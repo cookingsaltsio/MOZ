@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 
@@ -2590,7 +2589,7 @@
         <div class="view-footer">
             <button class="btn btn-green" onclick="startBattle('srs')">🔄 間隔反復モード (SRS)</button>
             <button class="btn btn-gold" onclick="startBattle('all')">⚔️ 全項目で出陣</button>
-            <button class="btn btn-purple" onclick="openFriendBattle()">🤝 友達対戦</button>
+            <button class="btn btn-purple" onclick="openFriendBattle()">🤝 対戦</button>
             <div style="display:flex; gap:10px;">
                 <button class="btn btn-indigo btn-small" onclick="goWordBook()">📖 項目一覧</button>
                 <button class="btn btn-teal btn-small" onclick="goStamp()">🗓️ 討伐記録</button>
@@ -2601,7 +2600,7 @@
     <!-- Friend Battle Connection View -->
     <div id="view-friend-battle" class="view">
         <div class="view-content" style="justify-content:flex-start;">
-            <h1>🤝 友達対戦</h1>
+            <h1>🤝 対戦</h1>
             <div id="friend-status-toast" class="friend-status-toast">待機中です。</div>
             <div id="friend-defeat-overlay" class="friend-defeat-overlay">
                 <div class="friend-defeat-title">DEFEAT</div>
@@ -2621,7 +2620,7 @@
                 <button class="btn btn-gold" id="friend-reserve-btn" onclick="FriendBattle.reserveRoomId()">対戦IDだけ作る</button>
                 <div class="room-code" id="friend-room-code">未作成</div>
                 <div style="font-size:0.82rem; color:#888; margin-bottom:10px;">
-                    スマホでLINEなどに切り替える場合は、先にIDだけ作って友達へ送り、アプリに戻ってから部屋を開いてください。
+                    スマホでLINEなどに切り替える場合は、先にIDだけ作って相手へ送り、アプリに戻ってから部屋を開いてください。
                 </div>
                 <button class="btn btn-green" id="friend-create-btn" onclick="FriendBattle.createRoom()">このIDで部屋を開く</button>
                 <button class="btn btn-blue btn-small" id="friend-copy-btn" onclick="FriendBattle.copyRoomId()" disabled>対戦IDをコピー</button>
@@ -2629,7 +2628,7 @@
 
             <div class="panel">
                 <h3 style="margin-top:0; color: var(--accent);">部屋に参加</h3>
-                <input type="text" id="friend-join-id" class="online-input" placeholder="友達から届いた対戦ID">
+                <input type="text" id="friend-join-id" class="online-input" placeholder="相手から届いた対戦ID">
                 <button class="btn btn-gold" id="friend-join-btn" onclick="FriendBattle.joinRoom()" style="margin-top:10px;">参加する</button>
             </div>
 
@@ -3128,7 +3127,7 @@
             if (typeof window.Peer === 'undefined') failed.push('PeerJS');
             const unique = Array.from(new Set(failed));
             if (unique.length) {
-                this.showWarning(`外部ライブラリを読み込めませんでした: ${unique.join(' / ')}。ZIP読込、xlsx/ods読込、友達対戦など一部機能が使えない可能性があります。`, 'error');
+                this.showWarning(`外部ライブラリを読み込めませんでした: ${unique.join(' / ')}。ZIP読込、xlsx/ods読込、対戦など一部機能が使えない可能性があります。`, 'error');
             }
             return unique;
         },
@@ -3136,7 +3135,7 @@
         checkBrowserDelivery() {
             if (this.isAndroidAsset()) return;
             if (location.protocol === 'file:') {
-                this.showWarning('PCブラウザで友達対戦まで使う場合は、index.htmlをfile://で直接開かずHTTPSまたはlocalhostから開いてください。', 'warn');
+                this.showWarning('PCブラウザで対戦まで使う場合は、index.htmlをfile://で直接開かずHTTPSまたはlocalhostから開いてください。', 'warn');
             } else if (location.protocol === 'http:' && !this.isLocalHost()) {
                 this.showWarning('ブラウザ公開版はHTTPSで配信してください。HTTPでは一部のブラウザ機能が制限されます。', 'warn');
             }
@@ -4917,14 +4916,14 @@
                     this.addLog('PeerJSのCDN読み込みに失敗しました。ネットワーク、広告ブロック、社内/学校Wi-Fiの制限を確認してください。', 'error');
                 }
                 if (!support.hasWebRTC) {
-                    this.addLog('このブラウザは友達対戦に必要な通信機能に対応していないか、無効化されています。最新のChrome/Safari/Firefoxで開いてください。', 'error');
+                    this.addLog('このブラウザは対戦に必要な通信機能に対応していないか、無効化されています。最新のChrome/Safari/Firefoxで開いてください。', 'error');
                 }
                 this.addLog('通信機能を初期化できませんでした。PeerJSの読み込み失敗やWebRTC非対応が考えられます。', 'error');
                 this.updateButtons();
                 return;
             }
-            this.setStatus('部屋を作るか、友達から届いた対戦IDで参加してください。', 'warn');
-            this.addLog('友達対戦画面を開きました。', 'system');
+            this.setStatus('部屋を作るか、相手から届いた対戦IDで参加してください。', 'warn');
+            this.addLog('対戦画面を開きました。', 'system');
             if (!support.secureWeb) {
                 this.addLog('ブラウザ公開版ではHTTPS配信を推奨します。HTTP配信ではiOS Safariなどで通信機能が制限される場合があります。', 'error');
             }
@@ -5368,7 +5367,7 @@
                 if (battleActive) {
                     note.textContent = '対戦中です。現在のターンのプレイヤーだけが回答できます。';
                 } else if (!hasDeck) {
-                    note.textContent = '対戦に使えるデッキがありません。先にホームでtxtデッキを読み込んでください。';
+                    note.textContent = '対戦に使えるデッキがありません。先にホームでデッキを読み込んでください。';
                 } else if (!connected) {
                     note.textContent = '相手と接続すると、ホスト設定と準備状態が同期されます。';
                 } else if (this.questionSetSending) {
@@ -6917,7 +6916,7 @@
             }
             this.roomId = this.roomId || this.generateRoomId();
             this.setText('friend-room-code', this.roomId);
-            this.setStatus('対戦IDを作りました。友達に送ったあと、この画面に戻って部屋を開いてください。', 'ready');
+            this.setStatus('対戦IDを作りました。相手に送ったあと、この画面に戻って部屋を開いてください。', 'ready');
             this.addLog(`対戦IDを作成: ${this.roomId}`, 'system');
             this.updateButtons();
         },
@@ -7032,10 +7031,10 @@
                 if (this.role === 'host') {
                     this.roomId = this.roomId || id;
                     this.setText('friend-room-code', id);
-                    this.setStatus('部屋を開きました。この画面のまま友達の参加を待ってください。', 'ready');
+                    this.setStatus('部屋を開きました。この画面のまま相手の参加を待ってください。', 'ready');
                     this.addLog(`部屋を開きました: ${id} / 通信モード: ${this.getIceModeLabel()}`, 'system');
                 } else if (this.role === 'guest') {
-                    this.setStatus('友達の部屋へ接続中です...', 'warn');
+                    this.setStatus('相手の部屋へ接続中です...', 'warn');
                     const conn = this.peer.connect(this.roomId, {
                         reliable: true,
                         serialization: 'json',
@@ -7570,12 +7569,12 @@
                 if (typeof navigator !== 'undefined' && navigator.clipboard && window.isSecureContext) {
                     await navigator.clipboard.writeText(this.roomId);
                     this.addLog('対戦IDをコピーしました。', 'system');
-                    this.setStatus('対戦IDをコピーしました。友達に送ってください。', 'ready');
+                    this.setStatus('対戦IDをコピーしました。相手に送ってください。', 'ready');
                 } else {
-                    window.prompt('この対戦IDを友達に送ってください。', this.roomId);
+                    window.prompt('この対戦IDを相手に送ってください。', this.roomId);
                 }
             } catch (e) {
-                window.prompt('この対戦IDを友達に送ってください。', this.roomId);
+                window.prompt('この対戦IDを相手に送ってください。', this.roomId);
             }
         },
 

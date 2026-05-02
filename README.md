@@ -1,6 +1,7 @@
 [README.md](https://github.com/user-attachments/files/27289987/README.md)# モンスターおぼえるぜ
 
 「モンスターおぼえるぜ」は、単語や問題をモンスターとのバトル形式で学習するためのブラウザ対応学習アプリです。
+プレイできるURL: https://cookingsaltsio.github.io/MOZ/
 
 PCブラウザ、Android Chrome、iOS Safari、Android APK版で使うことを想定しています。
 

@@ -4861,6 +4861,8 @@
         conn: null,
         role: null,
         roomId: '',
+        roomIdChars: '23456789abcdefghjkmnpqrstuvwxyz',
+        roomCreateRetryCount: 0,
         connected: false,
         closing: false,
         connectionToken: 0,
@@ -4930,7 +4932,7 @@
         },
 
         resetPanel() {
-            this.setText('friend-room-code', '未作成');
+            this.setRoomCode('');
             this.setValue('friend-join-id', '');
             this.setValue('friend-test-message', '');
             const log = document.getElementById('friend-log');
@@ -5017,8 +5019,7 @@
                 return;
             }
             this.relayOnly = !!enabled;
-            this.roomId = '';
-            this.setText('friend-room-code', '未作成');
+            this.setRoomCode('');
             this.resetDiagnostics();
             this.setStatus(`${this.getIceModeLabel()}モードにしました。部屋を作り直してください。`, 'warn');
             this.addLog(`通信モード: ${this.getIceModeLabel()}`, 'system');
@@ -6903,10 +6904,47 @@
         },
 
         generateRoomId() {
-            const prefix = this.relayOnly ? 'mozr' : 'moz';
-            const partA = Math.random().toString(36).slice(2, 6);
-            const partB = Date.now().toString(36).slice(-5);
-            return `${prefix}-${partA}-${partB}`.toLowerCase();
+            const chars = this.roomIdChars;
+            let id = '';
+            if (window.crypto && typeof window.crypto.getRandomValues === 'function') {
+                const values = new Uint32Array(6);
+                window.crypto.getRandomValues(values);
+                values.forEach(value => {
+                    id += chars[value % chars.length];
+                });
+                return id;
+            }
+            for (let i = 0; i < 6; i++) {
+                id += chars[Math.floor(Math.random() * chars.length)];
+            }
+            return id;
+        },
+
+        normalizeRoomId(value) {
+            return String(value || '')
+                .toLowerCase()
+                .replace(/[\s\-]+/g, '')
+                .trim();
+        },
+
+        isValidRoomId(value) {
+            return new RegExp(`^[${this.roomIdChars}]{6}$`).test(String(value || ''));
+        },
+
+        toPeerRoomId(displayId = this.roomId) {
+            const normalized = this.normalizeRoomId(displayId);
+            return `moz-${normalized}`;
+        },
+
+        toDisplayRoomId(peerId) {
+            const normalized = String(peerId || '').toLowerCase().trim();
+            if (normalized.startsWith('moz-')) return this.normalizeRoomId(normalized.slice(4));
+            return this.normalizeRoomId(normalized);
+        },
+
+        setRoomCode(id) {
+            this.roomId = id || '';
+            this.setText('friend-room-code', this.roomId || '未作成');
         },
 
         reserveRoomId() {
@@ -6914,8 +6952,7 @@
                 this.setStatus('すでに部屋を開いています。', 'warn');
                 return;
             }
-            this.roomId = this.roomId || this.generateRoomId();
-            this.setText('friend-room-code', this.roomId);
+            this.setRoomCode(this.roomId || this.generateRoomId());
             this.setStatus('対戦IDを作りました。相手に送ったあと、この画面に戻って部屋を開いてください。', 'ready');
             this.addLog(`対戦IDを作成: ${this.roomId}`, 'system');
             this.updateButtons();
@@ -6972,20 +7009,20 @@
             };
         },
 
-        createRoom() {
+        createRoom(retryCount = 0) {
             const support = this.isSupported();
             if (!support.ok) return this.open();
-            const reservedRoomId = this.roomId || this.generateRoomId();
+            const reservedRoomId = this.isValidRoomId(this.roomId) ? this.roomId : this.generateRoomId();
             this.leave(false);
             this.closing = false;
             this.role = 'host';
-            this.roomId = reservedRoomId;
+            this.roomCreateRetryCount = retryCount;
+            this.setRoomCode(reservedRoomId);
             this.resetDiagnostics();
-            this.setText('friend-room-code', this.roomId);
             this.setStatus('部屋を開いています。この画面を開いたまま相手の参加を待ってください。', 'warn');
             this.addLog(`オンライン接続の準備をしています。通信モード: ${this.getIceModeLabel()}`, 'system');
             try {
-                this.peer = new window.Peer(this.roomId, this.getPeerOptions());
+                this.peer = new window.Peer(this.toPeerRoomId(this.roomId), this.getPeerOptions());
                 this.bindPeerEvents();
             } catch (e) {
                 this.addLog(`部屋作成に失敗しました: ${e.message}`, 'error');
@@ -6998,17 +7035,20 @@
         joinRoom() {
             const support = this.isSupported();
             if (!support.ok) return this.open();
-            const roomId = (document.getElementById('friend-join-id')?.value || '').trim();
+            const roomId = this.normalizeRoomId(document.getElementById('friend-join-id')?.value || '');
             if (!roomId) {
                 this.setStatus('参加するには対戦IDを入力してください。', 'error');
                 return;
             }
-            const relayRoom = roomId.toLowerCase().startsWith('mozr-');
+            if (!this.isValidRoomId(roomId)) {
+                this.setStatus('対戦IDは6文字の小文字英数字で入力してください。使える文字は 23456789abcdefghjkmnpqrstuvwxyz です。', 'error');
+                return;
+            }
+            this.setValue('friend-join-id', roomId);
             this.leave(false);
             this.closing = false;
             this.role = 'guest';
             this.roomId = roomId;
-            this.relayOnly = relayRoom || this.relayOnly;
             this.syncRelayCheckbox();
             this.resetDiagnostics();
             this.setStatus('参加準備中です...', 'warn');
@@ -7024,18 +7064,41 @@
             this.updateButtons();
         },
 
+        retryCreateRoomAfterUnavailableId() {
+            const nextAttempt = (this.roomCreateRetryCount || 0) + 1;
+            if (nextAttempt > 5) {
+                this.setStatus('対戦IDの自動生成に何度も失敗しました。少し待ってからもう一度部屋を作ってください。', 'error');
+                this.leave(false);
+                this.reserveRoomId();
+                return;
+            }
+
+            const nextRoomId = this.generateRoomId();
+            this.addLog(`対戦IDが重複したため、別IDで作り直します: ${nextRoomId}`, 'system');
+            this.setStatus('対戦IDが重複したため、別のIDで部屋を作り直しています。', 'warn');
+            try {
+                if (this.peer && !this.peer.destroyed) this.peer.destroy();
+            } catch (e) { }
+            this.peer = null;
+            this.conn = null;
+            this.connected = false;
+            this.setRoomCode(nextRoomId);
+            window.setTimeout(() => this.createRoom(nextAttempt), 80);
+        },
+
         bindPeerEvents() {
             if (!this.peer) return;
             this.peer.on('open', id => {
                 if (this.closing) return;
                 if (this.role === 'host') {
-                    this.roomId = this.roomId || id;
-                    this.setText('friend-room-code', id);
+                    this.roomCreateRetryCount = 0;
+                    const displayId = this.isValidRoomId(this.roomId) ? this.roomId : this.toDisplayRoomId(id);
+                    this.setRoomCode(displayId);
                     this.setStatus('部屋を開きました。この画面のまま相手の参加を待ってください。', 'ready');
-                    this.addLog(`部屋を開きました: ${id} / 通信モード: ${this.getIceModeLabel()}`, 'system');
+                    this.addLog(`部屋を開きました: ${this.roomId} / 通信モード: ${this.getIceModeLabel()}`, 'system');
                 } else if (this.role === 'guest') {
                     this.setStatus('相手の部屋へ接続中です...', 'warn');
-                    const conn = this.peer.connect(this.roomId, {
+                    const conn = this.peer.connect(this.toPeerRoomId(this.roomId), {
                         reliable: true,
                         serialization: 'json',
                         metadata: { app: 'monster-oboeru-ze', role: 'guest' }
@@ -7076,13 +7139,17 @@
             this.peer.on('error', err => {
                 if (this.closing) return;
                 const message = err && err.message ? err.message : String(err);
-                this.addLog(`PeerJSエラー: ${message}`, 'error');
                 if (err && err.type === 'unavailable-id') {
-                    this.setStatus('この対戦IDは使用中でした。IDだけ作り直してください。', 'error');
-                    this.leave(false);
-                    this.reserveRoomId();
+                    this.addLog('PeerJSエラー: 対戦IDが重複しました。', 'error');
+                    if (this.role === 'host') {
+                        this.retryCreateRoomAfterUnavailableId();
+                    } else {
+                        this.setStatus('この対戦IDは使用中でした。別のIDで部屋を作り直してください。', 'error');
+                        this.leave(false);
+                    }
                     return;
                 }
+                this.addLog(`PeerJSエラー: ${message}`, 'error');
                 const hint = message.includes('Negotiation')
                     ? (this.relayOnly
                         ? 'TURNリレーのみでも接続交渉に失敗しました。別のWi-FiやPCブラウザ同士で確認してください。'
@@ -7596,7 +7663,8 @@
             this.peer = null;
             this.conn = null;
             this.role = null;
-            this.roomId = '';
+            this.setRoomCode('');
+            this.roomCreateRetryCount = 0;
             this.connected = false;
             this.localReady = false;
             this.remoteReady = false;
@@ -7612,7 +7680,6 @@
             this.battle = null;
             this.battleChoices = [];
             this.setFriendDefeatOverlay(false);
-            this.setText('friend-room-code', '未作成');
             this.updateButtons();
             if (showMessage && this.isActive()) {
                 this.setStatus('切断しました。', 'warn');

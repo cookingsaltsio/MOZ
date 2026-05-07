@@ -10159,7 +10159,7 @@
 
             const finishImport = () => {
                 loaded++;
-                if (loaded === files.length) {
+                if (loaded === fileList.length) {
                     if (totalWords > 0) {
                         let message = `${files.length}個のファイルから合計${totalWords}単語を読み込みました`;
                         if (failedFiles.length) {
@@ -10172,6 +10172,7 @@
                     } else {
                         alert("読込失敗\n\n表形式は1列目を問題、2列目以降を解答にしてください。\n対応形式: txt / csv / tsv / xlsx / ods");
                     }
+                    e.target.value = '';
                     goHome();
                 }
             };
@@ -10214,7 +10215,13 @@
         // ZIPファイル読み込み
         safeSetHandler('zip-input', 'onchange', e => {
             const file = e.target.files[0];
-            if (file) handleZipFile(file);
+            if (file) {
+                handleZipFile(file).finally(() => {
+                    e.target.value = '';
+                });
+            } else {
+                e.target.value = '';
+            }
         });
 
         // データインポート

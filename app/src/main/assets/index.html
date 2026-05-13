@@ -489,11 +489,15 @@
         .hp-cnt.finisher-shatter {
             border-color: #fff59d;
             box-shadow: 0 0 14px rgba(255, 235, 59, 0.75);
-            animation: hpBreakFlash 0.72s ease-out;
+            animation: hpFrameObliterate 1.55s ease-out forwards;
         }
         .hp-cnt.finisher-shatter .fill-e {
             background: linear-gradient(90deg, #ffeb3b, #ff5252, #b71c1c);
             box-shadow: 0 0 14px rgba(255, 82, 82, 0.82);
+            animation: hpFillObliterate 1.05s ease-in forwards;
+        }
+        .hp-cnt.finisher-shatter .hp-label {
+            animation: hpLabelObliterate 0.82s ease-in forwards;
         }
         .hp-shard {
             position: absolute;
@@ -506,7 +510,7 @@
             background: var(--hc, #ff5252);
             clip-path: polygon(0% 18%, 80% 0%, 100% 68%, 28% 100%);
             filter: drop-shadow(0 0 5px rgba(255, 235, 59, 0.65));
-            animation: hpShardBreak 1.15s ease-out forwards;
+            animation: hpShardBreak 1.72s cubic-bezier(.12, .78, .2, 1) forwards;
             animation-delay: var(--hd, 0ms);
         }
 
@@ -515,17 +519,30 @@
             35% { filter: brightness(1.9); box-shadow: 0 0 12px #69f0ae; }
             100% { filter: brightness(1); box-shadow: none; }
         }
-        @keyframes hpBreakFlash {
-            0% { transform: translateX(0); filter: brightness(1); }
-            18% { transform: translateX(-3px); filter: brightness(2.1); }
-            36% { transform: translateX(3px); }
-            58% { transform: translateX(-2px); }
-            100% { transform: translateX(0); filter: brightness(1); }
+        @keyframes hpFrameObliterate {
+            0% { transform: translateX(0); filter: brightness(1); border-color: #fff; background: #333; }
+            10% { transform: translateX(-5px); filter: brightness(2.4); border-color: #fffde7; background: #4a1515; }
+            20% { transform: translateX(5px); }
+            32% { transform: translateX(-3px); }
+            56% { transform: translateX(0); border-color: rgba(255, 235, 59, 0.85); background: rgba(70, 12, 12, 0.45); box-shadow: 0 0 18px rgba(255, 82, 82, 0.8); }
+            100% { transform: translateX(0); filter: brightness(1); border-color: transparent; background: transparent; box-shadow: none; }
+        }
+        @keyframes hpFillObliterate {
+            0% { opacity: 1; transform: scaleX(1); filter: brightness(1); }
+            18% { opacity: 1; transform: scaleX(1.02); filter: brightness(2.6); }
+            42% { opacity: 0.86; transform: scaleX(0.72) skewX(-12deg); }
+            100% { opacity: 0; transform: scaleX(0) skewX(-22deg); filter: brightness(1.8); }
+        }
+        @keyframes hpLabelObliterate {
+            0% { opacity: 1; transform: scale(1); }
+            24% { opacity: 1; transform: scale(1.18) rotate(-3deg); color: #fff59d; }
+            100% { opacity: 0; transform: scale(0.62) rotate(9deg); }
         }
         @keyframes hpShardBreak {
             0% { opacity: 0; transform: translate(-50%, -50%) scale(0.35) rotate(0deg); }
-            18% { opacity: 1; }
-            100% { opacity: 0; transform: translate(calc(-50% + var(--hdx, 0px)), calc(-50% + var(--hdy, -28px))) scale(0.15) rotate(var(--hr, 180deg)); }
+            10% { opacity: 1; }
+            66% { opacity: 1; }
+            100% { opacity: 0; transform: translate(calc(-50% + var(--hdx, 0px)), calc(-50% + var(--hdy, -80px))) scale(0.08) rotate(var(--hr, 180deg)); }
         }
 
         .skill-row {
@@ -664,6 +681,11 @@
             position: relative;
             overflow: hidden;
             isolation: isolate;
+        }
+
+        .battle-field.finisher-field {
+            overflow: visible;
+            z-index: 6;
         }
 
         .monster-img {
@@ -1023,11 +1045,11 @@
             position: absolute;
             left: var(--fx, 50%);
             top: var(--fy, 50%);
-            width: clamp(180px, 44vw, 360px);
-            height: clamp(180px, 44vw, 360px);
+            width: clamp(280px, 74vw, 620px);
+            height: clamp(280px, 74vw, 620px);
             z-index: 96;
             pointer-events: none;
-            overflow: hidden;
+            overflow: visible;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1042,9 +1064,10 @@
         .finisher-burst::before {
             content: "";
             position: absolute;
-            inset: -18%;
+            inset: -8%;
+            border-radius: 50%;
             background:
-                radial-gradient(circle at center, rgba(255, 255, 255, 1) 0 9%, rgba(255, 249, 196, 0.88) 10% 24%, rgba(179, 229, 252, 0.42) 25% 43%, transparent 64%),
+                radial-gradient(circle at center, rgba(255, 255, 255, 1) 0 8%, rgba(255, 249, 196, 0.9) 9% 25%, rgba(179, 229, 252, 0.5) 26% 51%, transparent 72%),
                 conic-gradient(from 0deg, transparent 0 7deg, rgba(225, 245, 254, 0.76) 8deg 13deg, transparent 14deg 24deg);
             filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.95));
             animation: finisherRays var(--finisher-rays-duration, 1.55s) ease-out forwards;
@@ -1054,8 +1077,8 @@
             position: absolute;
             left: 50%;
             top: 50%;
-            width: 180%;
-            height: 20%;
+            width: 210%;
+            height: 22%;
             transform: translate(-50%, -50%) rotate(var(--beam-angle, -14deg));
             background:
                 linear-gradient(90deg, transparent, rgba(187, 222, 251, 0.12) 13%, rgba(255, 255, 255, 0.95) 45% 55%, rgba(255, 249, 196, 0.18) 85%, transparent);
@@ -1065,7 +1088,7 @@
         .finisher-text {
             position: absolute;
             left: 50%;
-            top: calc(50% + 52%);
+            top: calc(50% + 44%);
             z-index: 2;
             font-family: var(--font-game);
             font-size: clamp(1.35rem, 5.2vw, 3.2rem);
@@ -4824,6 +4847,7 @@
             const field = document.getElementById('field-area');
             if (!field) return;
             const lingerMs = Math.max(1600, parseInt(options.lingerMs) || 1600);
+            field.classList.add('finisher-field');
             const target = field;
             const fieldRect = field.getBoundingClientRect();
             let centerX = fieldRect.width / 2;
@@ -4852,7 +4876,10 @@
             text.appendChild(sub);
             el.appendChild(text);
             target.appendChild(el);
-            setTimeout(() => el.remove(), lingerMs + 80);
+            setTimeout(() => {
+                el.remove();
+                field.classList.remove('finisher-field');
+            }, lingerMs + 80);
         },
         shatterEnemyHP() {
             if (!this.enabled()) return;
@@ -4865,27 +4892,26 @@
             box.classList.add('finisher-shatter');
             box.querySelectorAll('.hp-shard').forEach(el => el.remove());
 
-            const colors = ['#ffeb3b', '#ff8a65', '#ff5252', '#b71c1c', '#fffde7'];
-            const count = 18;
+            const colors = ['#ffeb3b', '#ff8a65', '#ff5252', '#b71c1c', '#fffde7', '#4a0000'];
+            const count = 54;
             for (let i = 0; i < count; i++) {
                 const shard = document.createElement('div');
-                const x = 6 + (i / Math.max(1, count - 1)) * 88 + (randomInt(7) - 3);
-                const dy = -18 - randomInt(32);
-                const dx = -48 + randomInt(97);
+                const x = 4 + (i / Math.max(1, count - 1)) * 92 + (randomInt(11) - 5);
+                const upward = i % 4 !== 0;
+                const dy = upward ? (-36 - randomInt(95)) : (18 + randomInt(64));
+                const dx = -170 + randomInt(341);
                 shard.className = 'hp-shard';
                 shard.style.setProperty('--hx', `${Math.max(2, Math.min(98, x))}%`);
-                shard.style.setProperty('--hy', `${42 + randomInt(18)}%`);
-                shard.style.setProperty('--hs', `${5 + randomInt(8)}px`);
+                shard.style.setProperty('--hy', `${35 + randomInt(34)}%`);
+                shard.style.setProperty('--hs', `${4 + randomInt(13)}px`);
                 shard.style.setProperty('--hc', colors[i % colors.length]);
                 shard.style.setProperty('--hdx', `${dx}px`);
                 shard.style.setProperty('--hdy', `${dy}px`);
-                shard.style.setProperty('--hr', `${120 + randomInt(300)}deg`);
-                shard.style.setProperty('--hd', `${(i % 6) * 24}ms`);
+                shard.style.setProperty('--hr', `${180 + randomInt(720)}deg`);
+                shard.style.setProperty('--hd', `${(i % 9) * 18}ms`);
                 box.appendChild(shard);
-                setTimeout(() => shard.remove(), 1300);
+                setTimeout(() => shard.remove(), 1900);
             }
-
-            setTimeout(() => box.classList.remove('finisher-shatter'), 1250);
         },
         finisherMonster(el) {
             if (!this.enabled() || !el) return;
@@ -8188,6 +8214,11 @@
         const eLabel = document.getElementById('hp-e-label');
         if (pLabel) pLabel.textContent = `${Math.max(0, Math.round(Game.pHP))}/${Math.max(1, Math.round(Game.pMax))}`;
         if (eLabel) eLabel.textContent = `${Math.max(0, Math.round(Game.eHP))}/${Math.max(1, Math.round(Game.eMax))}`;
+        const eBox = document.getElementById('hp-e')?.parentElement;
+        if (eBox && Game.eHP > 0 && eBox.classList.contains('finisher-shatter')) {
+            eBox.classList.remove('finisher-shatter');
+            eBox.querySelectorAll('.hp-shard').forEach(el => el.remove());
+        }
         FX.setMonsterHpState(document.getElementById('monster'), ePct);
         updateSkillUI();
     }

@@ -499,6 +499,22 @@
         .hp-cnt.finisher-shatter .hp-label {
             animation: hpLabelObliterate 0.82s ease-in forwards;
         }
+        .hp-piece {
+            position: absolute;
+            left: var(--piece-left, 0%);
+            top: 0;
+            width: var(--piece-width, 10%);
+            height: 100%;
+            z-index: 5;
+            pointer-events: none;
+            border-radius: 3px;
+            background:
+                linear-gradient(90deg, rgba(255, 235, 59, 0.95), rgba(255, 82, 82, 0.95), rgba(183, 28, 28, 0.98));
+            transform-origin: center;
+            will-change: transform, opacity;
+            animation: hpPieceScatter 1.42s cubic-bezier(.12, .78, .2, 1) forwards;
+            animation-delay: var(--piece-delay, 0ms);
+        }
         .hp-cnt.finisher-shatter::before,
         .hp-cnt.finisher-shatter::after {
             content: "";
@@ -555,6 +571,11 @@
             0% { opacity: 1; transform: scale(1); }
             24% { opacity: 1; transform: scale(1.18) rotate(-3deg); color: #fff59d; }
             100% { opacity: 0; transform: scale(0.62) rotate(9deg); }
+        }
+        @keyframes hpPieceScatter {
+            0% { opacity: 1; transform: translate(0, 0) scale(1) rotate(0deg); }
+            18% { opacity: 1; transform: translate(0, 0) scale(1.08) rotate(var(--piece-jolt, 0deg)); }
+            100% { opacity: 0; transform: translate(var(--piece-dx, 0px), var(--piece-dy, -80px)) scale(0.22) rotate(var(--piece-rot, 180deg)); }
         }
         @keyframes hpShatterFlash {
             0% { opacity: 0; transform: scaleX(0.25) scaleY(0.35); }
@@ -770,6 +791,31 @@
                 radial-gradient(circle, rgba(255, 255, 255, 0.96) 0 16%, rgba(187, 222, 251, 0.46) 17% 42%, transparent 68%);
             animation: finisherMonsterHalo 1.45s ease-out forwards;
         }
+        .monster-piece {
+            position: absolute;
+            left: var(--mx, 50%);
+            top: var(--my, 50%);
+            width: var(--mw, 100px);
+            height: var(--mh, 100px);
+            z-index: 88;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: var(--mfs, 100px);
+            line-height: 1;
+            transform: translate(-50%, -50%);
+            transform-origin: center;
+            clip-path: var(--clip, inset(0 0 0 0));
+            will-change: transform, opacity;
+            animation: monsterPieceScatter 1.5s cubic-bezier(.12, .78, .2, 1) forwards;
+            animation-delay: var(--piece-delay, 0ms);
+        }
+        .monster-piece img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
         .monster-shard {
             position: absolute;
             left: var(--sx, 50%);
@@ -818,10 +864,15 @@
         }
         @keyframes monsterFinisherDecay {
             0% { opacity: 1; transform: scale(1) rotate(0deg); }
-            16% { opacity: 1; transform: scale(1.2) rotate(-3deg); }
-            42% { opacity: 0.98; transform: scale(0.98) rotate(5deg); }
-            72% { opacity: 0.52; transform: scale(0.74) rotate(-8deg) translateY(12px); }
+            12% { opacity: 1; transform: scale(1.16) rotate(-3deg); }
+            28% { opacity: 0.24; transform: scale(0.92) rotate(5deg); }
+            72% { opacity: 0.08; transform: scale(0.62) rotate(-8deg) translateY(12px); }
             100% { opacity: 0; transform: scale(0.34) rotate(13deg) translateY(34px); }
+        }
+        @keyframes monsterPieceScatter {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+            9% { opacity: 1; transform: translate(-50%, -50%) scale(1.06) rotate(var(--jolt, 0deg)); }
+            100% { opacity: 0; transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, -80px))) scale(0.22) rotate(var(--rot, 180deg)); }
         }
         @keyframes finisherMonsterHalo {
             0% { opacity: 0; transform: scale(0.4); }
@@ -4847,6 +4898,7 @@
             if (!el) return;
             el.classList.remove('state-enraged', 'state-wounded', 'state-defeated', 'finisher-decay', 'hit-anim', 'critical-hit', 'combo-hit');
             el.style.opacity = '';
+            document.querySelectorAll('.monster-piece').forEach(piece => piece.remove());
         },
         setMonsterHpState(el, hpPercent) {
             if (!el) return;
@@ -4918,14 +4970,32 @@
             box.classList.remove('finisher-shatter');
             void box.offsetWidth;
             box.classList.add('finisher-shatter');
-            box.querySelectorAll('.hp-shard').forEach(el => el.remove());
+            box.querySelectorAll('.hp-shard, .hp-piece').forEach(el => el.remove());
 
             const colors = ['#ffeb3b', '#ff8a65', '#ff5252', '#b71c1c', '#fffde7', '#4a0000'];
-            const count = 26;
+            const pieceCount = 12;
             const fragment = document.createDocumentFragment();
-            for (let i = 0; i < count; i++) {
+            for (let i = 0; i < pieceCount; i++) {
+                const piece = document.createElement('div');
+                const width = 100 / pieceCount;
+                const upward = i % 3 !== 0;
+                const dx = -130 + randomInt(261);
+                const dy = upward ? (-42 - randomInt(90)) : (20 + randomInt(54));
+                piece.className = 'hp-piece';
+                piece.style.setProperty('--piece-left', `${i * width}%`);
+                piece.style.setProperty('--piece-width', `${width + 0.35}%`);
+                piece.style.setProperty('--piece-dx', `${dx}px`);
+                piece.style.setProperty('--piece-dy', `${dy}px`);
+                piece.style.setProperty('--piece-rot', `${160 + randomInt(560)}deg`);
+                piece.style.setProperty('--piece-jolt', `${-10 + randomInt(21)}deg`);
+                piece.style.setProperty('--piece-delay', `${(i % 4) * 18}ms`);
+                fragment.appendChild(piece);
+            }
+
+            const sparkCount = 10;
+            for (let i = 0; i < sparkCount; i++) {
                 const shard = document.createElement('div');
-                const x = 4 + (i / Math.max(1, count - 1)) * 92 + (randomInt(11) - 5);
+                const x = 4 + (i / Math.max(1, sparkCount - 1)) * 92 + (randomInt(11) - 5);
                 const upward = i % 4 !== 0;
                 const dy = upward ? (-36 - randomInt(82)) : (18 + randomInt(56));
                 const dx = -138 + randomInt(277);
@@ -4941,7 +5011,7 @@
                 fragment.appendChild(shard);
             }
             box.appendChild(fragment);
-            setTimeout(() => box.querySelectorAll('.hp-shard').forEach(el => el.remove()), 1900);
+            setTimeout(() => box.querySelectorAll('.hp-shard, .hp-piece').forEach(el => el.remove()), 1900);
         },
         finisherMonster(el) {
             if (!this.enabled() || !el) return;
@@ -4955,29 +5025,45 @@
             const monsterRect = el.getBoundingClientRect();
             const centerX = monsterRect.left - fieldRect.left + monsterRect.width / 2;
             const centerY = monsterRect.top - fieldRect.top + monsterRect.height / 2;
-            const shards = 10;
-            const colors = ['#fff59d', '#ffd54f', '#ff8a65', '#f5f5f5', '#b0bec5'];
+            const width = Math.max(72, monsterRect.width || 110);
+            const height = Math.max(72, monsterRect.height || 110);
+            const fontSize = window.getComputedStyle(el).fontSize || '100px';
+            const monsterHTML = el.innerHTML || el.textContent || '';
+            const clips = [
+                'polygon(0 0, 42% 0, 36% 44%, 0 38%)',
+                'polygon(42% 0, 100% 0, 82% 38%, 36% 44%)',
+                'polygon(0 38%, 36% 44%, 30% 100%, 0 100%)',
+                'polygon(36% 44%, 82% 38%, 100% 100%, 30% 100%)',
+                'polygon(18% 12%, 62% 8%, 52% 58%, 12% 50%)',
+                'polygon(52% 20%, 100% 18%, 90% 72%, 48% 58%)',
+                'polygon(12% 50%, 50% 58%, 46% 100%, 6% 92%)',
+                'polygon(50% 58%, 92% 72%, 100% 100%, 46% 100%)'
+            ];
             const fragment = document.createDocumentFragment();
 
-            for (let i = 0; i < shards; i++) {
-                const shard = document.createElement('div');
-                const angle = (Math.PI * 2 * i / shards) + (i % 3) * 0.18;
-                const distance = 56 + (i % 5) * 18;
+            for (let i = 0; i < clips.length; i++) {
+                const piece = document.createElement('div');
+                const angle = (Math.PI * 2 * i / clips.length) + (i % 3) * 0.2;
+                const distance = 74 + (i % 4) * 22;
                 const dx = Math.cos(angle) * distance;
-                const dy = Math.sin(angle) * distance - 18 - (i % 4) * 9;
-                shard.className = 'monster-shard';
-                shard.style.setProperty('--sx', `${centerX}px`);
-                shard.style.setProperty('--sy', `${centerY}px`);
-                shard.style.setProperty('--dx', `${dx.toFixed(1)}px`);
-                shard.style.setProperty('--dy', `${dy.toFixed(1)}px`);
-                shard.style.setProperty('--rot', `${180 + i * 47}deg`);
-                shard.style.setProperty('--delay', `${(i % 6) * 22}ms`);
-                shard.style.setProperty('--size', `${8 + (i % 4) * 3}px`);
-                shard.style.setProperty('--shade', colors[i % colors.length]);
-                fragment.appendChild(shard);
+                const dy = Math.sin(angle) * distance - 24 - (i % 3) * 12;
+                piece.className = 'monster-piece';
+                piece.innerHTML = monsterHTML;
+                piece.style.setProperty('--mx', `${centerX}px`);
+                piece.style.setProperty('--my', `${centerY}px`);
+                piece.style.setProperty('--mw', `${width}px`);
+                piece.style.setProperty('--mh', `${height}px`);
+                piece.style.setProperty('--mfs', fontSize);
+                piece.style.setProperty('--clip', clips[i]);
+                piece.style.setProperty('--dx', `${dx.toFixed(1)}px`);
+                piece.style.setProperty('--dy', `${dy.toFixed(1)}px`);
+                piece.style.setProperty('--rot', `${-120 + randomInt(420)}deg`);
+                piece.style.setProperty('--jolt', `${-8 + randomInt(17)}deg`);
+                piece.style.setProperty('--piece-delay', `${(i % 4) * 24}ms`);
+                fragment.appendChild(piece);
             }
             field.appendChild(fragment);
-            setTimeout(() => field.querySelectorAll('.monster-shard').forEach(shard => shard.remove()), 1550);
+            setTimeout(() => field.querySelectorAll('.monster-piece').forEach(piece => piece.remove()), 1650);
         },
         specialAura(active) {
             const battle = document.getElementById('view-battle');
@@ -8249,7 +8335,7 @@
         const eBox = document.getElementById('hp-e')?.parentElement;
         if (eBox && Game.eHP > 0 && eBox.classList.contains('finisher-shatter')) {
             eBox.classList.remove('finisher-shatter');
-            eBox.querySelectorAll('.hp-shard').forEach(el => el.remove());
+            eBox.querySelectorAll('.hp-shard, .hp-piece').forEach(el => el.remove());
         }
         FX.setMonsterHpState(document.getElementById('monster'), ePct);
         updateSkillUI();

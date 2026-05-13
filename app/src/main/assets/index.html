@@ -3492,6 +3492,45 @@
     };
 
     const DB = {
+        saveTimer: null,
+        saveTimerIsIdle: false,
+        saveInFlight: false,
+        savePending: false,
+
+        cancelScheduledSave() {
+            if (!this.saveTimer) return;
+            if (this.saveTimerIsIdle && typeof window !== 'undefined' && typeof window.cancelIdleCallback === 'function') {
+                window.cancelIdleCallback(this.saveTimer);
+            } else {
+                clearTimeout(this.saveTimer);
+            }
+            this.saveTimer = null;
+            this.saveTimerIsIdle = false;
+        },
+
+        scheduleSave(delay = 900) {
+            this.savePending = true;
+            if (this.saveTimer) return;
+
+            const flush = () => {
+                this.saveTimer = null;
+                this.saveTimerIsIdle = false;
+                this.flushScheduledSave();
+            };
+
+            if (typeof window !== 'undefined' && typeof window.requestIdleCallback === 'function') {
+                this.saveTimerIsIdle = true;
+                this.saveTimer = window.requestIdleCallback(flush, { timeout: Math.max(250, delay) });
+            } else {
+                this.saveTimer = setTimeout(flush, delay);
+            }
+        },
+
+        async flushScheduledSave() {
+            if (!this.savePending) return true;
+            return this.save({ deferred: true, skipSizeLog: true });
+        },
+
         // 習熟度判定関数（時間ベース）
         calculateMastery(timeInSeconds, deckName) {
             // デッキごとの閾値を取得（なければデフォルト）
@@ -3779,12 +3818,23 @@
             this.updateUI();
         },
 
-        async save() {
-            try {
-                const dataSize = new Blob([JSON.stringify(this.d)]).size;
-                const dataSizeMB = (dataSize / (1024 * 1024)).toFixed(2);
+        async save(options = {}) {
+            const opts = (options && typeof options === 'object') ? options : {};
+            if (!opts.deferred) this.cancelScheduledSave();
+            if (this.saveInFlight) {
+                this.savePending = true;
+                if (!this.saveTimer) this.scheduleSave(500);
+                return false;
+            }
 
-                console.log(`💾 データ保存: ${dataSizeMB}MB`);
+            this.saveInFlight = true;
+            this.savePending = false;
+            try {
+                if (!opts.skipSizeLog) {
+                    const dataSize = new Blob([JSON.stringify(this.d)]).size;
+                    const dataSizeMB = (dataSize / (1024 * 1024)).toFixed(2);
+                    console.log(`💾 データ保存: ${dataSizeMB}MB`);
+                }
 
                 // IndexedDBに保存（圧縮不要）
                 await IDB.set(APP_DATA_KEY, this.d);
@@ -3794,6 +3844,9 @@
                 console.error('保存エラー:', e);
                 alert(`❌ データの保存に失敗しました\n\nエラー: ${e.message}`);
                 return false;
+            } finally {
+                this.saveInFlight = false;
+                if (this.savePending) this.scheduleSave(500);
             }
         },
 
@@ -3918,7 +3971,7 @@
                 };
             }
 
-            this.save();
+            this.save({ skipSizeLog: true });
         },
 
         renderMonsterPreviews() {
@@ -4432,7 +4485,7 @@
                 const baseMinutes = this.d.srsIntervals['lv1'] || 1;
                 s.next = Date.now() + (baseMinutes * 60 * 1000);
             }
-            this.save();
+            this.scheduleSave();
         },
 
         getTodayKey() {
@@ -4558,11 +4611,7 @@
 
     function randomInt(max) {
         if (max <= 0) return 0;
-        if (window.crypto && window.crypto.getRandomValues) {
-            const buffer = new Uint32Array(1);
-            window.crypto.getRandomValues(buffer);
-            return Math.floor((buffer[0] / 4294967296) * max);
-        }
+        // Math.random is fast enough for gameplay shuffles and avoids mobile tap lag.
         return Math.floor(Math.random() * max);
     }
 
@@ -4576,6 +4625,38 @@
 
     function shuffled(items) {
         return shuffleInPlace([...items]);
+    }
+
+    function buildAnswerChoices(deck, currentCard, maxChoices = 4) {
+        const choices = [currentCard];
+        if (!Array.isArray(deck) || !currentCard || deck.length <= 1) return choices;
+
+        const usedAnswers = new Set([String(currentCard.a)]);
+        const currentQuestion = String(currentCard.q);
+        const targetCount = Math.max(1, maxChoices);
+        const attempts = Math.min(deck.length * 2, 80);
+
+        for (let i = 0; i < attempts && choices.length < targetCount; i++) {
+            const candidate = deck[randomInt(deck.length)];
+            if (!candidate) continue;
+            const answer = String(candidate.a);
+            if (!answer || usedAnswers.has(answer) || String(candidate.q) === currentQuestion) continue;
+            choices.push(candidate);
+            usedAnswers.add(answer);
+        }
+
+        if (choices.length < targetCount) {
+            for (const candidate of deck) {
+                if (!candidate) continue;
+                const answer = String(candidate.a);
+                if (!answer || usedAnswers.has(answer) || String(candidate.q) === currentQuestion) continue;
+                choices.push(candidate);
+                usedAnswers.add(answer);
+                if (choices.length >= targetCount) break;
+            }
+        }
+
+        return shuffleInPlace(choices);
     }
 
     function getSrsWeaknessScore(card, now = Date.now()) {
@@ -4922,6 +5003,7 @@
     }
 
     function goHome() {
+        if (typeof DB !== 'undefined' && DB.savePending) DB.save({ skipSizeLog: true });
         if (typeof Game !== 'undefined') {
             Game.battleActive = false;
             Game.battleToken++;
@@ -8400,16 +8482,8 @@
         document.getElementById('q-combo').innerText = Game.combo;
         FX.feedback('');
 
-        const choices = [Game.cur];
         const deck = DB.getCurrentDeck();
-        const candidates = shuffled(deck.filter(r => r.q !== Game.cur.q && r.a !== Game.cur.a));
-        for (const r of candidates) {
-            if (!choices.some(c => c.a === r.a)) {
-                choices.push(r);
-                if (choices.length >= 4) break;
-            }
-        }
-        shuffleInPlace(choices);
+        const choices = buildAnswerChoices(deck, Game.cur, 4);
 
         const grid = document.getElementById('choices');
         grid.innerHTML = '';
@@ -8718,6 +8792,7 @@
     function finishBattle(win) {
         Game.battleActive = false;
         Game.battleToken++;
+        if (DB.savePending) DB.save({ skipSizeLog: true });
         if (Game.tid) clearInterval(Game.tid);
         resetSuperComboState(false);
         const overlay = document.getElementById('view-overlay');
@@ -10235,6 +10310,14 @@
             }
             DB.ensureDataShape();
         }
+
+        const flushPendingStudySave = () => {
+            if (DB.savePending) DB.save({ skipSizeLog: true });
+        };
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) flushPendingStudySave();
+        });
+        window.addEventListener('pagehide', flushPendingStudySave);
 
         // 安全なイベントハンドラ設定用のヘルパー関数
         const safeSetHandler = (id, event, handler) => {

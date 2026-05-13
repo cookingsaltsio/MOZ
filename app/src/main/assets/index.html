@@ -488,16 +488,33 @@
         .hp-fill.heal-pulse { animation: hpHealGlow 0.7s ease-out; }
         .hp-cnt.finisher-shatter {
             border-color: #fff59d;
-            box-shadow: 0 0 14px rgba(255, 235, 59, 0.75);
+            box-shadow: 0 0 10px rgba(255, 235, 59, 0.65);
             animation: hpFrameObliterate 1.55s ease-out forwards;
         }
         .hp-cnt.finisher-shatter .fill-e {
             background: linear-gradient(90deg, #ffeb3b, #ff5252, #b71c1c);
-            box-shadow: 0 0 14px rgba(255, 82, 82, 0.82);
+            box-shadow: 0 0 10px rgba(255, 82, 82, 0.72);
             animation: hpFillObliterate 1.05s ease-in forwards;
         }
         .hp-cnt.finisher-shatter .hp-label {
             animation: hpLabelObliterate 0.82s ease-in forwards;
+        }
+        .hp-cnt.finisher-shatter::before,
+        .hp-cnt.finisher-shatter::after {
+            content: "";
+            position: absolute;
+            inset: -10px -18px;
+            z-index: 3;
+            pointer-events: none;
+            background:
+                linear-gradient(90deg, transparent, rgba(255, 235, 59, 0.9), transparent),
+                linear-gradient(0deg, transparent, rgba(255, 82, 82, 0.62), transparent);
+            transform-origin: center;
+            animation: hpShatterFlash 0.78s ease-out forwards;
+        }
+        .hp-cnt.finisher-shatter::after {
+            transform: rotate(12deg);
+            animation-delay: 0.04s;
         }
         .hp-shard {
             position: absolute;
@@ -509,7 +526,8 @@
             pointer-events: none;
             background: var(--hc, #ff5252);
             clip-path: polygon(0% 18%, 80% 0%, 100% 68%, 28% 100%);
-            filter: drop-shadow(0 0 5px rgba(255, 235, 59, 0.65));
+            box-shadow: 0 0 5px rgba(255, 235, 59, 0.45);
+            will-change: transform, opacity;
             animation: hpShardBreak 1.72s cubic-bezier(.12, .78, .2, 1) forwards;
             animation-delay: var(--hd, 0ms);
         }
@@ -520,23 +538,28 @@
             100% { filter: brightness(1); box-shadow: none; }
         }
         @keyframes hpFrameObliterate {
-            0% { transform: translateX(0); filter: brightness(1); border-color: #fff; background: #333; }
-            10% { transform: translateX(-5px); filter: brightness(2.4); border-color: #fffde7; background: #4a1515; }
+            0% { transform: translateX(0); border-color: #fff; background: #333; }
+            10% { transform: translateX(-5px); border-color: #fffde7; background: #4a1515; }
             20% { transform: translateX(5px); }
             32% { transform: translateX(-3px); }
             56% { transform: translateX(0); border-color: rgba(255, 235, 59, 0.85); background: rgba(70, 12, 12, 0.45); box-shadow: 0 0 18px rgba(255, 82, 82, 0.8); }
-            100% { transform: translateX(0); filter: brightness(1); border-color: transparent; background: transparent; box-shadow: none; }
+            100% { transform: translateX(0); border-color: transparent; background: transparent; box-shadow: none; }
         }
         @keyframes hpFillObliterate {
-            0% { opacity: 1; transform: scaleX(1); filter: brightness(1); }
-            18% { opacity: 1; transform: scaleX(1.02); filter: brightness(2.6); }
+            0% { opacity: 1; transform: scaleX(1); }
+            18% { opacity: 1; transform: scaleX(1.02); }
             42% { opacity: 0.86; transform: scaleX(0.72) skewX(-12deg); }
-            100% { opacity: 0; transform: scaleX(0) skewX(-22deg); filter: brightness(1.8); }
+            100% { opacity: 0; transform: scaleX(0) skewX(-22deg); }
         }
         @keyframes hpLabelObliterate {
             0% { opacity: 1; transform: scale(1); }
             24% { opacity: 1; transform: scale(1.18) rotate(-3deg); color: #fff59d; }
             100% { opacity: 0; transform: scale(0.62) rotate(9deg); }
+        }
+        @keyframes hpShatterFlash {
+            0% { opacity: 0; transform: scaleX(0.25) scaleY(0.35); }
+            18% { opacity: 1; transform: scaleX(1.08) scaleY(0.9); }
+            100% { opacity: 0; transform: scaleX(1.35) scaleY(1.4); }
         }
         @keyframes hpShardBreak {
             0% { opacity: 0; transform: translate(-50%, -50%) scale(0.35) rotate(0deg); }
@@ -734,7 +757,7 @@
         }
         .monster-img.finisher-decay {
             animation: monsterFinisherDecay 1.55s ease-in forwards;
-            filter: brightness(2.45) saturate(0.2) contrast(1.35) drop-shadow(0 0 34px rgba(225, 245, 254, 1));
+            filter: saturate(0.2);
         }
         .monster-img.finisher-decay::before {
             content: "";
@@ -757,7 +780,8 @@
             pointer-events: none;
             background: var(--shade, #fff59d);
             clip-path: polygon(50% 0%, 66% 28%, 100% 36%, 73% 58%, 78% 100%, 50% 78%, 19% 100%, 26% 59%, 0% 37%, 34% 28%);
-            filter: drop-shadow(0 0 8px rgba(255, 193, 7, 0.75));
+            box-shadow: 0 0 6px rgba(255, 193, 7, 0.55);
+            will-change: transform, opacity;
             animation: monsterShardBurst 1.35s ease-out forwards;
             animation-delay: var(--delay, 0ms);
         }
@@ -794,10 +818,10 @@
         }
         @keyframes monsterFinisherDecay {
             0% { opacity: 1; transform: scale(1) rotate(0deg); }
-            16% { opacity: 1; transform: scale(1.2) rotate(-3deg); filter: brightness(4) saturate(0) contrast(1.9) drop-shadow(0 0 46px rgba(255, 255, 255, 1)); }
-            42% { opacity: 0.98; transform: scale(0.98) rotate(5deg); filter: brightness(2.8) saturate(0) contrast(1.65) drop-shadow(0 0 40px rgba(187, 222, 251, 1)); }
-            72% { opacity: 0.52; transform: scale(0.74) rotate(-8deg) translateY(12px); filter: grayscale(1) brightness(1.9) blur(0.5px); }
-            100% { opacity: 0; transform: scale(0.34) rotate(13deg) translateY(34px); filter: grayscale(1) brightness(1.8) blur(1.6px); }
+            16% { opacity: 1; transform: scale(1.2) rotate(-3deg); }
+            42% { opacity: 0.98; transform: scale(0.98) rotate(5deg); }
+            72% { opacity: 0.52; transform: scale(0.74) rotate(-8deg) translateY(12px); }
+            100% { opacity: 0; transform: scale(0.34) rotate(13deg) translateY(34px); }
         }
         @keyframes finisherMonsterHalo {
             0% { opacity: 0; transform: scale(0.4); }
@@ -1056,6 +1080,8 @@
             transform: translate(-50%, -50%);
             border-radius: 50%;
             mix-blend-mode: screen;
+            contain: layout paint;
+            will-change: opacity, transform;
             animation: finisherFade var(--finisher-duration, 1.55s) ease-out forwards;
         }
         .finisher-burst.hold {
@@ -1069,7 +1095,8 @@
             background:
                 radial-gradient(circle at center, rgba(255, 255, 255, 1) 0 8%, rgba(255, 249, 196, 0.9) 9% 25%, rgba(179, 229, 252, 0.5) 26% 51%, transparent 72%),
                 conic-gradient(from 0deg, transparent 0 7deg, rgba(225, 245, 254, 0.76) 8deg 13deg, transparent 14deg 24deg);
-            filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.95));
+            opacity: 0.95;
+            will-change: transform, opacity;
             animation: finisherRays var(--finisher-rays-duration, 1.55s) ease-out forwards;
         }
         .finisher-burst::after {
@@ -1082,7 +1109,8 @@
             transform: translate(-50%, -50%) rotate(var(--beam-angle, -14deg));
             background:
                 linear-gradient(90deg, transparent, rgba(187, 222, 251, 0.12) 13%, rgba(255, 255, 255, 0.95) 45% 55%, rgba(255, 249, 196, 0.18) 85%, transparent);
-            filter: blur(1px) drop-shadow(0 0 12px rgba(225, 245, 254, 0.9));
+            opacity: 0.9;
+            will-change: transform, opacity;
             animation: finisherBeam var(--finisher-beam-duration, 1.15s) ease-out forwards;
         }
         .finisher-text {
@@ -1301,10 +1329,10 @@
             100% { opacity: 0; }
         }
         @keyframes finisherRays {
-            0% { transform: scale(0.36) rotate(0deg); filter: brightness(1); opacity: 0.7; }
-            24% { transform: scale(1.08) rotate(12deg); filter: brightness(1.8); opacity: 1; }
-            68% { transform: scale(1.24) rotate(26deg); filter: brightness(1.25); opacity: 0.76; }
-            100% { transform: scale(1.48) rotate(38deg); filter: brightness(0.78); opacity: 0; }
+            0% { transform: scale(0.36) rotate(0deg); opacity: 0.7; }
+            24% { transform: scale(1.08) rotate(12deg); opacity: 1; }
+            68% { transform: scale(1.24) rotate(26deg); opacity: 0.62; }
+            100% { transform: scale(1.48) rotate(38deg); opacity: 0; }
         }
         @keyframes finisherBeam {
             0% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--beam-angle, -14deg)) scaleX(0.2); }
@@ -4893,13 +4921,14 @@
             box.querySelectorAll('.hp-shard').forEach(el => el.remove());
 
             const colors = ['#ffeb3b', '#ff8a65', '#ff5252', '#b71c1c', '#fffde7', '#4a0000'];
-            const count = 54;
+            const count = 26;
+            const fragment = document.createDocumentFragment();
             for (let i = 0; i < count; i++) {
                 const shard = document.createElement('div');
                 const x = 4 + (i / Math.max(1, count - 1)) * 92 + (randomInt(11) - 5);
                 const upward = i % 4 !== 0;
-                const dy = upward ? (-36 - randomInt(95)) : (18 + randomInt(64));
-                const dx = -170 + randomInt(341);
+                const dy = upward ? (-36 - randomInt(82)) : (18 + randomInt(56));
+                const dx = -138 + randomInt(277);
                 shard.className = 'hp-shard';
                 shard.style.setProperty('--hx', `${Math.max(2, Math.min(98, x))}%`);
                 shard.style.setProperty('--hy', `${35 + randomInt(34)}%`);
@@ -4909,9 +4938,10 @@
                 shard.style.setProperty('--hdy', `${dy}px`);
                 shard.style.setProperty('--hr', `${180 + randomInt(720)}deg`);
                 shard.style.setProperty('--hd', `${(i % 9) * 18}ms`);
-                box.appendChild(shard);
-                setTimeout(() => shard.remove(), 1900);
+                fragment.appendChild(shard);
             }
+            box.appendChild(fragment);
+            setTimeout(() => box.querySelectorAll('.hp-shard').forEach(el => el.remove()), 1900);
         },
         finisherMonster(el) {
             if (!this.enabled() || !el) return;
@@ -4925,8 +4955,9 @@
             const monsterRect = el.getBoundingClientRect();
             const centerX = monsterRect.left - fieldRect.left + monsterRect.width / 2;
             const centerY = monsterRect.top - fieldRect.top + monsterRect.height / 2;
-            const shards = 18;
+            const shards = 10;
             const colors = ['#fff59d', '#ffd54f', '#ff8a65', '#f5f5f5', '#b0bec5'];
+            const fragment = document.createDocumentFragment();
 
             for (let i = 0; i < shards; i++) {
                 const shard = document.createElement('div');
@@ -4943,9 +4974,10 @@
                 shard.style.setProperty('--delay', `${(i % 6) * 22}ms`);
                 shard.style.setProperty('--size', `${8 + (i % 4) * 3}px`);
                 shard.style.setProperty('--shade', colors[i % colors.length]);
-                field.appendChild(shard);
-                setTimeout(() => shard.remove(), 1550);
+                fragment.appendChild(shard);
             }
+            field.appendChild(fragment);
+            setTimeout(() => field.querySelectorAll('.monster-shard').forEach(shard => shard.remove()), 1550);
         },
         specialAura(active) {
             const battle = document.getElementById('view-battle');

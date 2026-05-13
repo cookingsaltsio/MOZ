@@ -421,6 +421,15 @@
             display: flex;
         }
 
+        .finisher-debris-layer {
+            position: absolute;
+            inset: 0;
+            z-index: 90;
+            pointer-events: none;
+            overflow: hidden;
+            contain: layout paint;
+        }
+
         .battle-header {
             flex-shrink: 0;
             display: flex;
@@ -501,10 +510,10 @@
         }
         .hp-piece {
             position: absolute;
-            left: var(--piece-left, 0%);
-            top: 0;
-            width: var(--piece-width, 10%);
-            height: 100%;
+            left: var(--piece-left, 0px);
+            top: var(--piece-top, 0px);
+            width: var(--piece-width, 24px);
+            height: var(--piece-height, 14px);
             z-index: 5;
             pointer-events: none;
             border-radius: 3px;
@@ -512,7 +521,7 @@
                 linear-gradient(90deg, rgba(255, 235, 59, 0.95), rgba(255, 82, 82, 0.95), rgba(183, 28, 28, 0.98));
             transform-origin: center;
             will-change: transform, opacity;
-            animation: hpPieceScatter 1.42s cubic-bezier(.12, .78, .2, 1) forwards;
+            animation: hpPieceWaterfall 2.25s cubic-bezier(.16, .72, .2, 1) forwards;
             animation-delay: var(--piece-delay, 0ms);
         }
         .hp-cnt.finisher-shatter::before,
@@ -577,6 +586,12 @@
             18% { opacity: 1; transform: translate(0, 0) scale(1.08) rotate(var(--piece-jolt, 0deg)); }
             100% { opacity: 0; transform: translate(var(--piece-dx, 0px), var(--piece-dy, -80px)) scale(0.22) rotate(var(--piece-rot, 180deg)); }
         }
+        @keyframes hpPieceWaterfall {
+            0% { opacity: 1; transform: translate3d(0, 0, 0) scale(1) rotate(0deg); }
+            10% { opacity: 1; transform: translate3d(var(--piece-burst-x, 0px), var(--piece-burst-y, -22px), 0) scale(1.14) rotate(var(--piece-jolt, 0deg)); }
+            38% { opacity: 1; transform: translate3d(calc(var(--piece-dx, 0px) * 0.34), calc(var(--piece-fall-y, 360px) * 0.34), 0) scale(0.9) rotate(calc(var(--piece-rot, 180deg) * 0.42)); }
+            100% { opacity: 0; transform: translate3d(var(--piece-dx, 0px), var(--piece-fall-y, 520px), 0) scale(0.34) rotate(var(--piece-rot, 180deg)); }
+        }
         @keyframes hpShatterFlash {
             0% { opacity: 0; transform: scaleX(0.25) scaleY(0.35); }
             18% { opacity: 1; transform: scaleX(1.08) scaleY(0.9); }
@@ -586,7 +601,7 @@
             0% { opacity: 0; transform: translate(-50%, -50%) scale(0.35) rotate(0deg); }
             10% { opacity: 1; }
             66% { opacity: 1; }
-            100% { opacity: 0; transform: translate(calc(-50% + var(--hdx, 0px)), calc(-50% + var(--hdy, -80px))) scale(0.08) rotate(var(--hr, 180deg)); }
+            100% { opacity: 0; transform: translate(calc(-50% + var(--hdx, 0px)), calc(-50% + var(--hdy, 520px))) scale(0.08) rotate(var(--hr, 180deg)); }
         }
 
         .skill-row {
@@ -808,7 +823,7 @@
             transform-origin: center;
             clip-path: var(--clip, inset(0 0 0 0));
             will-change: transform, opacity;
-            animation: monsterPieceScatter 1.5s cubic-bezier(.12, .78, .2, 1) forwards;
+            animation: monsterPieceScatter 2.35s cubic-bezier(.16, .72, .2, 1) forwards;
             animation-delay: var(--piece-delay, 0ms);
         }
         .monster-piece img {
@@ -871,8 +886,9 @@
         }
         @keyframes monsterPieceScatter {
             0% { opacity: 0; transform: translate(-50%, -50%) scale(1) rotate(0deg); }
-            9% { opacity: 1; transform: translate(-50%, -50%) scale(1.06) rotate(var(--jolt, 0deg)); }
-            100% { opacity: 0; transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, -80px))) scale(0.22) rotate(var(--rot, 180deg)); }
+            8% { opacity: 1; transform: translate(calc(-50% + var(--burst-x, 0px)), calc(-50% + var(--burst-y, -26px))) scale(1.08) rotate(var(--jolt, 0deg)); }
+            42% { opacity: 1; transform: translate(calc(-50% + var(--dx-mid, 0px)), calc(-50% + var(--fall-mid, 160px))) scale(0.86) rotate(calc(var(--rot, 180deg) * 0.48)); }
+            100% { opacity: 0; transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--fall-y, 560px))) scale(0.28) rotate(var(--rot, 180deg)); }
         }
         @keyframes finisherMonsterHalo {
             0% { opacity: 0; transform: scale(0.4); }
@@ -4922,20 +4938,36 @@
             target.appendChild(el);
             setTimeout(() => el.remove(), 420);
         },
+        getFinisherDebrisLayer(duration = 2600) {
+            const target = document.getElementById('view-battle');
+            if (!target) return null;
+
+            let layer = target.querySelector('.finisher-debris-layer');
+            if (!layer) {
+                layer = document.createElement('div');
+                layer.className = 'finisher-debris-layer';
+                target.appendChild(layer);
+            }
+            if (layer.cleanupTimer) clearTimeout(layer.cleanupTimer);
+            layer.cleanupTimer = setTimeout(() => {
+                layer.remove();
+            }, duration);
+            return layer;
+        },
         specialFinisher(monsterEl = null, options = {}) {
             if (!this.enabled()) return;
             const field = document.getElementById('field-area');
             if (!field) return;
             const lingerMs = Math.max(1600, parseInt(options.lingerMs) || 1600);
             field.classList.add('finisher-field');
-            const target = field;
-            const fieldRect = field.getBoundingClientRect();
-            let centerX = fieldRect.width / 2;
-            let centerY = fieldRect.height / 2;
+            const target = document.getElementById('view-battle') || field;
+            const targetRect = target.getBoundingClientRect();
+            let centerX = targetRect.width / 2;
+            let centerY = targetRect.height / 2;
             if (monsterEl) {
                 const monsterRect = monsterEl.getBoundingClientRect();
-                centerX = monsterRect.left - fieldRect.left + monsterRect.width / 2;
-                centerY = monsterRect.top - fieldRect.top + monsterRect.height / 2;
+                centerX = monsterRect.left - targetRect.left + monsterRect.width / 2;
+                centerY = monsterRect.top - targetRect.top + monsterRect.height / 2;
             }
 
             const el = document.createElement('div');
@@ -4966,69 +4998,85 @@
             const fill = document.getElementById('hp-e');
             const box = fill ? fill.parentElement : null;
             if (!box) return;
+            const layer = this.getFinisherDebrisLayer(2800);
+            if (!layer) return;
 
             box.classList.remove('finisher-shatter');
             void box.offsetWidth;
             box.classList.add('finisher-shatter');
             box.querySelectorAll('.hp-shard, .hp-piece').forEach(el => el.remove());
+            layer.querySelectorAll('.hp-shard, .hp-piece').forEach(el => el.remove());
+
+            const layerRect = layer.getBoundingClientRect();
+            const boxRect = box.getBoundingClientRect();
+            const startX = boxRect.left - layerRect.left;
+            const startY = boxRect.top - layerRect.top;
+            const fallBase = Math.max(220, layerRect.height - startY + 90);
 
             const colors = ['#ffeb3b', '#ff8a65', '#ff5252', '#b71c1c', '#fffde7', '#4a0000'];
-            const pieceCount = 12;
+            const pieceCount = 14;
             const fragment = document.createDocumentFragment();
             for (let i = 0; i < pieceCount; i++) {
                 const piece = document.createElement('div');
-                const width = 100 / pieceCount;
-                const upward = i % 3 !== 0;
-                const dx = -130 + randomInt(261);
-                const dy = upward ? (-42 - randomInt(90)) : (20 + randomInt(54));
+                const width = boxRect.width / pieceCount;
+                const dx = -160 + randomInt(321);
+                const burstX = -36 + randomInt(73);
+                const burstY = -20 - randomInt(36);
                 piece.className = 'hp-piece';
-                piece.style.setProperty('--piece-left', `${i * width}%`);
-                piece.style.setProperty('--piece-width', `${width + 0.35}%`);
+                piece.style.setProperty('--piece-left', `${startX + i * width}px`);
+                piece.style.setProperty('--piece-top', `${startY}px`);
+                piece.style.setProperty('--piece-width', `${width + 1.25}px`);
+                piece.style.setProperty('--piece-height', `${Math.max(10, boxRect.height)}px`);
+                piece.style.setProperty('--piece-burst-x', `${burstX}px`);
+                piece.style.setProperty('--piece-burst-y', `${burstY}px`);
                 piece.style.setProperty('--piece-dx', `${dx}px`);
-                piece.style.setProperty('--piece-dy', `${dy}px`);
-                piece.style.setProperty('--piece-rot', `${160 + randomInt(560)}deg`);
+                piece.style.setProperty('--piece-fall-y', `${fallBase + randomInt(180)}px`);
+                piece.style.setProperty('--piece-rot', `${220 + randomInt(760)}deg`);
                 piece.style.setProperty('--piece-jolt', `${-10 + randomInt(21)}deg`);
-                piece.style.setProperty('--piece-delay', `${(i % 4) * 18}ms`);
+                piece.style.setProperty('--piece-delay', `${(i % 5) * 16}ms`);
                 fragment.appendChild(piece);
             }
 
-            const sparkCount = 10;
+            const sparkCount = 14;
             for (let i = 0; i < sparkCount; i++) {
                 const shard = document.createElement('div');
-                const x = 4 + (i / Math.max(1, sparkCount - 1)) * 92 + (randomInt(11) - 5);
-                const upward = i % 4 !== 0;
-                const dy = upward ? (-36 - randomInt(82)) : (18 + randomInt(56));
-                const dx = -138 + randomInt(277);
+                const x = startX + randomInt(Math.max(1, Math.round(boxRect.width)));
+                const y = startY + randomInt(Math.max(1, Math.round(boxRect.height + 8)));
+                const dx = -180 + randomInt(361);
                 shard.className = 'hp-shard';
-                shard.style.setProperty('--hx', `${Math.max(2, Math.min(98, x))}%`);
-                shard.style.setProperty('--hy', `${35 + randomInt(34)}%`);
+                shard.style.setProperty('--hx', `${x}px`);
+                shard.style.setProperty('--hy', `${y}px`);
                 shard.style.setProperty('--hs', `${4 + randomInt(13)}px`);
                 shard.style.setProperty('--hc', colors[i % colors.length]);
                 shard.style.setProperty('--hdx', `${dx}px`);
-                shard.style.setProperty('--hdy', `${dy}px`);
+                shard.style.setProperty('--hdy', `${fallBase + 20 + randomInt(220)}px`);
                 shard.style.setProperty('--hr', `${180 + randomInt(720)}deg`);
                 shard.style.setProperty('--hd', `${(i % 9) * 18}ms`);
                 fragment.appendChild(shard);
             }
-            box.appendChild(fragment);
-            setTimeout(() => box.querySelectorAll('.hp-shard, .hp-piece').forEach(el => el.remove()), 1900);
+            layer.appendChild(fragment);
         },
         finisherMonster(el) {
             if (!this.enabled() || !el) return;
             const field = document.getElementById('field-area');
+            const layer = this.getFinisherDebrisLayer(2900);
             if (!field) return;
+            if (!layer) return;
 
             el.classList.remove('state-defeated', 'hit-anim', 'critical-hit', 'combo-hit');
             el.classList.add('finisher-decay');
 
-            const fieldRect = field.getBoundingClientRect();
+            layer.querySelectorAll('.monster-piece').forEach(piece => piece.remove());
+
+            const layerRect = layer.getBoundingClientRect();
             const monsterRect = el.getBoundingClientRect();
-            const centerX = monsterRect.left - fieldRect.left + monsterRect.width / 2;
-            const centerY = monsterRect.top - fieldRect.top + monsterRect.height / 2;
+            const centerX = monsterRect.left - layerRect.left + monsterRect.width / 2;
+            const centerY = monsterRect.top - layerRect.top + monsterRect.height / 2;
             const width = Math.max(72, monsterRect.width || 110);
             const height = Math.max(72, monsterRect.height || 110);
             const fontSize = window.getComputedStyle(el).fontSize || '100px';
             const monsterHTML = el.innerHTML || el.textContent || '';
+            const fallBase = Math.max(260, layerRect.height - centerY + 150);
             const clips = [
                 'polygon(0 0, 42% 0, 36% 44%, 0 38%)',
                 'polygon(42% 0, 100% 0, 82% 38%, 36% 44%)',
@@ -5044,9 +5092,10 @@
             for (let i = 0; i < clips.length; i++) {
                 const piece = document.createElement('div');
                 const angle = (Math.PI * 2 * i / clips.length) + (i % 3) * 0.2;
-                const distance = 74 + (i % 4) * 22;
-                const dx = Math.cos(angle) * distance;
-                const dy = Math.sin(angle) * distance - 24 - (i % 3) * 12;
+                const burstDistance = 36 + (i % 4) * 12;
+                const burstX = Math.cos(angle) * burstDistance;
+                const burstY = Math.sin(angle) * burstDistance - 28;
+                const dx = Math.cos(angle) * (70 + (i % 4) * 26) + (-42 + randomInt(85));
                 piece.className = 'monster-piece';
                 piece.innerHTML = monsterHTML;
                 piece.style.setProperty('--mx', `${centerX}px`);
@@ -5055,15 +5104,18 @@
                 piece.style.setProperty('--mh', `${height}px`);
                 piece.style.setProperty('--mfs', fontSize);
                 piece.style.setProperty('--clip', clips[i]);
+                piece.style.setProperty('--burst-x', `${burstX.toFixed(1)}px`);
+                piece.style.setProperty('--burst-y', `${burstY.toFixed(1)}px`);
                 piece.style.setProperty('--dx', `${dx.toFixed(1)}px`);
-                piece.style.setProperty('--dy', `${dy.toFixed(1)}px`);
-                piece.style.setProperty('--rot', `${-120 + randomInt(420)}deg`);
+                piece.style.setProperty('--dx-mid', `${(dx * 0.34).toFixed(1)}px`);
+                piece.style.setProperty('--fall-mid', `${Math.round(fallBase * 0.36)}px`);
+                piece.style.setProperty('--fall-y', `${fallBase + randomInt(220)}px`);
+                piece.style.setProperty('--rot', `${-180 + randomInt(760)}deg`);
                 piece.style.setProperty('--jolt', `${-8 + randomInt(17)}deg`);
                 piece.style.setProperty('--piece-delay', `${(i % 4) * 24}ms`);
                 fragment.appendChild(piece);
             }
-            field.appendChild(fragment);
-            setTimeout(() => field.querySelectorAll('.monster-piece').forEach(piece => piece.remove()), 1650);
+            layer.appendChild(fragment);
         },
         specialAura(active) {
             const battle = document.getElementById('view-battle');

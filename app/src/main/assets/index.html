@@ -501,9 +501,10 @@
             animation: hpFrameObliterate 1.55s ease-out forwards;
         }
         .hp-cnt.finisher-shatter .fill-e {
-            background: linear-gradient(90deg, #ffeb3b, #ff5252, #b71c1c);
-            box-shadow: 0 0 10px rgba(255, 82, 82, 0.72);
-            animation: hpFillObliterate 1.05s ease-in forwards;
+            opacity: 0;
+            background: transparent;
+            box-shadow: none;
+            animation: none;
         }
         .hp-cnt.finisher-shatter .hp-label {
             animation: hpLabelObliterate 0.82s ease-in forwards;
@@ -518,7 +519,11 @@
             pointer-events: none;
             border-radius: 3px;
             background:
-                linear-gradient(90deg, rgba(255, 235, 59, 0.95), rgba(255, 82, 82, 0.95), rgba(183, 28, 28, 0.98));
+                linear-gradient(180deg, rgba(238, 238, 238, 0.95) 0 15%, rgba(76, 76, 76, 0.98) 16% 48%, rgba(24, 24, 24, 0.98) 49% 100%);
+            border: 1px solid rgba(255, 255, 255, 0.86);
+            box-shadow:
+                inset 0 0 0 1px rgba(0, 0, 0, 0.68),
+                0 0 7px rgba(255, 245, 157, 0.44);
             transform-origin: center;
             will-change: transform, opacity;
             animation: hpPieceWaterfall 2.25s cubic-bezier(.16, .72, .2, 1) forwards;
@@ -533,7 +538,7 @@
             pointer-events: none;
             background:
                 linear-gradient(90deg, transparent, rgba(255, 235, 59, 0.9), transparent),
-                linear-gradient(0deg, transparent, rgba(255, 82, 82, 0.62), transparent);
+                linear-gradient(0deg, transparent, rgba(207, 216, 220, 0.62), transparent);
             transform-origin: center;
             animation: hpShatterFlash 0.78s ease-out forwards;
         }
@@ -549,7 +554,7 @@
             height: var(--hs, 8px);
             z-index: 4;
             pointer-events: none;
-            background: var(--hc, #ff5252);
+            background: var(--hc, #cfd8dc);
             clip-path: polygon(0% 18%, 80% 0%, 100% 68%, 28% 100%);
             box-shadow: 0 0 5px rgba(255, 235, 59, 0.45);
             will-change: transform, opacity;
@@ -564,10 +569,10 @@
         }
         @keyframes hpFrameObliterate {
             0% { transform: translateX(0); border-color: #fff; background: #333; }
-            10% { transform: translateX(-5px); border-color: #fffde7; background: #4a1515; }
+            10% { transform: translateX(-5px); border-color: #fffde7; background: #303030; }
             20% { transform: translateX(5px); }
             32% { transform: translateX(-3px); }
-            56% { transform: translateX(0); border-color: rgba(255, 235, 59, 0.85); background: rgba(70, 12, 12, 0.45); box-shadow: 0 0 18px rgba(255, 82, 82, 0.8); }
+            56% { transform: translateX(0); border-color: rgba(255, 235, 59, 0.85); background: rgba(28, 28, 28, 0.48); box-shadow: 0 0 16px rgba(255, 245, 157, 0.7); }
             100% { transform: translateX(0); border-color: transparent; background: transparent; box-shadow: none; }
         }
         @keyframes hpFillObliterate {
@@ -1183,10 +1188,10 @@
         .finisher-text {
             position: absolute;
             left: 50%;
-            top: calc(50% + 44%);
+            top: calc(50% + 40%);
             z-index: 2;
             font-family: var(--font-game);
-            font-size: clamp(1.35rem, 5.2vw, 3.2rem);
+            font-size: clamp(2.55rem, 15vw, 7.6rem);
             font-weight: 900;
             color: #fffde7;
             letter-spacing: 0;
@@ -1408,17 +1413,17 @@
             100% { opacity: 0; transform: translate(-50%, -50%) rotate(var(--beam-angle, -14deg)) scaleX(1.18); }
         }
         @keyframes finisherTextPop {
-            0% { opacity: 0; transform: translate(-50%, -34%) scale(0.52); }
-            24% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
-            68% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            100% { opacity: 0; transform: translate(-50%, -72%) scale(1.05); }
+            0% { opacity: 0; transform: translate(-50%, -34%) scale(0.38); }
+            24% { opacity: 1; transform: translate(-50%, -50%) scale(1.02); }
+            68% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+            100% { opacity: 0; transform: translate(-50%, -72%) scale(1.14); }
         }
         @keyframes finisherTextHold {
-            0% { opacity: 0; transform: translate(-50%, -34%) scale(0.52); }
-            14% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
-            76% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-            92% { opacity: 1; transform: translate(-50%, -50%) scale(1.04); }
-            100% { opacity: 0; transform: translate(-50%, -64%) scale(1.08); }
+            0% { opacity: 0; transform: translate(-50%, -34%) scale(0.34); }
+            18% { opacity: 1; transform: translate(-50%, -50%) scale(0.86); }
+            72% { opacity: 1; transform: translate(-50%, -50%) scale(1.12); }
+            92% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
+            100% { opacity: 0; transform: translate(-50%, -62%) scale(1.26); }
         }
 
         @keyframes floatUpHeal {
@@ -5013,7 +5018,7 @@
             const startY = boxRect.top - layerRect.top;
             const fallBase = Math.max(220, layerRect.height - startY + 90);
 
-            const colors = ['#ffeb3b', '#ff8a65', '#ff5252', '#b71c1c', '#fffde7', '#4a0000'];
+            const colors = ['#ffffff', '#cfd8dc', '#90a4ae', '#424242', '#fff59d', '#263238'];
             const pieceCount = 14;
             const fragment = document.createDocumentFragment();
             for (let i = 0; i < pieceCount; i++) {

@@ -1,0 +1,22 @@
+*.iml
+.gradle/
+.kotlin/
+/local.properties
+.idea/
+.DS_Store
+/build
+**/build/
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# Android build artifacts
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Personal exports / backups
+*.json
+*.zip

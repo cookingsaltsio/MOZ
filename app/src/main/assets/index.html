@@ -486,11 +486,46 @@
         .fill-p { background: var(--success); }
         .fill-e { background: var(--danger); }
         .hp-fill.heal-pulse { animation: hpHealGlow 0.7s ease-out; }
+        .hp-cnt.finisher-shatter {
+            border-color: #fff59d;
+            box-shadow: 0 0 14px rgba(255, 235, 59, 0.75);
+            animation: hpBreakFlash 0.72s ease-out;
+        }
+        .hp-cnt.finisher-shatter .fill-e {
+            background: linear-gradient(90deg, #ffeb3b, #ff5252, #b71c1c);
+            box-shadow: 0 0 14px rgba(255, 82, 82, 0.82);
+        }
+        .hp-shard {
+            position: absolute;
+            left: var(--hx, 50%);
+            top: var(--hy, 50%);
+            width: var(--hs, 8px);
+            height: var(--hs, 8px);
+            z-index: 4;
+            pointer-events: none;
+            background: var(--hc, #ff5252);
+            clip-path: polygon(0% 18%, 80% 0%, 100% 68%, 28% 100%);
+            filter: drop-shadow(0 0 5px rgba(255, 235, 59, 0.65));
+            animation: hpShardBreak 1.15s ease-out forwards;
+            animation-delay: var(--hd, 0ms);
+        }
 
         @keyframes hpHealGlow {
             0% { filter: brightness(1); box-shadow: none; }
             35% { filter: brightness(1.9); box-shadow: 0 0 12px #69f0ae; }
             100% { filter: brightness(1); box-shadow: none; }
+        }
+        @keyframes hpBreakFlash {
+            0% { transform: translateX(0); filter: brightness(1); }
+            18% { transform: translateX(-3px); filter: brightness(2.1); }
+            36% { transform: translateX(3px); }
+            58% { transform: translateX(-2px); }
+            100% { transform: translateX(0); filter: brightness(1); }
+        }
+        @keyframes hpShardBreak {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.35) rotate(0deg); }
+            18% { opacity: 1; }
+            100% { opacity: 0; transform: translate(calc(-50% + var(--hdx, 0px)), calc(-50% + var(--hdy, -28px))) scale(0.15) rotate(var(--hr, 180deg)); }
         }
 
         .skill-row {
@@ -999,7 +1034,10 @@
             transform: translate(-50%, -50%);
             border-radius: 50%;
             mix-blend-mode: screen;
-            animation: finisherFade 1.55s ease-out forwards;
+            animation: finisherFade var(--finisher-duration, 1.55s) ease-out forwards;
+        }
+        .finisher-burst.hold {
+            animation-name: finisherHold;
         }
         .finisher-burst::before {
             content: "";
@@ -1009,7 +1047,7 @@
                 radial-gradient(circle at center, rgba(255, 255, 255, 1) 0 9%, rgba(255, 249, 196, 0.88) 10% 24%, rgba(179, 229, 252, 0.42) 25% 43%, transparent 64%),
                 conic-gradient(from 0deg, transparent 0 7deg, rgba(225, 245, 254, 0.76) 8deg 13deg, transparent 14deg 24deg);
             filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.95));
-            animation: finisherRays 1.55s ease-out forwards;
+            animation: finisherRays var(--finisher-rays-duration, 1.55s) ease-out forwards;
         }
         .finisher-burst::after {
             content: "";
@@ -1022,7 +1060,7 @@
             background:
                 linear-gradient(90deg, transparent, rgba(187, 222, 251, 0.12) 13%, rgba(255, 255, 255, 0.95) 45% 55%, rgba(255, 249, 196, 0.18) 85%, transparent);
             filter: blur(1px) drop-shadow(0 0 12px rgba(225, 245, 254, 0.9));
-            animation: finisherBeam 1.15s ease-out forwards;
+            animation: finisherBeam var(--finisher-beam-duration, 1.15s) ease-out forwards;
         }
         .finisher-text {
             position: absolute;
@@ -1041,7 +1079,10 @@
                 3px 3px 0 #263238;
             white-space: nowrap;
             transform: translate(-50%, -50%) scale(0.6);
-            animation: finisherTextPop 1.35s cubic-bezier(.16, 1.2, .24, 1) forwards;
+            animation: finisherTextPop var(--finisher-text-duration, 1.35s) cubic-bezier(.16, 1.2, .24, 1) forwards;
+        }
+        .finisher-burst.hold .finisher-text {
+            animation-name: finisherTextHold;
         }
         .finisher-sub {
             display: block;
@@ -1230,6 +1271,12 @@
             76% { opacity: 1; }
             100% { opacity: 0; }
         }
+        @keyframes finisherHold {
+            0% { opacity: 0; }
+            8% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { opacity: 0; }
+        }
         @keyframes finisherRays {
             0% { transform: scale(0.36) rotate(0deg); filter: brightness(1); opacity: 0.7; }
             24% { transform: scale(1.08) rotate(12deg); filter: brightness(1.8); opacity: 1; }
@@ -1247,6 +1294,13 @@
             24% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
             68% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
             100% { opacity: 0; transform: translate(-50%, -72%) scale(1.05); }
+        }
+        @keyframes finisherTextHold {
+            0% { opacity: 0; transform: translate(-50%, -34%) scale(0.52); }
+            14% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+            76% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            92% { opacity: 1; transform: translate(-50%, -50%) scale(1.04); }
+            100% { opacity: 0; transform: translate(-50%, -64%) scale(1.08); }
         }
 
         @keyframes floatUpHeal {
@@ -4765,10 +4819,11 @@
             target.appendChild(el);
             setTimeout(() => el.remove(), 420);
         },
-        specialFinisher(monsterEl = null) {
+        specialFinisher(monsterEl = null, options = {}) {
             if (!this.enabled()) return;
             const field = document.getElementById('field-area');
             if (!field) return;
+            const lingerMs = Math.max(1600, parseInt(options.lingerMs) || 1600);
             const target = field;
             const fieldRect = field.getBoundingClientRect();
             let centerX = fieldRect.width / 2;
@@ -4780,10 +4835,14 @@
             }
 
             const el = document.createElement('div');
-            el.className = 'finisher-burst';
+            el.className = `finisher-burst${options.holdText ? ' hold' : ''}`;
             el.style.setProperty('--fx', `${centerX}px`);
             el.style.setProperty('--fy', `${centerY}px`);
             el.style.setProperty('--beam-angle', `${-18 + randomInt(12)}deg`);
+            el.style.setProperty('--finisher-duration', `${lingerMs}ms`);
+            el.style.setProperty('--finisher-text-duration', `${lingerMs}ms`);
+            el.style.setProperty('--finisher-rays-duration', `${Math.min(1800, lingerMs)}ms`);
+            el.style.setProperty('--finisher-beam-duration', `${Math.min(1300, lingerMs)}ms`);
             const text = document.createElement('div');
             text.className = 'finisher-text';
             text.textContent = 'MARVELOUS';
@@ -4793,7 +4852,40 @@
             text.appendChild(sub);
             el.appendChild(text);
             target.appendChild(el);
-            setTimeout(() => el.remove(), 1600);
+            setTimeout(() => el.remove(), lingerMs + 80);
+        },
+        shatterEnemyHP() {
+            if (!this.enabled()) return;
+            const fill = document.getElementById('hp-e');
+            const box = fill ? fill.parentElement : null;
+            if (!box) return;
+
+            box.classList.remove('finisher-shatter');
+            void box.offsetWidth;
+            box.classList.add('finisher-shatter');
+            box.querySelectorAll('.hp-shard').forEach(el => el.remove());
+
+            const colors = ['#ffeb3b', '#ff8a65', '#ff5252', '#b71c1c', '#fffde7'];
+            const count = 18;
+            for (let i = 0; i < count; i++) {
+                const shard = document.createElement('div');
+                const x = 6 + (i / Math.max(1, count - 1)) * 88 + (randomInt(7) - 3);
+                const dy = -18 - randomInt(32);
+                const dx = -48 + randomInt(97);
+                shard.className = 'hp-shard';
+                shard.style.setProperty('--hx', `${Math.max(2, Math.min(98, x))}%`);
+                shard.style.setProperty('--hy', `${42 + randomInt(18)}%`);
+                shard.style.setProperty('--hs', `${5 + randomInt(8)}px`);
+                shard.style.setProperty('--hc', colors[i % colors.length]);
+                shard.style.setProperty('--hdx', `${dx}px`);
+                shard.style.setProperty('--hdy', `${dy}px`);
+                shard.style.setProperty('--hr', `${120 + randomInt(300)}deg`);
+                shard.style.setProperty('--hd', `${(i % 6) * 24}ms`);
+                box.appendChild(shard);
+                setTimeout(() => shard.remove(), 1300);
+            }
+
+            setTimeout(() => box.classList.remove('finisher-shatter'), 1250);
         },
         finisherMonster(el) {
             if (!this.enabled() || !el) return;
@@ -8317,7 +8409,8 @@
         const battleToken = Game.battleToken;
         const willFinish = totalDamage >= Game.eHP;
         const showFinisher = willFinish && FX.enabled();
-        const cleanupDelay = finalDelay + (showFinisher ? 2000 : 900);
+        const finisherHoldMs = 3200;
+        const cleanupDelay = finalDelay + (showFinisher ? finisherHoldMs : 900);
         const perHitScale = Math.sqrt(Math.max(1, (totalDamage / Math.max(1, hits)) / Math.max(1, Game.atk)));
         const targetIndexes = (Game.superComboTargetIndexes && Game.superComboTargetIndexes.length)
             ? [...Game.superComboTargetIndexes]
@@ -8357,8 +8450,9 @@
             if (willFinish) {
                 Snd.finisher();
                 if (showFinisher) {
+                    FX.shatterEnemyHP();
                     FX.finisherMonster(monster);
-                    FX.specialFinisher(monster);
+                    FX.specialFinisher(monster, { lingerMs: finisherHoldMs, holdText: true });
                 }
             }
         }, finalDelay);

@@ -129,16 +129,9 @@ dog,犬
 
 ブラウザ版では、ZIP読み込み、xlsx/ods読み込み、対戦機能に外部ライブラリやブラウザ機能を使います。通信制限や広告ブロックなどにより外部CDNを読み込めない場合、一部機能が使えないことがあります。
 
-## 公開・管理する人向けメモ
-
-このリポジトリをGitHub Pagesで公開する場合、公開対象はリポジトリ直下の `index.html` です。実際のアプリ本体は `app/src/main/assets/index.html` にあり、直下の `index.html` から自動で移動します。
-
-GitHub Pagesを有効にした場合のURLは、通常は次の形になります。
-
+## githubpageでのプレイ
 ```text
 https://cookingsaltsio.github.io/MOZ/
 ```
 
-公開前には、個人の学習データJSON、バックアップZIP、APKファイル、ビルド成果物をリポジトリに含めないでください。
 
-APKを配布したい場合は、ソースコードに直接含めるよりも、GitHub Releasesに添付する形が分かりやすいです。

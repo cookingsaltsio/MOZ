@@ -131,18 +131,16 @@ dog,犬
 
 ## 公開・管理する人向けメモ
 
+### GitHub Pagesでのプレイ
+
+```text
+https://cookingsaltsio.github.io/MOZ/
+```
+
 このリポジトリをGitHub Pagesで公開する場合、公開対象はリポジトリ直下の `index.html` です。
 
 Android APK版で使う本体HTMLは `app/src/main/assets/index.html` です。ブラウザ公開版では、iPhone Safariなどで転送ページが止まる問題を避けるため、同じ内容をリポジトリ直下の `index.html` にも置いています。
 
 アプリ本体を修正した場合は、公開前に `app/src/main/assets/index.html` の内容を直下の `index.html` にも反映してください。
 
-GitHub Pagesを有効にした場合のURLは、通常は次の形になります。
 
-```text
-https://cookingsaltsio.github.io/MOZ/
-```
-
-公開前には、個人の学習データJSON、バックアップZIP、APKファイル、ビルド成果物をリポジトリに含めないでください。
-
-APKを配布したい場合は、ソースコードに直接含めるよりも、GitHub Releasesに添付する形が分かりやすいです。

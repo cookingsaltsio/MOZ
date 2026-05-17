@@ -131,7 +131,11 @@ dog,犬
 
 ## 公開・管理する人向けメモ
 
-このリポジトリをGitHub Pagesで公開する場合、公開対象はリポジトリ直下の `index.html` です。実際のアプリ本体は `app/src/main/assets/index.html` にあり、直下の `index.html` から自動で移動します。
+このリポジトリをGitHub Pagesで公開する場合、公開対象はリポジトリ直下の `index.html` です。
+
+Android APK版で使う本体HTMLは `app/src/main/assets/index.html` です。ブラウザ公開版では、iPhone Safariなどで転送ページが止まる問題を避けるため、同じ内容をリポジトリ直下の `index.html` にも置いています。
+
+アプリ本体を修正した場合は、公開前に `app/src/main/assets/index.html` の内容を直下の `index.html` にも反映してください。
 
 GitHub Pagesを有効にした場合のURLは、通常は次の形になります。
 

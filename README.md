@@ -80,20 +80,24 @@ The capital of Japan is {{c1::Tokyo}}.
 
 - 1列目: 問題
 - 2列目以降: 解答
-- `choice_group` 列がある場合: 同じグループのカードは不正解選択肢に出にくくなります
+- `choice_exclude_words` 列がある場合: 指定した語は不正解選択肢から除外されます
+- `choice_group` 列がある場合: 同じグループのカードは不正解選択肢から除外されます
 
 例:
 
 ```csv
-question,answer,choice_group
-large,大きい,size_large
-huge,巨大な,size_large
-small,小さい,size_small
+question,answer,choice_exclude_words,choice_group
+一丝一毫 yī sī yī háo,一点儿，极少或极小。,一针一线、一星半点、微乎其微,
+一针一线 yī zhēn yī xiàn,比喻极微小的东西。,一丝一毫,
+大同小异 dà tóng xiǎo yì,大体相同，略有差异。,,sim_test_001
+异曲同工 yì qǔ tóng gōng,不同做法收到同样效果。,,sim_test_001
 ```
 
 ヘッダー行が `question,answer`、`front,back`、`問題,解答` などの場合は自動でスキップします。
 
-`choice_group` は任意です。似た意味の問題に同じ値を入れると、その問題同士が同じ選択肢に並びにくくなります。`choice_group` 列は解答欄には混ざりません。
+`choice_exclude_words` と `choice_group` は任意です。`choice_exclude_words` は `、`、`,`、`;`、`/`、改行、空白などで複数指定できます。
+
+問題列が `一丝一毫 yī sī yī háo` のように「成語 + 半角スペース + pinyin」の場合、選択肢除外の比較では先頭の `一丝一毫` だけを使います。`choice_exclude_words` と `choice_group` 列は解答欄には混ざりません。
 
 ### zip
 

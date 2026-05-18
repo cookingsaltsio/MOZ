@@ -2543,7 +2543,7 @@
                 </div>
 
                 <div style="font-size: 0.85rem; color: #888; margin-top: 8px;">
-                    💡 txt / csv / tsv / xlsx / ods / zip を読み込めます（choice_group列対応）
+                    💡 txt / csv / tsv / xlsx / ods / zip を読み込めます（choice_exclude_words / choice_group列対応）
                 </div>
             </div>
 
@@ -3850,19 +3850,46 @@
             this.d.deckMasteryThresholds = this.d.deckMasteryThresholds || {};
             this.d.deckStat = this.d.deckStat || {};
             this.d.studyHistory = this.d.studyHistory || [];
+            this.normalizeDeckChoiceMetadata();
+        },
+
+        normalizeDeckChoiceMetadata() {
+            Object.values(this.d.decks || {}).forEach(deck => {
+                if (!Array.isArray(deck)) return;
+                deck.forEach(card => this.normalizeCardChoiceMetadata(card));
+            });
+        },
+
+        normalizeCardChoiceMetadata(card) {
+            if (!card || typeof card !== 'object') return;
+            card.choiceKey = this.extractChoiceKeyFromQuestion(card.choiceKey || card.choice_key || card.q || '');
+            card.choiceExcludeWords = this.parseChoiceExcludeWords(
+                card.choiceExcludeWords || card.choice_exclude_words || card.choiceExcludes || card.excludeWords || []
+            );
+            if (!card.choiceGroup && card.choice_group) card.choiceGroup = card.choice_group;
+            if (card.choiceGroup) card.choiceGroup = String(card.choiceGroup).trim();
         },
 
         buildCardRecords() {
             const records = {};
             Object.entries(this.d.decks || {}).forEach(([deckName, deck]) => {
-                records[deckName] = deck.map(card => ({
-                    q: card.q,
-                    mastery: card.mastery || 0,
-                    totalTime: card.totalTime || 0,
-                    attempts: card.attempts || 0,
-                    starred: !!card.starred,
-                    lastStudied: card.lastStudied || null
-                }));
+                records[deckName] = deck.map(card => {
+                    const record = {
+                        q: card.q,
+                        mastery: card.mastery || 0,
+                        totalTime: card.totalTime || 0,
+                        attempts: card.attempts || 0,
+                        starred: !!card.starred,
+                        lastStudied: card.lastStudied || null
+                    };
+                    const choiceKey = this.extractChoiceKeyFromQuestion(card.choiceKey || card.q || '');
+                    const choiceExcludeWords = this.parseChoiceExcludeWords(card.choiceExcludeWords || card.choice_exclude_words || []);
+                    const choiceGroup = String(card.choiceGroup || card.choice_group || '').trim();
+                    if (choiceKey) record.choiceKey = choiceKey;
+                    if (choiceExcludeWords.length) record.choiceExcludeWords = choiceExcludeWords;
+                    if (choiceGroup) record.choiceGroup = choiceGroup;
+                    return record;
+                });
             });
             return records;
         },
@@ -3885,6 +3912,9 @@
                     if (record.attempts !== undefined) card.attempts = record.attempts;
                     if (record.starred !== undefined) card.starred = record.starred;
                     if (record.lastStudied !== undefined) card.lastStudied = record.lastStudied;
+                    if (record.choiceKey !== undefined) card.choiceKey = this.extractChoiceKeyFromQuestion(record.choiceKey);
+                    if (record.choiceExcludeWords !== undefined) card.choiceExcludeWords = this.parseChoiceExcludeWords(record.choiceExcludeWords);
+                    if (record.choiceGroup !== undefined) card.choiceGroup = String(record.choiceGroup || '').trim();
                 });
             });
         },
@@ -4397,8 +4427,8 @@
             if (!row || row.length < 2) return false;
             const first = this.normalizeDelimitedHeader(row[0]);
             const second = this.normalizeDelimitedHeader(row[1]);
-            const qNames = ['question', 'front', 'prompt', 'q', '問題', '設問', '表', 'おもて', 'word', 'word_pinyin', 'term', '単語', '見出し'];
-            const aNames = ['answer', 'back', 'a', '解答', '答え', '回答', '裏', 'うら', 'content', 'meaning', 'definition', '説明', '意味', '訳', '訳語'];
+            const qNames = ['question', 'front', 'prompt', 'q', '問題', '設問', '表', 'おもて', 'word', 'word_pinyin', 'term', '単語', '見出し', 'a列', 'col_a', 'column_a'];
+            const aNames = ['answer', 'back', 'a', '解答', '答え', '回答', '裏', 'うら', 'content', 'meaning', 'definition', '説明', '意味', '訳', '訳語', 'b列', 'col_b', 'column_b'];
             return qNames.includes(first) && aNames.includes(second);
         },
 
@@ -4424,13 +4454,76 @@
                 '選択肢除外グループ',
                 '同義語グループ',
                 '類語グループ',
-                '除外グループ'
+                '除外グループ',
+                'd列',
+                'col_d',
+                'column_d'
+            ].includes(name);
+        },
+
+        isChoiceExcludeHeader(value) {
+            const name = this.normalizeDelimitedHeader(value);
+            return [
+                'choice_exclude_words',
+                'choiceexcludewords',
+                'exclude_words',
+                'excludewords',
+                'choice_excludes',
+                'exclude_choices',
+                'synonym_words',
+                'synonyms',
+                '類義語',
+                '類語',
+                '同義語',
+                '除外語',
+                '選択肢除外語',
+                '選択肢除外リスト',
+                'c列',
+                'col_c',
+                'column_c'
             ].includes(name);
         },
 
         getChoiceGroupColumnIndex(headerRow) {
             if (!headerRow || headerRow.length < 3) return -1;
             return headerRow.findIndex(cell => this.isChoiceGroupHeader(cell));
+        },
+
+        getChoiceExcludeColumnIndex(headerRow) {
+            if (!headerRow || headerRow.length < 3) return -1;
+            return headerRow.findIndex(cell => this.isChoiceExcludeHeader(cell));
+        },
+
+        getImportColumnMap(rows) {
+            const firstRow = (rows || [])[0] || [];
+            const hasHeader = this.isDelimitedHeader(firstRow);
+            const maxColumns = (rows || []).reduce((max, row) => Math.max(max, row ? row.length : 0), 0);
+            const groupColumnIndex = hasHeader
+                ? this.getChoiceGroupColumnIndex(firstRow)
+                : (maxColumns >= 4 ? 3 : -1);
+            const excludeColumnIndex = hasHeader
+                ? this.getChoiceExcludeColumnIndex(firstRow)
+                : (maxColumns >= 3 ? 2 : -1);
+
+            return { hasHeader, groupColumnIndex, excludeColumnIndex };
+        },
+
+        extractChoiceKeyFromQuestion(question) {
+            const text = String(question || '').trim();
+            const firstSpace = text.indexOf(' ');
+            return (firstSpace > 0 ? text.slice(0, firstSpace) : text).trim();
+        },
+
+        parseChoiceExcludeWords(value) {
+            if (Array.isArray(value)) {
+                return value
+                    .map(item => this.extractChoiceKeyFromQuestion(item))
+                    .filter(Boolean);
+            }
+            return String(value || '')
+                .split(/[、，,;；\/／\s\u3000]+/g)
+                .map(item => this.extractChoiceKeyFromQuestion(item))
+                .filter(Boolean);
         },
 
         cleanImportedCell(value, parser) {
@@ -4443,14 +4536,15 @@
         },
 
         scoreDeckRows(rows) {
-            const groupColumnIndex = this.getChoiceGroupColumnIndex((rows || [])[0]);
+            const { hasHeader, groupColumnIndex, excludeColumnIndex } = this.getImportColumnMap(rows);
             return (rows || []).reduce((count, row, index) => {
                 if (!row || row.length < 2) return count;
-                if (index === 0 && this.isDelimitedHeader(row)) return count;
+                if (index === 0 && hasHeader) return count;
                 const hasQ = String(row[0] || '').trim().length > 0;
                 const hasA = row.some((cell, cellIndex) =>
                     cellIndex > 0
                     && cellIndex !== groupColumnIndex
+                    && cellIndex !== excludeColumnIndex
                     && String(cell || '').trim().length > 0
                 );
                 return count + (hasQ && hasA ? 1 : 0);
@@ -4460,22 +4554,38 @@
         importRowsAsDeck(rows, deckName) {
             const p = new DOMParser();
             const deck = [];
-            const groupColumnIndex = this.getChoiceGroupColumnIndex((rows || [])[0]);
+            const { hasHeader, groupColumnIndex, excludeColumnIndex } = this.getImportColumnMap(rows);
             (rows || []).forEach((row, index) => {
                 if (!row || row.length < 2) return;
-                if (index === 0 && this.isDelimitedHeader(row)) return;
+                if (index === 0 && hasHeader) return;
                 const q = this.cleanImportedCell(row[0], p);
                 const a = row
                     .slice(1)
-                    .filter((cell, offset) => offset + 1 !== groupColumnIndex)
+                    .filter((cell, offset) => {
+                        const cellIndex = offset + 1;
+                        return cellIndex !== groupColumnIndex && cellIndex !== excludeColumnIndex;
+                    })
                     .map(cell => this.cleanImportedCell(cell, p))
                     .filter(Boolean)
                     .join('\n');
                 const choiceGroup = groupColumnIndex >= 0
                     ? this.cleanImportedCell(row[groupColumnIndex], p)
                     : '';
+                const choiceExcludeWords = excludeColumnIndex >= 0
+                    ? this.parseChoiceExcludeWords(this.cleanImportedCell(row[excludeColumnIndex], p))
+                    : [];
                 if (q && a) {
-                    const card = { q, a, mastery: 0, totalTime: 0, attempts: 0, starred: false, lastStudied: null };
+                    const card = {
+                        q,
+                        a,
+                        choiceKey: this.extractChoiceKeyFromQuestion(q),
+                        choiceExcludeWords,
+                        mastery: 0,
+                        totalTime: 0,
+                        attempts: 0,
+                        starred: false,
+                        lastStudied: null
+                    };
                     if (choiceGroup) card.choiceGroup = choiceGroup;
                     deck.push(card);
                 }
@@ -4884,6 +4994,40 @@
         return shuffleInPlace([...items]);
     }
 
+    function extractChoiceKeyFromQuestion(question) {
+        const text = String(question || '').trim();
+        const firstSpace = text.indexOf(' ');
+        return (firstSpace > 0 ? text.slice(0, firstSpace) : text).trim();
+    }
+
+    function normalizeChoiceTerm(value) {
+        return extractChoiceKeyFromQuestion(value)
+            .replace(/[​﻿]/g, '')
+            .trim()
+            .toLowerCase();
+    }
+
+    function parseChoiceExcludeWords(value) {
+        if (Array.isArray(value)) {
+            return value.map(item => normalizeChoiceTerm(item)).filter(Boolean);
+        }
+        return String(value || '')
+            .split(/[、，,;；\/／\s\u3000]+/g)
+            .map(item => normalizeChoiceTerm(item))
+            .filter(Boolean);
+    }
+
+    function getCardChoiceKey(card) {
+        if (!card || typeof card !== 'object') return '';
+        return normalizeChoiceTerm(card.choiceKey || card.choice_key || card.q || '');
+    }
+
+    function getCardChoiceExcludeSet(card) {
+        if (!card || typeof card !== 'object') return new Set();
+        const raw = card.choiceExcludeWords || card.choice_exclude_words || card.choiceExcludes || card.excludeWords || [];
+        return new Set(parseChoiceExcludeWords(raw));
+    }
+
     function normalizeChoiceGroup(value) {
         return String(value || '').trim().toLowerCase();
     }
@@ -4899,44 +5043,47 @@
         return !!groupA && groupA === groupB;
     }
 
+    function isChoiceCandidateExcluded(currentCard, candidateCard) {
+        if (!currentCard || !candidateCard) return true;
+        if (currentCard === candidateCard) return true;
+        if (String(currentCard.q || '') === String(candidateCard.q || '')) return true;
+        if (isSameChoiceGroup(currentCard, candidateCard)) return true;
+
+        const currentKey = getCardChoiceKey(currentCard);
+        const candidateKey = getCardChoiceKey(candidateCard);
+        if (!currentKey || !candidateKey) return false;
+
+        const currentExcludes = getCardChoiceExcludeSet(currentCard);
+        if (currentExcludes.has(candidateKey)) return true;
+
+        const candidateExcludes = getCardChoiceExcludeSet(candidateCard);
+        return candidateExcludes.has(currentKey);
+    }
+
     function buildAnswerChoices(deck, currentCard, maxChoices = 4) {
         const choices = [currentCard];
         if (!Array.isArray(deck) || !currentCard || deck.length <= 1) return choices;
 
         const usedAnswers = new Set([String(currentCard.a)]);
-        const currentQuestion = String(currentCard.q);
         const targetCount = Math.max(1, maxChoices);
         const attempts = Math.min(deck.length * 2, 80);
-        const tryAdd = (candidate, allowSameGroup = false) => {
+        const tryAdd = (candidate) => {
             if (!candidate) return false;
             const answer = String(candidate.a);
-            if (!answer || usedAnswers.has(answer) || String(candidate.q) === currentQuestion) return false;
-            if (!allowSameGroup && isSameChoiceGroup(currentCard, candidate)) return false;
+            if (!answer || usedAnswers.has(answer)) return false;
+            if (isChoiceCandidateExcluded(currentCard, candidate)) return false;
             choices.push(candidate);
             usedAnswers.add(answer);
             return true;
         };
 
         for (let i = 0; i < attempts && choices.length < targetCount; i++) {
-            tryAdd(deck[randomInt(deck.length)], false);
+            tryAdd(deck[randomInt(deck.length)]);
         }
 
         if (choices.length < targetCount) {
             for (const candidate of deck) {
-                tryAdd(candidate, false);
-                if (choices.length >= targetCount) break;
-            }
-        }
-
-        if (choices.length < targetCount) {
-            for (let i = 0; i < attempts && choices.length < targetCount; i++) {
-                tryAdd(deck[randomInt(deck.length)], true);
-            }
-        }
-
-        if (choices.length < targetCount) {
-            for (const candidate of deck) {
-                tryAdd(candidate, true);
+                tryAdd(candidate);
                 if (choices.length >= targetCount) break;
             }
         }
@@ -6016,6 +6163,10 @@
                     q: String(card.q || ''),
                     a: String(card.a || '')
                 };
+                const choiceKey = getCardChoiceKey(card);
+                if (choiceKey) item.choiceKey = choiceKey;
+                const choiceExcludeWords = Array.from(getCardChoiceExcludeSet(card));
+                if (choiceExcludeWords.length) item.choiceExcludeWords = choiceExcludeWords;
                 const choiceGroup = getCardChoiceGroup(card);
                 if (choiceGroup) item.choiceGroup = choiceGroup;
                 return item;
@@ -10693,7 +10844,7 @@
                     failedText);
             } else {
                 alert(`❌ ZIP内のデッキを読み込めませんでした。\n\n` +
-                    `表形式は1列目を問題、2列目以降を解答にしてください。choice_group列がある場合は選択肢グループとして扱います。\n` +
+                    `表形式は1列目を問題、2列目以降を解答にしてください。choice_exclude_words / choice_group列がある場合は選択肢除外情報として扱います。\n` +
                     `対応形式: txt / csv / tsv / xlsx / ods` +
                     failedText);
             }
@@ -10770,7 +10921,7 @@
                             DB.d.selectedDeck = Object.keys(DB.d.decks)[0];
                         }
                     } else {
-                        alert("読込失敗\n\n表形式は1列目を問題、2列目以降を解答にしてください。choice_group列がある場合は選択肢グループとして扱います。\n対応形式: txt / csv / tsv / xlsx / ods");
+                        alert("読込失敗\n\n表形式は1列目を問題、2列目以降を解答にしてください。choice_exclude_words / choice_group列がある場合は選択肢除外情報として扱います。\n対応形式: txt / csv / tsv / xlsx / ods");
                     }
                     e.target.value = '';
                     goHome();

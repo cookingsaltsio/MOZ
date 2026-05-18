@@ -2543,7 +2543,7 @@
                 </div>
 
                 <div style="font-size: 0.85rem; color: #888; margin-top: 8px;">
-                    💡 txt / csv / tsv / xlsx / ods / zip を読み込めます
+                    💡 txt / csv / tsv / xlsx / ods / zip を読み込めます（choice_group列対応）
                 </div>
             </div>
 
@@ -4395,12 +4395,42 @@
 
         isDelimitedHeader(row) {
             if (!row || row.length < 2) return false;
-            const normalize = value => String(value || '').trim().replace(/^\uFEFF/, '').toLowerCase();
-            const first = normalize(row[0]);
-            const second = normalize(row[1]);
-            const qNames = ['question', 'front', 'prompt', 'q', '問題', '設問', '表', 'おもて'];
-            const aNames = ['answer', 'back', 'a', '解答', '答え', '回答', '裏', 'うら'];
+            const first = this.normalizeDelimitedHeader(row[0]);
+            const second = this.normalizeDelimitedHeader(row[1]);
+            const qNames = ['question', 'front', 'prompt', 'q', '問題', '設問', '表', 'おもて', 'word', 'word_pinyin', 'term', '単語', '見出し'];
+            const aNames = ['answer', 'back', 'a', '解答', '答え', '回答', '裏', 'うら', 'content', 'meaning', 'definition', '説明', '意味', '訳', '訳語'];
             return qNames.includes(first) && aNames.includes(second);
+        },
+
+        normalizeDelimitedHeader(value) {
+            return String(value || '')
+                .trim()
+                .replace(/^\uFEFF/, '')
+                .toLowerCase()
+                .replace(/[\s\-]+/g, '_');
+        },
+
+        isChoiceGroupHeader(value) {
+            const name = this.normalizeDelimitedHeader(value);
+            return [
+                'choice_group',
+                'choicegroup',
+                'synonym_group',
+                'synonymgroup',
+                'similar_group',
+                'similarity_group',
+                'group',
+                '選択肢グループ',
+                '選択肢除外グループ',
+                '同義語グループ',
+                '類語グループ',
+                '除外グループ'
+            ].includes(name);
+        },
+
+        getChoiceGroupColumnIndex(headerRow) {
+            if (!headerRow || headerRow.length < 3) return -1;
+            return headerRow.findIndex(cell => this.isChoiceGroupHeader(cell));
         },
 
         cleanImportedCell(value, parser) {
@@ -4413,11 +4443,16 @@
         },
 
         scoreDeckRows(rows) {
+            const groupColumnIndex = this.getChoiceGroupColumnIndex((rows || [])[0]);
             return (rows || []).reduce((count, row, index) => {
                 if (!row || row.length < 2) return count;
                 if (index === 0 && this.isDelimitedHeader(row)) return count;
                 const hasQ = String(row[0] || '').trim().length > 0;
-                const hasA = row.slice(1).some(cell => String(cell || '').trim().length > 0);
+                const hasA = row.some((cell, cellIndex) =>
+                    cellIndex > 0
+                    && cellIndex !== groupColumnIndex
+                    && String(cell || '').trim().length > 0
+                );
                 return count + (hasQ && hasA ? 1 : 0);
             }, 0);
         },
@@ -4425,16 +4460,24 @@
         importRowsAsDeck(rows, deckName) {
             const p = new DOMParser();
             const deck = [];
+            const groupColumnIndex = this.getChoiceGroupColumnIndex((rows || [])[0]);
             (rows || []).forEach((row, index) => {
                 if (!row || row.length < 2) return;
                 if (index === 0 && this.isDelimitedHeader(row)) return;
                 const q = this.cleanImportedCell(row[0], p);
-                const a = row.slice(1)
+                const a = row
+                    .slice(1)
+                    .filter((cell, offset) => offset + 1 !== groupColumnIndex)
                     .map(cell => this.cleanImportedCell(cell, p))
                     .filter(Boolean)
                     .join('\n');
+                const choiceGroup = groupColumnIndex >= 0
+                    ? this.cleanImportedCell(row[groupColumnIndex], p)
+                    : '';
                 if (q && a) {
-                    deck.push({ q, a, mastery: 0, totalTime: 0, attempts: 0, starred: false, lastStudied: null });
+                    const card = { q, a, mastery: 0, totalTime: 0, attempts: 0, starred: false, lastStudied: null };
+                    if (choiceGroup) card.choiceGroup = choiceGroup;
+                    deck.push(card);
                 }
             });
 
@@ -4841,6 +4884,21 @@
         return shuffleInPlace([...items]);
     }
 
+    function normalizeChoiceGroup(value) {
+        return String(value || '').trim().toLowerCase();
+    }
+
+    function getCardChoiceGroup(card) {
+        if (!card || typeof card !== 'object') return '';
+        return normalizeChoiceGroup(card.choiceGroup || card.choice_group || card.synonymGroup || card.group);
+    }
+
+    function isSameChoiceGroup(a, b) {
+        const groupA = getCardChoiceGroup(a);
+        const groupB = getCardChoiceGroup(b);
+        return !!groupA && groupA === groupB;
+    }
+
     function buildAnswerChoices(deck, currentCard, maxChoices = 4) {
         const choices = [currentCard];
         if (!Array.isArray(deck) || !currentCard || deck.length <= 1) return choices;
@@ -4849,23 +4907,36 @@
         const currentQuestion = String(currentCard.q);
         const targetCount = Math.max(1, maxChoices);
         const attempts = Math.min(deck.length * 2, 80);
-
-        for (let i = 0; i < attempts && choices.length < targetCount; i++) {
-            const candidate = deck[randomInt(deck.length)];
-            if (!candidate) continue;
+        const tryAdd = (candidate, allowSameGroup = false) => {
+            if (!candidate) return false;
             const answer = String(candidate.a);
-            if (!answer || usedAnswers.has(answer) || String(candidate.q) === currentQuestion) continue;
+            if (!answer || usedAnswers.has(answer) || String(candidate.q) === currentQuestion) return false;
+            if (!allowSameGroup && isSameChoiceGroup(currentCard, candidate)) return false;
             choices.push(candidate);
             usedAnswers.add(answer);
+            return true;
+        };
+
+        for (let i = 0; i < attempts && choices.length < targetCount; i++) {
+            tryAdd(deck[randomInt(deck.length)], false);
         }
 
         if (choices.length < targetCount) {
             for (const candidate of deck) {
-                if (!candidate) continue;
-                const answer = String(candidate.a);
-                if (!answer || usedAnswers.has(answer) || String(candidate.q) === currentQuestion) continue;
-                choices.push(candidate);
-                usedAnswers.add(answer);
+                tryAdd(candidate, false);
+                if (choices.length >= targetCount) break;
+            }
+        }
+
+        if (choices.length < targetCount) {
+            for (let i = 0; i < attempts && choices.length < targetCount; i++) {
+                tryAdd(deck[randomInt(deck.length)], true);
+            }
+        }
+
+        if (choices.length < targetCount) {
+            for (const candidate of deck) {
+                tryAdd(candidate, true);
                 if (choices.length >= targetCount) break;
             }
         }
@@ -5939,11 +6010,16 @@
                 throw new Error(`問題数が不足しています。${settings.deckName} は ${deck.length}問、設定は ${settings.questionCount}問です。`);
             }
             const picked = this.pickQuestionCards(deck, settings.questionCount);
-            const items = picked.map((card, index) => ({
-                n: index + 1,
-                q: String(card.q || ''),
-                a: String(card.a || '')
-            })).filter(item => item.q && item.a);
+            const items = picked.map((card, index) => {
+                const item = {
+                    n: index + 1,
+                    q: String(card.q || ''),
+                    a: String(card.a || '')
+                };
+                const choiceGroup = getCardChoiceGroup(card);
+                if (choiceGroup) item.choiceGroup = choiceGroup;
+                return item;
+            }).filter(item => item.q && item.a);
             if (items.length !== settings.questionCount) {
                 throw new Error('空の問題または解答が含まれているため、問題セットを作成できません。');
             }
@@ -6770,13 +6846,7 @@
             const items = this.questionSet?.items || [];
             const current = items[questionIndex];
             if (!current) return [];
-            const answers = [String(current.a)];
-            const candidates = shuffled(items.filter(item => item && String(item.a) !== String(current.a)));
-            candidates.forEach(item => {
-                const answer = String(item.a || '');
-                if (answer && !answers.includes(answer) && answers.length < 4) answers.push(answer);
-            });
-            return shuffled(answers);
+            return buildAnswerChoices(items, current, 4).map(item => String(item.a || '')).filter(Boolean);
         },
 
         showFriendChoiceFullText(text) {
@@ -10623,7 +10693,7 @@
                     failedText);
             } else {
                 alert(`❌ ZIP内のデッキを読み込めませんでした。\n\n` +
-                    `表形式は1列目を問題、2列目以降を解答にしてください。\n` +
+                    `表形式は1列目を問題、2列目以降を解答にしてください。choice_group列がある場合は選択肢グループとして扱います。\n` +
                     `対応形式: txt / csv / tsv / xlsx / ods` +
                     failedText);
             }
@@ -10700,7 +10770,7 @@
                             DB.d.selectedDeck = Object.keys(DB.d.decks)[0];
                         }
                     } else {
-                        alert("読込失敗\n\n表形式は1列目を問題、2列目以降を解答にしてください。\n対応形式: txt / csv / tsv / xlsx / ods");
+                        alert("読込失敗\n\n表形式は1列目を問題、2列目以降を解答にしてください。choice_group列がある場合は選択肢グループとして扱います。\n対応形式: txt / csv / tsv / xlsx / ods");
                     }
                     e.target.value = '';
                     goHome();

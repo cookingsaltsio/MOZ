@@ -80,16 +80,20 @@ The capital of Japan is {{c1::Tokyo}}.
 
 - 1列目: 問題
 - 2列目以降: 解答
+- `choice_group` 列がある場合: 同じグループのカードは不正解選択肢に出にくくなります
 
 例:
 
 ```csv
-question,answer
-cat,猫
-dog,犬
+question,answer,choice_group
+large,大きい,size_large
+huge,巨大な,size_large
+small,小さい,size_small
 ```
 
 ヘッダー行が `question,answer`、`front,back`、`問題,解答` などの場合は自動でスキップします。
+
+`choice_group` は任意です。似た意味の問題に同じ値を入れると、その問題同士が同じ選択肢に並びにくくなります。`choice_group` 列は解答欄には混ざりません。
 
 ### zip
 

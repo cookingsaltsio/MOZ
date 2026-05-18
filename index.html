@@ -5060,6 +5060,13 @@
         return candidateExcludes.has(currentKey);
     }
 
+    function isSameChoiceCard(a, b) {
+        if (!a || !b) return false;
+        if (a === b) return true;
+        return String(a.q || '') === String(b.q || '')
+            && String(a.a || '') === String(b.a || '');
+    }
+
     function buildAnswerChoices(deck, currentCard, maxChoices = 4) {
         const choices = [currentCard];
         if (!Array.isArray(deck) || !currentCard || deck.length <= 1) return choices;
@@ -9057,7 +9064,10 @@
         choices.forEach((o, choiceIndex) => {
             const b = document.createElement('div');
             b.className = 'c-btn';
-            b.innerHTML = `<span>${o.a}</span>`;
+            b.__choiceCard = o;
+            const label = document.createElement('span');
+            label.textContent = String(o.a || '');
+            b.appendChild(label);
 
             let pressTimer;
             let isLongPress = false;
@@ -9178,9 +9188,12 @@
 
         const btns = document.querySelectorAll('.c-btn');
         btns.forEach(b => {
-            const text = b.querySelector('span').innerText;
-            if (text === Game.cur.a) b.classList.add('correct');
-            else if (text === selectedOption.a) b.classList.add('wrong');
+            const card = b.__choiceCard;
+            if (isSameChoiceCard(card, Game.cur)) {
+                b.classList.add('correct');
+            } else if (isSameChoiceCard(card, selectedOption)) {
+                b.classList.add('wrong');
+            }
         });
 
         const isCorrect = (selectedOption.q === Game.cur.q);

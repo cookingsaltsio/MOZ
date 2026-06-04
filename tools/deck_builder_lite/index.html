@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MOZ Deck Builder Lite</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <h1>MOZ Deck Builder Lite</h1>
+        <p>単語帳・Cloze穴埋めをブラウザだけで作る軽量ツール</p>
+      </div>
+      <div class="toolbar" aria-label="ファイル操作">
+        <button type="button" data-load="text1">テキスト1読込</button>
+        <button type="button" data-load="text2">テキスト2読込</button>
+        <button type="button" id="save-work-button">作業保存</button>
+        <button type="button" id="open-work-button">作業を開く</button>
+        <button type="button" id="export-tsv-button" class="primary">TSV出力</button>
+        <button type="button" id="export-csv-button">CSV出力</button>
+      </div>
+    </header>
+
+    <section class="statusbar" aria-live="polite">
+      <div class="shortcut-line">
+        単語帳: A=問題draft / S=解答draft / D=追加　Cloze: Dまたは0=カード化 / 1-9=選択箇所を穴埋め化　共通: Z=取消 / X=draftクリア / Ctrl+F=検索 / Ctrl+S=作業保存
+      </div>
+      <label class="lock-toggle">
+        <input type="checkbox" id="source-lock-input" checked>
+        本文編集ロック
+      </label>
+      <div id="status-text">準備完了</div>
+    </section>
+
+    <section class="modebar">
+      <div class="mode-switch" role="radiogroup" aria-label="作成モード">
+        <label>
+          <input type="radio" name="builder-mode" value="vocab" checked>
+          単語帳
+        </label>
+        <label>
+          <input type="radio" name="builder-mode" value="cloze">
+          穴埋め
+        </label>
+      </div>
+      <div class="format-tools">
+        <button type="button" data-clean="text1">テキスト1整理</button>
+        <button type="button" data-clean="text2">テキスト2整理</button>
+        <button type="button" data-clean="both">両方整理</button>
+        <button type="button" data-format="text1">テキスト1整形</button>
+        <button type="button" data-format="text2">テキスト2整形</button>
+        <button type="button" data-format="both">両方整形</button>
+        <label class="delimiter-control">区切り文字
+          <input id="delimiter-input" value="。！？!?．.：:" aria-label="整形に使う区切り文字">
+        </label>
+        <button type="button" id="detect-delimiters-button">本文から候補</button>
+        <button type="button" id="reset-delimiters-button">初期値</button>
+      </div>
+    </section>
+
+    <section class="findbar" id="findbar" hidden>
+      <label>検索 <input id="find-input" type="search" autocomplete="off"></label>
+      <label>対象
+        <select id="find-scope">
+          <option value="text1">テキスト1</option>
+          <option value="text2">テキスト2</option>
+          <option value="both">両方</option>
+        </select>
+      </label>
+      <button type="button" id="find-prev-button">前へ</button>
+      <button type="button" id="find-next-button">次へ</button>
+      <span id="find-count">0 / 0</span>
+      <button type="button" id="find-close-button">閉じる</button>
+    </section>
+
+    <main class="workspace">
+      <section class="sources">
+        <article class="source-pane active" data-pane="text1">
+          <div class="pane-head">
+            <h2>テキスト1</h2>
+            <span id="text1-info">未読込</span>
+          </div>
+          <textarea id="text1" spellcheck="false" readonly placeholder="ここに本文を貼り付けるか、テキスト1読込を使います。"></textarea>
+        </article>
+        <article class="source-pane" data-pane="text2">
+          <div class="pane-head">
+            <h2>テキスト2</h2>
+            <span id="text2-info">未読込</span>
+          </div>
+          <textarea id="text2" spellcheck="false" readonly placeholder="対訳、解答側本文、別資料などを貼り付けます。"></textarea>
+        </article>
+      </section>
+
+      <section class="builder">
+        <article class="draft-panel">
+          <div class="panel-head">
+            <h2 id="draft-title">単語帳draft</h2>
+            <span id="mode-hint">A/Sで候補を入れてDでカード化</span>
+          </div>
+
+          <div class="vocab-draft" id="vocab-draft">
+            <label>問題文 A列候補
+              <textarea id="draft-question" rows="3" spellcheck="false"></textarea>
+            </label>
+            <label>解答文 B列候補
+              <textarea id="draft-answer" rows="3" spellcheck="false"></textarea>
+            </label>
+          </div>
+
+          <div class="cloze-tools" id="cloze-tools" hidden>
+            <p>
+              本文を選択してDまたは0でカード一覧に追加します。追加後、カードの問題欄で隠したい箇所を選択し、1-9を押すと <code>{{c1::...}}</code> に変換されます。
+            </p>
+            <div class="button-row">
+              <button type="button" id="add-selected-cloze-button" class="primary">選択範囲をClozeカード化</button>
+              <button type="button" id="bulk-cloze-button">アクティブ本文の各行を一括追加</button>
+              <button type="button" id="bulk-selected-cloze-button">選択範囲を文分割して一括追加</button>
+            </div>
+          </div>
+
+          <div class="metadata-grid">
+            <label>choice_exclude_words
+              <textarea id="draft-excludes" rows="2" spellcheck="false" placeholder="類義語や紛らわしい語を 、 , ; / 空白 などで区切ります"></textarea>
+            </label>
+            <label>choice_group
+              <input id="draft-group" type="text" spellcheck="false" placeholder="例: sim_00001">
+            </label>
+          </div>
+
+          <div class="button-row">
+            <button type="button" id="add-card-button" class="primary">カード追加</button>
+            <button type="button" id="add-empty-button">空行追加</button>
+            <button type="button" id="clear-draft-button">draftクリア</button>
+            <button type="button" id="undo-button">取消</button>
+          </div>
+        </article>
+
+        <article class="cards-panel">
+          <div class="panel-head">
+            <h2>作成済みカード一覧</h2>
+            <span id="card-count">0件</span>
+          </div>
+          <div class="table-actions">
+            <button type="button" id="clear-cards-button" class="danger">一覧クリア</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>No.</th>
+                  <th>種別</th>
+                  <th>問題 / Cloze本文</th>
+                  <th>解答</th>
+                  <th>除外語</th>
+                  <th>グループ</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody id="cards-body"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <input id="source-file-input" type="file" accept=".txt,.html,.htm,text/plain,text/html" hidden>
+  <input id="work-file-input" type="file" accept=".mozbuild.json,.json" hidden>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -4248,6 +4248,62 @@
             });
         },
 
+        hasClozeText(text) {
+            return /\{\{c\d+::[^:}]+(?:::[^}]+)?\}\}/.test(String(text || ''));
+        },
+
+        createClozeCards(line, parser, metadata = {}) {
+            const text = String(line || '').trim();
+            const clozePattern = /\{\{c(\d+)::([^:}]+)(?:::([^}]+))?\}\}/g;
+            if (!clozePattern.test(text)) return [];
+
+            const clozeGroups = {};
+            let match;
+            const matcher = new RegExp(clozePattern);
+            while ((match = matcher.exec(text)) !== null) {
+                const num = match[1];
+                if (!clozeGroups[num]) clozeGroups[num] = [];
+                clozeGroups[num].push({ full: match[0], ans: match[2] });
+            }
+
+            const cards = [];
+            for (const [cNum, group] of Object.entries(clozeGroups)) {
+                let q = text;
+                const answers = [];
+                group.forEach(m => {
+                    q = q.replace(m.full, '■■■');
+                    answers.push(m.ans);
+                });
+                q = q.replace(/\{\{c(\d+)::([^:}]+)(?:::([^}]+))?\}\}/g, (m, n, t) => n === cNum ? m : t);
+
+                let cleanQ = parser.parseFromString(q, 'text/html').body.textContent || q;
+                let cleanA = answers.join(' / ');
+
+                if (cleanQ.startsWith('"') && cleanQ.endsWith('"')) cleanQ = cleanQ.slice(1, -1).replace(/""/g, '"');
+                if (cleanA.startsWith('"') && cleanA.endsWith('"')) cleanA = cleanA.slice(1, -1).replace(/""/g, '"');
+
+                cleanQ = cleanQ.replace(/[​﻿]/g, '').trim();
+                cleanA = cleanA.replace(/[​﻿]/g, '').trim();
+
+                if (cleanQ && cleanA) {
+                    const card = {
+                        q: cleanQ,
+                        a: cleanA,
+                        choiceKey: this.extractChoiceKeyFromQuestion(cleanQ),
+                        choiceExcludeWords: Array.isArray(metadata.choiceExcludeWords) ? [...metadata.choiceExcludeWords] : [],
+                        mastery: 0,
+                        totalTime: 0,
+                        attempts: 0,
+                        starred: false,
+                        lastStudied: null
+                    };
+                    if (metadata.choiceGroup) card.choiceGroup = metadata.choiceGroup;
+                    cards.push(card);
+                }
+            }
+            return cards;
+        },
+
         import(txt, deckName) {
             // 1. 改行コードの正規化
             const normalizedTxt = txt.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
@@ -4296,33 +4352,8 @@
                 if (!line || line.startsWith('#')) return;
 
                 // A. 穴埋め (Cloze) 形式
-                const clozePattern = /\{\{c(\d+)::([^:}]+)(?:::([^}]+))?\}\}/g;
-                if (clozePattern.test(line)) {
-                    const clozeGroups = {};
-                    let match;
-                    const r = new RegExp(clozePattern);
-                    while ((match = r.exec(line)) !== null) {
-                        const num = match[1];
-                        if (!clozeGroups[num]) clozeGroups[num] = [];
-                        clozeGroups[num].push({ full: match[0], ans: match[2] });
-                    }
-                    for (const [cNum, group] of Object.entries(clozeGroups)) {
-                        let q = line; let answers = [];
-                        group.forEach(m => { q = q.replace(m.full, '■■■'); answers.push(m.ans); });
-                        q = q.replace(/\{\{c(\d+)::([^:}]+)(?:::([^}]+))?\}\}/g, (m,n,t)=>n===cNum?m:t);
-
-                        let cleanQ = p.parseFromString(q, 'text/html').body.textContent || q;
-                        let cleanA = answers.join(' / ');
-
-                        // 引用符の除去処理
-                        if (cleanQ.startsWith('"') && cleanQ.endsWith('"')) cleanQ = cleanQ.slice(1, -1).replace(/""/g, '"');
-                        if (cleanA.startsWith('"') && cleanA.endsWith('"')) cleanA = cleanA.slice(1, -1).replace(/""/g, '"');
-
-                        cleanQ = cleanQ.replace(/[​﻿]/g, '').trim();
-                        cleanA = cleanA.replace(/[​﻿]/g, '').trim();
-
-                        if (cleanQ && cleanA) deck.push({ q: cleanQ, a: cleanA, mastery: 0, totalTime: 0, attempts: 0, starred: false, lastStudied: null });
-                    }
+                if (this.hasClozeText(line)) {
+                    deck.push(...this.createClozeCards(line, p));
                 } else {
                     // B. 通常カード形式
                     let pts = [];
@@ -4538,16 +4569,17 @@
         scoreDeckRows(rows) {
             const { hasHeader, groupColumnIndex, excludeColumnIndex } = this.getImportColumnMap(rows);
             return (rows || []).reduce((count, row, index) => {
-                if (!row || row.length < 2) return count;
+                if (!row || row.length < 1) return count;
                 if (index === 0 && hasHeader) return count;
                 const hasQ = String(row[0] || '').trim().length > 0;
+                const hasCloze = this.hasClozeText(row[0]);
                 const hasA = row.some((cell, cellIndex) =>
                     cellIndex > 0
                     && cellIndex !== groupColumnIndex
                     && cellIndex !== excludeColumnIndex
                     && String(cell || '').trim().length > 0
                 );
-                return count + (hasQ && hasA ? 1 : 0);
+                return count + (hasQ && (hasA || hasCloze) ? 1 : 0);
             }, 0);
         },
 
@@ -4556,9 +4588,19 @@
             const deck = [];
             const { hasHeader, groupColumnIndex, excludeColumnIndex } = this.getImportColumnMap(rows);
             (rows || []).forEach((row, index) => {
-                if (!row || row.length < 2) return;
+                if (!row || row.length < 1) return;
                 if (index === 0 && hasHeader) return;
                 const q = this.cleanImportedCell(row[0], p);
+                const choiceGroup = groupColumnIndex >= 0
+                    ? this.cleanImportedCell(row[groupColumnIndex], p)
+                    : '';
+                const choiceExcludeWords = excludeColumnIndex >= 0
+                    ? this.parseChoiceExcludeWords(this.cleanImportedCell(row[excludeColumnIndex], p))
+                    : [];
+                if (this.hasClozeText(q)) {
+                    deck.push(...this.createClozeCards(q, p, { choiceGroup, choiceExcludeWords }));
+                    return;
+                }
                 const a = row
                     .slice(1)
                     .filter((cell, offset) => {
@@ -4568,12 +4610,6 @@
                     .map(cell => this.cleanImportedCell(cell, p))
                     .filter(Boolean)
                     .join('\n');
-                const choiceGroup = groupColumnIndex >= 0
-                    ? this.cleanImportedCell(row[groupColumnIndex], p)
-                    : '';
-                const choiceExcludeWords = excludeColumnIndex >= 0
-                    ? this.parseChoiceExcludeWords(this.cleanImportedCell(row[excludeColumnIndex], p))
-                    : [];
                 if (q && a) {
                     const card = {
                         q,

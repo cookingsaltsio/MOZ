@@ -14,8 +14,8 @@
         <p>単語帳・Cloze穴埋めをブラウザだけで作る軽量ツール</p>
       </div>
       <div class="toolbar" aria-label="ファイル操作">
-        <button type="button" data-load="text1">テキスト1読込</button>
-        <button type="button" data-load="text2">テキスト2読込</button>
+        <button type="button" data-load="text1" id="load-text1-button">テキスト1読込</button>
+        <button type="button" data-load="text2" id="load-text2-button">テキスト2読込</button>
         <button type="button" id="save-work-button">作業保存</button>
         <button type="button" id="open-work-button">作業を開く</button>
         <button type="button" id="export-tsv-button" class="primary">TSV出力</button>
@@ -24,8 +24,8 @@
     </header>
 
     <section class="statusbar" aria-live="polite">
-      <div class="shortcut-line">
-        単語帳: A=問題draft / S=解答draft / D=追加　Cloze: Dまたは0=カード化 / 1-9=選択箇所を穴埋め化　共通: Z=取消 / X=draftクリア / Ctrl+F=検索 / Ctrl+S=作業保存
+      <div class="shortcut-line" id="shortcut-line">
+        単語帳: A=問題draft / S=解答draft / D=追加　穴埋め: 元本文でA=draftへ追加 / draftで1-9=穴埋め化 / D=カード登録　共通: Z=取消 / X=draftクリア / Ctrl+F=検索 / Ctrl+S=作業保存
       </div>
       <label class="lock-toggle">
         <input type="checkbox" id="source-lock-input" checked>
@@ -46,17 +46,29 @@
         </label>
       </div>
       <div class="format-tools">
-        <button type="button" data-clean="text1">テキスト1整理</button>
-        <button type="button" data-clean="text2">テキスト2整理</button>
+        <button type="button" data-clean="text1" id="clean-text1-button">テキスト1整理</button>
+        <button type="button" data-clean="text2" id="clean-text2-button">テキスト2整理</button>
         <button type="button" data-clean="both">両方整理</button>
-        <button type="button" data-format="text1">テキスト1整形</button>
-        <button type="button" data-format="text2">テキスト2整形</button>
+        <button type="button" data-format="text1" id="format-text1-button">テキスト1整形</button>
+        <button type="button" data-format="text2" id="format-text2-button">テキスト2整形</button>
         <button type="button" data-format="both">両方整形</button>
         <label class="delimiter-control">区切り文字
           <input id="delimiter-input" value="。！？!?．.：:" aria-label="整形に使う区切り文字">
         </label>
         <button type="button" id="detect-delimiters-button">本文から候補</button>
         <button type="button" id="reset-delimiters-button">初期値</button>
+      </div>
+      <div class="cloze-actions" id="cloze-actions" hidden>
+        <button type="button" id="add-selected-cloze-button" class="primary">選択範囲をdraftへ追加</button>
+        <button type="button" id="register-cloze-draft-button">draftの現在行をカード登録</button>
+        <button type="button" id="bulk-cloze-button">テキスト1の各行をdraftへ追加</button>
+        <button type="button" id="bulk-selected-cloze-button">選択範囲を文分割してdraftへ追加</button>
+        <label>除外語
+          <input id="cloze-excludes" type="text" spellcheck="false" placeholder="類義語、除外語">
+        </label>
+        <label>グループ
+          <input id="cloze-group" type="text" spellcheck="false" placeholder="sim_00001">
+        </label>
       </div>
     </section>
 
@@ -79,17 +91,20 @@
       <section class="sources">
         <article class="source-pane active" data-pane="text1">
           <div class="pane-head">
-            <h2>テキスト1</h2>
+            <h2 id="text1-title">テキスト1</h2>
             <span id="text1-info">未読込</span>
           </div>
           <textarea id="text1" spellcheck="false" readonly placeholder="ここに本文を貼り付けるか、テキスト1読込を使います。"></textarea>
         </article>
         <article class="source-pane" data-pane="text2">
           <div class="pane-head">
-            <h2>テキスト2</h2>
+            <h2 id="text2-title">テキスト2</h2>
             <span id="text2-info">未読込</span>
           </div>
-          <textarea id="text2" spellcheck="false" readonly placeholder="対訳、解答側本文、別資料などを貼り付けます。"></textarea>
+          <div class="cloze-draft-editor">
+            <div class="cloze-draft-gutter" id="cloze-draft-gutter" aria-hidden="true"></div>
+            <textarea id="text2" spellcheck="false" readonly placeholder="対訳、解答側本文、別資料などを貼り付けます。"></textarea>
+          </div>
         </article>
       </section>
 
@@ -107,17 +122,6 @@
             <label>解答文 B列候補
               <textarea id="draft-answer" rows="3" spellcheck="false"></textarea>
             </label>
-          </div>
-
-          <div class="cloze-tools" id="cloze-tools" hidden>
-            <p>
-              本文を選択してDまたは0でカード一覧に追加します。追加後、カードの問題欄で隠したい箇所を選択し、1-9を押すと <code>{{c1::...}}</code> に変換されます。
-            </p>
-            <div class="button-row">
-              <button type="button" id="add-selected-cloze-button" class="primary">選択範囲をClozeカード化</button>
-              <button type="button" id="bulk-cloze-button">アクティブ本文の各行を一括追加</button>
-              <button type="button" id="bulk-selected-cloze-button">選択範囲を文分割して一括追加</button>
-            </div>
           </div>
 
           <div class="metadata-grid">

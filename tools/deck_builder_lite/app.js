@@ -20,12 +20,21 @@ const state = {
 const el = {
   text1: document.getElementById("text1"),
   text2: document.getElementById("text2"),
+  clozeDraftGutter: document.getElementById("cloze-draft-gutter"),
+  text1Title: document.getElementById("text1-title"),
+  text2Title: document.getElementById("text2-title"),
   text1Info: document.getElementById("text1-info"),
   text2Info: document.getElementById("text2-info"),
+  shortcutLine: document.getElementById("shortcut-line"),
+  loadText2Button: document.getElementById("load-text2-button"),
+  cleanText2Button: document.getElementById("clean-text2-button"),
+  formatText2Button: document.getElementById("format-text2-button"),
+  clozeActions: document.getElementById("cloze-actions"),
+  clozeExcludes: document.getElementById("cloze-excludes"),
+  clozeGroup: document.getElementById("cloze-group"),
   draftTitle: document.getElementById("draft-title"),
   modeHint: document.getElementById("mode-hint"),
   vocabDraft: document.getElementById("vocab-draft"),
-  clozeTools: document.getElementById("cloze-tools"),
   draftQ: document.getElementById("draft-question"),
   draftA: document.getElementById("draft-answer"),
   draftExcludes: document.getElementById("draft-excludes"),
@@ -61,10 +70,14 @@ function pushUndo() {
   state.undo.push(JSON.stringify({
     mode: state.mode,
     cards: state.cards,
+    text2: el.text2.value,
+    text2Info: el.text2Info.textContent,
     draftQ: el.draftQ.value,
     draftA: el.draftA.value,
     draftExcludes: el.draftExcludes.value,
-    draftGroup: el.draftGroup.value
+    draftGroup: el.draftGroup.value,
+    clozeExcludes: el.clozeExcludes.value,
+    clozeGroup: el.clozeGroup.value
   }));
   if (state.undo.length > 80) state.undo.shift();
 }
@@ -77,10 +90,14 @@ function undo() {
   }
   const data = JSON.parse(snapshot);
   state.cards = Array.isArray(data.cards) ? data.cards : [];
+  if (typeof data.text2 === "string") el.text2.value = data.text2;
+  if (typeof data.text2Info === "string") el.text2Info.textContent = data.text2Info;
   el.draftQ.value = data.draftQ || "";
   el.draftA.value = data.draftA || "";
   el.draftExcludes.value = data.draftExcludes || "";
   el.draftGroup.value = data.draftGroup || "";
+  el.clozeExcludes.value = data.clozeExcludes || "";
+  el.clozeGroup.value = data.clozeGroup || "";
   setMode(data.mode === "cloze" ? "cloze" : "vocab", { silent: true });
   renderCards();
   setStatus("直前の操作を取り消しました");
@@ -111,12 +128,33 @@ function setMode(mode, options = {}) {
     input.checked = input.value === state.mode;
   });
   const cloze = state.mode === "cloze";
+  document.body.classList.toggle("mode-cloze", cloze);
   el.vocabDraft.hidden = cloze;
-  el.clozeTools.hidden = !cloze;
+  el.clozeActions.hidden = !cloze;
   el.draftTitle.textContent = cloze ? "穴埋め作成" : "単語帳draft";
   el.modeHint.textContent = cloze
-    ? "D/0でカード化、カード欄で1-9を押して穴埋め化"
+    ? "テキスト1でA=draft追加、draftで1-9=Cloze化、D=カード登録"
     : "A/Sで候補を入れてDでカード化";
+  el.shortcutLine.textContent = cloze
+    ? "穴埋め: テキスト1でA=draftへ1問追加 / 穴埋めdraftで1-9=穴埋め化 / D=カード登録　共通: Z=取消 / X=draftクリア / Ctrl+F=検索 / Ctrl+S=作業保存"
+    : "単語帳: A=問題draft / S=解答draft / D=追加　共通: Z=取消 / X=draftクリア / Ctrl+F=検索 / Ctrl+S=作業保存";
+  el.text1Title.textContent = cloze ? "テキスト1（元本文）" : "テキスト1";
+  el.text2Title.textContent = cloze ? "穴埋めdraft" : "テキスト2";
+  el.text1.placeholder = cloze
+    ? "穴埋め問題の元になる本文を貼り付けます。文を選択してAで穴埋めdraftへ送ります。"
+    : "ここに本文を貼り付けるか、テキスト1読込を使います。";
+  el.text2.placeholder = cloze
+    ? "ここが穴埋めdraftです。テキスト1で選択してAを押すと1問ずつ追加されます。隠したい箇所を選択して1-9、Dでカード登録します。"
+    : "対訳、解答側本文、別資料などを貼り付けます。";
+  el.text2.setAttribute("wrap", cloze ? "off" : "soft");
+  el.loadText2Button.disabled = cloze;
+  el.loadText2Button.title = cloze ? "穴埋めモードではテキスト2をdraftとして使います" : "";
+  el.cleanText2Button.textContent = cloze ? "draft整理" : "テキスト2整理";
+  el.formatText2Button.textContent = cloze ? "draft整形" : "テキスト2整形";
+  const text2Option = el.findScope.querySelector('option[value="text2"]');
+  if (text2Option) text2Option.textContent = cloze ? "穴埋めdraft" : "テキスト2";
+  applySourceLock({ silent: true });
+  updateClozeDraftGutter();
   if (!options.silent) setStatus(cloze ? "穴埋めモードに切り替えました" : "単語帳モードに切り替えました");
 }
 
@@ -174,19 +212,38 @@ function lineCount(text) {
   return String(text || "").split("\n").filter((line) => line.trim()).length;
 }
 
+function paneLabel(paneId) {
+  if (paneId === "text2") return state.mode === "cloze" ? "穴埋めdraft" : "テキスト2";
+  return state.mode === "cloze" ? "テキスト1（元本文）" : "テキスト1";
+}
+
 function updatePaneInfo(paneId, message) {
   const info = paneId === "text2" ? el.text2Info : el.text1Info;
   info.textContent = message;
 }
 
+function syncClozeDraftGutterScroll() {
+  if (!el.clozeDraftGutter) return;
+  el.clozeDraftGutter.scrollTop = el.text2.scrollTop;
+}
+
+function updateClozeDraftGutter() {
+  if (!el.clozeDraftGutter) return;
+  const text = String(el.text2.value || "");
+  const count = text ? text.split("\n").length : 0;
+  el.clozeDraftGutter.innerHTML = Array.from({ length: count }, (_, index) => `<div>${index + 1}</div>`).join("");
+  syncClozeDraftGutterScroll();
+}
+
 function cleanSourcePane(paneId) {
   const box = paneId === "text2" ? el.text2 : el.text1;
   if (!box.value.trim()) {
-    setStatus(`${paneId === "text2" ? "テキスト2" : "テキスト1"} は空です`);
+    setStatus(`${paneLabel(paneId)} は空です`);
     return false;
   }
   box.value = cleanMaterialText(box.value);
   updatePaneInfo(paneId, `整理済み / ${lineCount(box.value)}行`);
+  if (paneId === "text2") updateClozeDraftGutter();
   return true;
 }
 
@@ -199,19 +256,20 @@ function cleanSources(scope) {
   }
   if (cleanSourcePane(scope)) {
     setActivePane(scope);
-    setStatus(`${scope === "text2" ? "テキスト2" : "テキスト1"} を整理しました`);
+    setStatus(`${paneLabel(scope)} を整理しました`);
   }
 }
 
 function formatSourcePane(paneId, options = {}) {
   const box = paneId === "text2" ? el.text2 : el.text1;
   if (!box.value.trim()) {
-    setStatus(`${paneId === "text2" ? "テキスト2" : "テキスト1"} は空です`);
+    setStatus(`${paneLabel(paneId)} は空です`);
     return false;
   }
   const delimiters = options.delimiters || delimiterTextFor();
   box.value = splitDisplayText(cleanMaterialText(box.value), delimiters);
   updatePaneInfo(paneId, `整形済み / ${lineCount(box.value)}行 / 区切り: ${delimiters}`);
+  if (paneId === "text2") updateClozeDraftGutter();
   return true;
 }
 
@@ -225,7 +283,7 @@ function formatSources(scope) {
   }
   if (formatSourcePane(scope)) {
     setActivePane(scope);
-    setStatus(`${scope === "text2" ? "テキスト2" : "テキスト1"} を文ごとに整形しました`);
+    setStatus(`${paneLabel(scope)} を文ごとに整形しました`);
   }
 }
 
@@ -275,15 +333,18 @@ async function loadSourceFile(file, paneId) {
   const box = paneId === "text2" ? el.text2 : el.text1;
   box.value = text;
   updatePaneInfo(paneId, `${file.name} / ${lineCount(text)}行`);
+  if (paneId === "text2") updateClozeDraftGutter();
   setActivePane(paneId);
   setStatus(`${file.name} を読み込みました`);
 }
 
-function applySourceLock() {
+function applySourceLock(options = {}) {
   const locked = el.sourceLock.checked;
   el.text1.readOnly = locked;
-  el.text2.readOnly = locked;
-  setStatus(locked ? "本文編集ロック中: 選択してショートカットを使えます" : "本文編集ロック解除中: 本文を直接編集できます");
+  el.text2.readOnly = state.mode === "cloze" ? false : locked;
+  if (!options.silent) {
+    setStatus(locked ? "本文編集ロック中: 選択してショートカットを使えます" : "本文編集ロック解除中: 本文を直接編集できます");
+  }
 }
 
 function appendSelectionToDraft(source, target) {
@@ -299,17 +360,132 @@ function appendSelectionToDraft(source, target) {
   return true;
 }
 
+function appendSelectionToClozeDraft(source = el.text1) {
+  const selected = selectedTextFrom(source);
+  if (!selected) {
+    setStatus("テキスト1で穴埋め問題にする文を選択してください");
+    return false;
+  }
+  pushUndo();
+  const item = cleanMaterialText(selected).replace(/\n+/g, " ").trim();
+  if (!item) {
+    setStatus("追加できる文がありません");
+    return false;
+  }
+  el.text2.value = el.text2.value.trim() ? `${el.text2.value.trim()}\n${item}` : item;
+  updatePaneInfo("text2", `draft / ${lineCount(el.text2.value)}件`);
+  updateClozeDraftGutter();
+  setActivePane("text2");
+  el.text2.focus();
+  const start = el.text2.value.length - item.length;
+  el.text2.setSelectionRange(start, el.text2.value.length);
+  setStatus("穴埋めdraftへ1問追加しました。隠す箇所を選んで1-9を押してください");
+  return true;
+}
+
+function getCurrentLineRange(area) {
+  const value = area.value;
+  const start = area.selectionStart;
+  const end = area.selectionEnd;
+  if (start !== end) {
+    const lineStart = value.lastIndexOf("\n", start - 1) + 1;
+    const nextBreak = value.indexOf("\n", end);
+    return { start: lineStart, end: nextBreak < 0 ? value.length : nextBreak };
+  }
+  const lineStart = value.lastIndexOf("\n", start - 1) + 1;
+  const nextBreak = value.indexOf("\n", start);
+  return { start: lineStart, end: nextBreak < 0 ? value.length : nextBreak };
+}
+
+function replaceRange(area, start, end, replacement) {
+  area.value = `${area.value.slice(0, start)}${replacement}${area.value.slice(end)}`;
+  area.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
+function removeCurrentClozeDraftLine(range) {
+  const value = el.text2.value;
+  let start = range.start;
+  let end = range.end;
+  if (end < value.length && value[end] === "\n") {
+    end += 1;
+  } else if (start > 0 && value[start - 1] === "\n") {
+    start -= 1;
+  }
+  replaceRange(el.text2, start, end, "");
+  updatePaneInfo("text2", `draft / ${lineCount(el.text2.value)}件`);
+  const caret = Math.min(start, el.text2.value.length);
+  el.text2.focus();
+  el.text2.setSelectionRange(caret, caret);
+}
+
+function registerClozeDraftCurrentItem() {
+  const range = getCurrentLineRange(el.text2);
+  const q = el.text2.value.slice(range.start, range.end).trim();
+  if (!q) {
+    setStatus("登録する穴埋めdraft行がありません");
+    return false;
+  }
+  if (!textHasCloze(q)) {
+    setStatus("先にdraft内で隠す箇所を選択し、1-9でCloze化してください");
+    return false;
+  }
+  pushUndo();
+  state.cards.push({
+    kind: "cloze",
+    q,
+    a: "",
+    ...metadataFromDraft()
+  });
+  removeCurrentClozeDraftLine(range);
+  renderCards();
+  setStatus("穴埋めカードを登録しました");
+  return true;
+}
+
+function wrapClozeDraftSelection(number) {
+  if (document.activeElement !== el.text2) el.text2.focus();
+  const start = el.text2.selectionStart;
+  const end = el.text2.selectionEnd;
+  const selected = el.text2.value.slice(start, end);
+  if (!selected.trim()) {
+    setStatus("穴埋めdraft内で隠したい箇所を選択してください");
+    return false;
+  }
+  pushUndo();
+  const wrapped = `{{c${number}::${selected}}}`;
+  replaceRange(el.text2, start, end, wrapped);
+  el.text2.focus();
+  el.text2.setSelectionRange(start, start + wrapped.length);
+  updatePaneInfo("text2", `draft / ${lineCount(el.text2.value)}件`);
+  setStatus(`draftの選択箇所を c${number} の穴埋めにしました`);
+  return true;
+}
+
 function clearDraft() {
-  if (!el.draftQ.value && !el.draftA.value && !el.draftExcludes.value && !el.draftGroup.value) return;
+  const hasClozeDraft = state.mode === "cloze" && el.text2.value.trim();
+  if (!el.draftQ.value && !el.draftA.value && !el.draftExcludes.value && !el.draftGroup.value && !hasClozeDraft) return;
   pushUndo();
   el.draftQ.value = "";
   el.draftA.value = "";
   el.draftExcludes.value = "";
   el.draftGroup.value = "";
+  if (state.mode === "cloze") {
+    el.text2.value = "";
+    el.clozeExcludes.value = "";
+    el.clozeGroup.value = "";
+    updatePaneInfo("text2", "draft / 0件");
+    updateClozeDraftGutter();
+  }
   setStatus("draftをクリアしました");
 }
 
 function metadataFromDraft() {
+  if (state.mode === "cloze") {
+    return {
+      choiceExcludeWords: el.clozeExcludes.value.trim(),
+      choiceGroup: el.clozeGroup.value.trim()
+    };
+  }
   return {
     choiceExcludeWords: el.draftExcludes.value.trim(),
     choiceGroup: el.draftGroup.value.trim()
@@ -318,6 +494,10 @@ function metadataFromDraft() {
 
 function cardHasCloze(card) {
   return /\{\{c\d+::[^:}]+(?:::[^}]+)?\}\}/.test(card?.q || "");
+}
+
+function textHasCloze(text) {
+  return /\{\{c\d+::[^:}]+(?:::[^}]+)?\}\}/.test(String(text || ""));
 }
 
 function addVocabCardFromDraft() {
@@ -340,26 +520,8 @@ function addVocabCardFromDraft() {
   setStatus("単語帳カードを追加しました");
 }
 
-function addClozeCard(text, options = {}) {
-  const q = cleanMaterialText(text);
-  if (!q) {
-    setStatus("Clozeカードにする本文がありません");
-    return false;
-  }
-  if (!options.skipUndo) pushUndo();
-  state.cards.push({
-    kind: "cloze",
-    q,
-    a: "",
-    ...metadataFromDraft()
-  });
-  renderCards();
-  setStatus(cardHasCloze(state.cards[state.cards.length - 1]) ? "Clozeカードを追加しました" : "Cloze候補カードを追加しました。カード内で隠す箇所を選んで1-9を押してください");
-  return true;
-}
-
 function addSelectedClozeCard() {
-  return addClozeCard(selectedSourceText());
+  return appendSelectionToClozeDraft(el.text1);
 }
 
 function linesFromText(text) {
@@ -373,13 +535,17 @@ function bulkAddClozeFromText(text) {
     return;
   }
   pushUndo();
-  lines.forEach((line) => addClozeCard(line, { skipUndo: true }));
-  renderCards();
-  setStatus(`${lines.length}件のCloze候補カードを追加しました`);
+  const current = el.text2.value.trim();
+  el.text2.value = `${current ? `${current}\n` : ""}${lines.join("\n")}`;
+  updatePaneInfo("text2", `draft / ${lineCount(el.text2.value)}件`);
+  updateClozeDraftGutter();
+  setActivePane("text2");
+  el.text2.focus();
+  setStatus(`${lines.length}件を穴埋めdraftへ追加しました`);
 }
 
 function bulkAddActiveCloze() {
-  bulkAddClozeFromText(activeTextarea().value);
+  bulkAddClozeFromText(el.text1.value);
 }
 
 function bulkAddSelectedCloze() {
@@ -393,13 +559,22 @@ function bulkAddSelectedCloze() {
 
 function addCardFromDraft() {
   if (state.mode === "cloze") {
-    addSelectedClozeCard();
+    registerClozeDraftCurrentItem();
   } else {
     addVocabCardFromDraft();
   }
 }
 
 function addEmptyCard() {
+  if (state.mode === "cloze") {
+    pushUndo();
+    el.text2.value = el.text2.value.trim() ? `${el.text2.value.trim()}\n` : "";
+    updatePaneInfo("text2", `draft / ${lineCount(el.text2.value)}件`);
+    updateClozeDraftGutter();
+    el.text2.focus();
+    setStatus("穴埋めdraftに空行を追加しました");
+    return;
+  }
   pushUndo();
   state.cards.push({
     kind: state.mode,
@@ -687,6 +862,8 @@ function collectWorkState() {
     draftAnswer: el.draftA.value,
     draftExcludes: el.draftExcludes.value,
     draftGroup: el.draftGroup.value,
+    clozeExcludes: el.clozeExcludes.value,
+    clozeGroup: el.clozeGroup.value,
     delimiter: el.delimiter.value,
     sourceLocked: el.sourceLock.checked,
     activePane: state.activePane,
@@ -711,6 +888,8 @@ async function openWork(file) {
   el.draftA.value = data.draftAnswer || "";
   el.draftExcludes.value = data.draftExcludes || "";
   el.draftGroup.value = data.draftGroup || "";
+  el.clozeExcludes.value = data.clozeExcludes || "";
+  el.clozeGroup.value = data.clozeGroup || "";
   el.delimiter.value = data.delimiter || DEFAULT_DELIMITERS;
   el.sourceLock.checked = data.sourceLocked !== false;
   state.cards = Array.isArray(data.cards) ? data.cards : [];
@@ -797,7 +976,7 @@ function isSourceTextarea(target) {
 }
 
 function isEditingTarget(target) {
-  return target.closest && target.closest("td, .draft-panel, .findbar");
+  return target.closest && target.closest("td, .draft-panel, .cloze-actions, .findbar");
 }
 
 function digitFromEvent(event) {
@@ -817,35 +996,49 @@ function shortcutKey(event) {
 function handleSourceShortcut(event, source) {
   if (state.mode === "cloze") {
     const digit = digitFromEvent(event);
-    if (digit === "0") {
-      if (!selectedTextFrom(source)) return false;
+    if (source === el.text2 && digit && digit !== "0") {
+      if (el.text2.selectionStart === el.text2.selectionEnd) return false;
       event.preventDefault();
       event.stopPropagation();
-      setActivePane(source.id);
-      return addClozeCard(selectedTextFrom(source));
+      setActivePane("text2");
+      return wrapClozeDraftSelection(digit);
+    }
+    if (source === el.text1 && digit === "0") {
+      event.preventDefault();
+      event.stopPropagation();
+      setStatus("穴埋めモードでは、テキスト1でAを押してdraftへ追加してください");
+      return true;
     }
   }
 
   const key = shortcutKey(event);
   if (!key) return false;
 
-  if (state.mode === "vocab" && (key === "A" || key === "S") && !selectedTextFrom(source)) {
-    return false;
-  }
-  if (state.mode === "cloze" && key === "D" && !selectedTextFrom(source)) {
-    return false;
-  }
-
-  event.preventDefault();
-  event.stopPropagation();
-  setActivePane(source.id);
-
   if (state.mode === "vocab") {
+    if ((key === "A" || key === "S") && !selectedTextFrom(source)) return false;
+    event.preventDefault();
+    event.stopPropagation();
+    setActivePane(source.id);
     if (key === "A") return appendSelectionToDraft(source, "q");
     if (key === "S") return appendSelectionToDraft(source, "a");
     if (key === "D") addVocabCardFromDraft();
-  } else if (key === "D") {
-    addClozeCard(selectedTextFrom(source));
+  } else {
+    if (source === el.text1) {
+      if (!["A", "D", "Z", "X"].includes(key)) return false;
+      if (key === "A" && !selectedTextFrom(source)) return false;
+      event.preventDefault();
+      event.stopPropagation();
+      setActivePane(source.id);
+      if (key === "A") return appendSelectionToClozeDraft(el.text1);
+      if (key === "D") setStatus("穴埋めモードでは、テキスト1でAを押してdraftへ追加してください");
+    } else if (source === el.text2) {
+      if (!["A", "S", "D", "Z", "X"].includes(key)) return false;
+      event.preventDefault();
+      event.stopPropagation();
+      setActivePane(source.id);
+      if (key === "D") return registerClozeDraftCurrentItem();
+      if (key === "A" || key === "S") setStatus("穴埋めdraftでは1-9で穴埋め化し、Dで登録します");
+    }
   }
   if (key === "Z") undo();
   if (key === "X") clearDraft();
@@ -876,6 +1069,13 @@ document.querySelectorAll(".source-pane textarea").forEach((box) => {
   box.addEventListener("keydown", (event) => handleSourceShortcut(event, box), true);
   box.addEventListener("beforeinput", (event) => {
     const data = String(event.data || "").toUpperCase();
+    if (state.mode === "cloze" && box === el.text2 && /^[1-9]$/.test(data) && selectedTextFrom(box)) {
+      event.preventDefault();
+      event.stopPropagation();
+      setActivePane("text2");
+      wrapClozeDraftSelection(data);
+      return;
+    }
     if (state.mode === "vocab" && (data === "A" || data === "S") && selectedTextFrom(box)) {
       event.preventDefault();
       event.stopPropagation();
@@ -907,6 +1107,7 @@ document.getElementById("open-work-button").addEventListener("click", () => el.w
 document.getElementById("export-tsv-button").addEventListener("click", exportTsv);
 document.getElementById("export-csv-button").addEventListener("click", exportCsv);
 document.getElementById("add-selected-cloze-button").addEventListener("click", addSelectedClozeCard);
+document.getElementById("register-cloze-draft-button").addEventListener("click", registerClozeDraftCurrentItem);
 document.getElementById("bulk-cloze-button").addEventListener("click", bulkAddActiveCloze);
 document.getElementById("bulk-selected-cloze-button").addEventListener("click", bulkAddSelectedCloze);
 document.getElementById("find-close-button").addEventListener("click", closeFind);
@@ -917,6 +1118,8 @@ document.getElementById("reset-delimiters-button").addEventListener("click", res
 el.findInput.addEventListener("input", updateFindMatches);
 el.findScope.addEventListener("change", updateFindMatches);
 el.sourceLock.addEventListener("change", applySourceLock);
+el.text2.addEventListener("input", updateClozeDraftGutter);
+el.text2.addEventListener("scroll", syncClozeDraftGutterScroll);
 
 document.addEventListener("keydown", (event) => {
   if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "f") {

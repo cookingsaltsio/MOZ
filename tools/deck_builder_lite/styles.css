@@ -110,7 +110,18 @@ button:disabled {
   border-top: 1px solid rgba(58, 74, 89, 0.75);
 }
 
+.format-help {
+  flex-basis: 100%;
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
 .choice-only {
+  display: none;
+}
+
+.mode-choice .format-tools {
   display: none;
 }
 

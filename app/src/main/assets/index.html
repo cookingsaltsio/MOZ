@@ -3366,7 +3366,7 @@
                 <div class="detail-label">問題</div>
                 <div class="detail-content" id="ov-q">問題</div>
             </div>
-            <div class="detail-section">
+            <div class="detail-section" id="ov-answer-section">
                 <div class="detail-label">解答</div>
                 <div class="detail-content answer" id="ov-a">意味</div>
             </div>
@@ -10201,7 +10201,9 @@
         const item = overlayList[overlayIndex];
         document.getElementById('ov-q').innerText = item.q;
         document.getElementById('ov-a').innerText = item.a;
-        updateOverlayFixedChoices(item);
+        const shouldHideAnswer = updateOverlayFixedChoices(item);
+        const answerSection = document.getElementById('ov-answer-section');
+        if (answerSection) answerSection.style.display = shouldHideAnswer ? 'none' : 'block';
 
         document.getElementById('btn-ov-prev').disabled = (overlayIndex === 0);
         document.getElementById('btn-ov-next-item').disabled = (overlayIndex === overlayList.length - 1);
@@ -10212,16 +10214,17 @@
     function updateOverlayFixedChoices(item) {
         const section = document.getElementById('ov-choice-section');
         const container = document.getElementById('ov-choices');
-        if (!section || !container) return;
+        if (!section || !container) return false;
 
         const choices = getCardFixedChoices(item);
         container.innerHTML = '';
         if (!choices.length) {
             section.style.display = 'none';
-            return;
+            return false;
         }
 
         const answerKey = normalizeFixedChoiceAnswer(item.a);
+        let hasCorrectChoice = false;
         const labels = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩'];
         section.style.display = 'block';
 
@@ -10230,6 +10233,7 @@
         choices.forEach((choice, index) => {
             const row = document.createElement('div');
             const isCorrect = normalizeFixedChoiceAnswer(choice) === answerKey;
+            if (isCorrect) hasCorrectChoice = true;
             row.className = `fixed-choice-item${isCorrect ? ' correct' : ''}`;
 
             const label = document.createElement('span');
@@ -10251,6 +10255,7 @@
         });
 
         container.appendChild(list);
+        return hasCorrectChoice;
     }
 
     function moveWordDetail(step) {

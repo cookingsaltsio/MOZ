@@ -11,7 +11,7 @@
     <header class="topbar">
       <div>
         <h1>MOZ Deck Builder Lite</h1>
-        <p>単語帳・Cloze穴埋めをブラウザだけで作る軽量ツール</p>
+        <p>単語帳・Cloze穴埋め・4択問題をブラウザだけで作る軽量ツール</p>
       </div>
       <div class="toolbar" aria-label="ファイル操作">
         <button type="button" data-load="text1" id="load-text1-button">テキスト1読込</button>
@@ -61,6 +61,9 @@
         </label>
         <button type="button" id="detect-delimiters-button">本文から候補</button>
         <button type="button" id="reset-delimiters-button">初期値</button>
+        <div class="format-help" id="format-help">
+          整理: 青空文庫記号や余分な空白を削除 / 整形: 区切り文字ごとに改行
+        </div>
       </div>
       <div class="choice-tools">
         <label class="choice-only">問題番号

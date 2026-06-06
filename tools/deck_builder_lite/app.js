@@ -26,8 +26,11 @@ const el = {
   text1Info: document.getElementById("text1-info"),
   text2Info: document.getElementById("text2-info"),
   shortcutLine: document.getElementById("shortcut-line"),
+  loadText1Button: document.getElementById("load-text1-button"),
   loadText2Button: document.getElementById("load-text2-button"),
+  cleanText1Button: document.getElementById("clean-text1-button"),
   cleanText2Button: document.getElementById("clean-text2-button"),
+  formatText1Button: document.getElementById("format-text1-button"),
   formatText2Button: document.getElementById("format-text2-button"),
   clozeCardLock: document.getElementById("cloze-card-lock-input"),
   choiceMarkerCustom: document.getElementById("choice-marker-custom"),
@@ -139,35 +142,40 @@ function setMode(mode, options = {}) {
   el.vocabDraft.hidden = cloze || choice;
   el.draftTitle.textContent = cloze ? "穴埋め作成" : choice ? "4択作成" : "単語帳draft";
   el.modeHint.textContent = cloze
-    ? "テキスト1でA=カード追加、一覧の問題欄で1-9=Cloze化"
+    ? "元本文でA=カード追加、一覧の問題欄で1-9=Cloze化"
     : choice
-      ? "テキスト1に貼り付け、答えを入力して4択をカード化"
+      ? "4択問題テキストを貼り付け、答えを入力してカード化"
     : "A/Sで候補を入れてDでカード化";
   el.shortcutLine.textContent = cloze
-    ? "穴埋め: テキスト1でA=穴埋めカード追加 / 問題文ロックON時、一覧の穴埋めカード問題欄で1-9=穴埋め化　共通: Z=取消 / Ctrl+F=検索 / Ctrl+S=作業保存"
+    ? "穴埋め: 元本文でA=穴埋めカード追加 / 問題文ロックON時、一覧の穴埋めカード問題欄で1-9=穴埋め化　共通: Z=取消 / Ctrl+F=検索 / Ctrl+S=作業保存"
     : choice
-      ? "4択: テキスト1に問題を貼り付け / 問題番号・4択番号・答えを設定 / 4択をカード化　共通: Z=取消 / Ctrl+F=検索 / Ctrl+S=作業保存"
+      ? "4択: 問題テキストを貼り付け / 問題番号・4択番号・答えを設定 / 4択をカード化　共通: Z=取消 / Ctrl+F=検索 / Ctrl+S=作業保存"
     : "単語帳: A=問題draft / S=解答draft / D=追加　共通: Z=取消 / X=draftクリア / Ctrl+F=検索 / Ctrl+S=作業保存";
-  el.text1Title.textContent = cloze ? "テキスト1（元本文）" : choice ? "4択問題テキスト" : "テキスト1";
+  el.text1Title.textContent = cloze ? "元本文" : choice ? "4択問題テキスト" : "テキスト1";
   el.text2Title.textContent = "テキスト2";
   el.text1.placeholder = cloze
     ? "穴埋め問題の元になる本文を貼り付けます。文を選択してAで作成済みカード一覧へ追加します。"
     : choice
-      ? "中国語検定などの4択問題を貼り付けます。問題番号や選択肢番号が縦に分かれていても構いません。答え欄に 4212441234 のように入力して「4択をカード化」を押します。"
+      ? "4択問題のテキストを貼り付けます。(1)などの問題番号や①②といった選択肢番号が、改行・スペース・タブで分かれていても、順番が正しければ自動でカード化できます。答えは上部の答え欄に 4212441234 のように羅列してください。自動処理できない場合は、上部の問題番号・4択番号で指定してください。"
     : "ここに本文を貼り付けるか、テキスト1読込を使います。";
   el.text2.placeholder = cloze
-    ? "穴埋めモードではテキスト2を使いません。テキスト1からカード一覧へ直接追加します。"
+    ? "穴埋めモードではテキスト2を使いません。元本文からカード一覧へ直接追加します。"
     : "対訳、解答側本文、別資料などを貼り付けます。";
   el.text2.setAttribute("wrap", cloze ? "off" : "soft");
   el.loadText2Button.disabled = cloze || choice;
-  el.loadText2Button.title = cloze ? "穴埋めモードではテキスト2を使いません" : choice ? "4択モードではテキスト1だけを使います" : "";
+  el.loadText1Button.textContent = cloze ? "元本文読込" : choice ? "4択テキスト読込" : "テキスト1読込";
+  el.loadText2Button.title = cloze ? "穴埋めモードではテキスト2を使いません" : choice ? "4択モードでは4択問題テキストだけを使います" : "";
+  el.cleanText1Button.textContent = cloze ? "元本文整理" : choice ? "4択テキスト整理" : "テキスト1整理";
   el.cleanText2Button.textContent = "テキスト2整理";
+  el.formatText1Button.textContent = cloze ? "元本文整形" : choice ? "4択テキスト整形" : "テキスト1整形";
   el.formatText2Button.textContent = "テキスト2整形";
   el.formatText2Button.disabled = cloze || choice;
-  el.formatText2Button.title = cloze || choice ? "このモードではテキスト1だけを使います" : "";
+  el.formatText2Button.title = cloze || choice ? "このモードでは2つ目のテキスト欄を使いません" : "";
   el.cleanText2Button.disabled = cloze || choice;
-  el.cleanText2Button.title = cloze || choice ? "このモードではテキスト1だけを使います" : "";
+  el.cleanText2Button.title = cloze || choice ? "このモードでは2つ目のテキスト欄を使いません" : "";
+  const text1Option = el.findScope.querySelector('option[value="text1"]');
   const text2Option = el.findScope.querySelector('option[value="text2"]');
+  if (text1Option) text1Option.textContent = cloze ? "元本文" : choice ? "4択問題テキスト" : "テキスト1";
   if (text2Option) text2Option.textContent = "テキスト2";
   if ((cloze || choice) && state.activePane === "text2") setActivePane("text1");
   applySourceLock({ silent: true });
@@ -232,7 +240,7 @@ function lineCount(text) {
 function paneLabel(paneId) {
   if (paneId === "text2") return "テキスト2";
   if (state.mode === "choice") return "4択問題テキスト";
-  return state.mode === "cloze" ? "テキスト1（元本文）" : "テキスト1";
+  return state.mode === "cloze" ? "元本文" : "テキスト1";
 }
 
 function updatePaneInfo(paneId, message) {
@@ -763,7 +771,7 @@ function appendSelectionToDraft(source, target) {
 function addSelectionAsClozeCard(source = el.text1) {
   const selected = selectedTextFrom(source);
   if (!selected) {
-    setStatus("テキスト1で穴埋めカードにする文を選択してください");
+    setStatus("元本文で穴埋めカードにする文を選択してください");
     return false;
   }
   const item = cleanMaterialText(selected).replace(/\n+/g, " ").trim();
@@ -853,7 +861,7 @@ function addVocabCardFromDraft() {
 
 function addCardFromDraft() {
   if (state.mode === "cloze") {
-    setStatus("穴埋めモードでは、テキスト1で文を選択してAを押してください");
+    setStatus("穴埋めモードでは、元本文で文を選択してAを押してください");
   } else if (state.mode === "choice") {
     buildChoiceCardsFromText();
   } else {
@@ -1383,7 +1391,7 @@ function handleSourceShortcut(event, source) {
       event.stopPropagation();
       setActivePane(source.id);
       if (key === "A") return addSelectionAsClozeCard(el.text1);
-      if (key === "D") setStatus("穴埋めモードでは、テキスト1で文を選択してAを押してください");
+      if (key === "D") setStatus("穴埋めモードでは、元本文で文を選択してAを押してください");
     }
   }
   if (key === "Z") undo();

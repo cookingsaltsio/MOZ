@@ -29,9 +29,10 @@ const el = {
   loadText2Button: document.getElementById("load-text2-button"),
   cleanText2Button: document.getElementById("clean-text2-button"),
   formatText2Button: document.getElementById("format-text2-button"),
-  clozeActions: document.getElementById("cloze-actions"),
-  clozeExcludes: document.getElementById("cloze-excludes"),
-  clozeGroup: document.getElementById("cloze-group"),
+  clozeCardLock: document.getElementById("cloze-card-lock-input"),
+  choiceMarkerCustom: document.getElementById("choice-marker-custom"),
+  choiceQuestionMarker: document.getElementById("choice-question-marker"),
+  choiceAnswerSequence: document.getElementById("choice-answer-sequence"),
   draftTitle: document.getElementById("draft-title"),
   modeHint: document.getElementById("mode-hint"),
   vocabDraft: document.getElementById("vocab-draft"),
@@ -76,8 +77,10 @@ function pushUndo() {
     draftA: el.draftA.value,
     draftExcludes: el.draftExcludes.value,
     draftGroup: el.draftGroup.value,
-    clozeExcludes: el.clozeExcludes.value,
-    clozeGroup: el.clozeGroup.value
+    clozeCardLock: el.clozeCardLock.checked,
+    choiceMarkerCustom: el.choiceMarkerCustom.value,
+    choiceQuestionMarker: el.choiceQuestionMarker.value,
+    choiceAnswerSequence: el.choiceAnswerSequence.value
   }));
   if (state.undo.length > 80) state.undo.shift();
 }
@@ -96,9 +99,11 @@ function undo() {
   el.draftA.value = data.draftA || "";
   el.draftExcludes.value = data.draftExcludes || "";
   el.draftGroup.value = data.draftGroup || "";
-  el.clozeExcludes.value = data.clozeExcludes || "";
-  el.clozeGroup.value = data.clozeGroup || "";
-  setMode(data.mode === "cloze" ? "cloze" : "vocab", { silent: true });
+  el.clozeCardLock.checked = data.clozeCardLock !== false;
+  el.choiceMarkerCustom.value = data.choiceMarkerCustom || "";
+  el.choiceQuestionMarker.value = data.choiceQuestionMarker || "";
+  el.choiceAnswerSequence.value = data.choiceAnswerSequence || "";
+  setMode(["cloze", "choice"].includes(data.mode) ? data.mode : "vocab", { silent: true });
   renderCards();
   setStatus("直前の操作を取り消しました");
 }
@@ -123,39 +128,51 @@ function setActivePane(paneId) {
 }
 
 function setMode(mode, options = {}) {
-  state.mode = mode === "cloze" ? "cloze" : "vocab";
+  state.mode = ["cloze", "choice"].includes(mode) ? mode : "vocab";
   document.querySelectorAll("input[name='builder-mode']").forEach((input) => {
     input.checked = input.value === state.mode;
   });
   const cloze = state.mode === "cloze";
+  const choice = state.mode === "choice";
   document.body.classList.toggle("mode-cloze", cloze);
-  el.vocabDraft.hidden = cloze;
-  el.clozeActions.hidden = !cloze;
-  el.draftTitle.textContent = cloze ? "穴埋め作成" : "単語帳draft";
+  document.body.classList.toggle("mode-choice", choice);
+  el.vocabDraft.hidden = cloze || choice;
+  el.draftTitle.textContent = cloze ? "穴埋め作成" : choice ? "4択作成" : "単語帳draft";
   el.modeHint.textContent = cloze
-    ? "テキスト1でA=draft追加、draftで1-9=Cloze化、D=カード登録"
+    ? "テキスト1でA=カード追加、一覧の問題欄で1-9=Cloze化"
+    : choice
+      ? "テキスト1に貼り付け、答えを入力して4択をカード化"
     : "A/Sで候補を入れてDでカード化";
   el.shortcutLine.textContent = cloze
-    ? "穴埋め: テキスト1でA=draftへ1問追加 / 穴埋めdraftで1-9=穴埋め化 / D=カード登録　共通: Z=取消 / X=draftクリア / Ctrl+F=検索 / Ctrl+S=作業保存"
+    ? "穴埋め: テキスト1でA=穴埋めカード追加 / 問題文ロックON時、一覧の穴埋めカード問題欄で1-9=穴埋め化　共通: Z=取消 / Ctrl+F=検索 / Ctrl+S=作業保存"
+    : choice
+      ? "4択: テキスト1に問題を貼り付け / 問題番号・4択番号・答えを設定 / 4択をカード化　共通: Z=取消 / Ctrl+F=検索 / Ctrl+S=作業保存"
     : "単語帳: A=問題draft / S=解答draft / D=追加　共通: Z=取消 / X=draftクリア / Ctrl+F=検索 / Ctrl+S=作業保存";
-  el.text1Title.textContent = cloze ? "テキスト1（元本文）" : "テキスト1";
-  el.text2Title.textContent = cloze ? "穴埋めdraft" : "テキスト2";
+  el.text1Title.textContent = cloze ? "テキスト1（元本文）" : choice ? "4択問題テキスト" : "テキスト1";
+  el.text2Title.textContent = "テキスト2";
   el.text1.placeholder = cloze
-    ? "穴埋め問題の元になる本文を貼り付けます。文を選択してAで穴埋めdraftへ送ります。"
+    ? "穴埋め問題の元になる本文を貼り付けます。文を選択してAで作成済みカード一覧へ追加します。"
+    : choice
+      ? "中国語検定などの4択問題を貼り付けます。問題番号や選択肢番号が縦に分かれていても構いません。答え欄に 4212441234 のように入力して「4択をカード化」を押します。"
     : "ここに本文を貼り付けるか、テキスト1読込を使います。";
   el.text2.placeholder = cloze
-    ? "ここが穴埋めdraftです。テキスト1で選択してAを押すと1問ずつ追加されます。隠したい箇所を選択して1-9、Dでカード登録します。"
+    ? "穴埋めモードではテキスト2を使いません。テキスト1からカード一覧へ直接追加します。"
     : "対訳、解答側本文、別資料などを貼り付けます。";
   el.text2.setAttribute("wrap", cloze ? "off" : "soft");
-  el.loadText2Button.disabled = cloze;
-  el.loadText2Button.title = cloze ? "穴埋めモードではテキスト2をdraftとして使います" : "";
-  el.cleanText2Button.textContent = cloze ? "draft整理" : "テキスト2整理";
-  el.formatText2Button.textContent = cloze ? "draft整形" : "テキスト2整形";
+  el.loadText2Button.disabled = cloze || choice;
+  el.loadText2Button.title = cloze ? "穴埋めモードではテキスト2を使いません" : choice ? "4択モードではテキスト1だけを使います" : "";
+  el.cleanText2Button.textContent = "テキスト2整理";
+  el.formatText2Button.textContent = "テキスト2整形";
+  el.formatText2Button.disabled = cloze || choice;
+  el.formatText2Button.title = cloze || choice ? "このモードではテキスト1だけを使います" : "";
+  el.cleanText2Button.disabled = cloze || choice;
+  el.cleanText2Button.title = cloze || choice ? "このモードではテキスト1だけを使います" : "";
   const text2Option = el.findScope.querySelector('option[value="text2"]');
-  if (text2Option) text2Option.textContent = cloze ? "穴埋めdraft" : "テキスト2";
+  if (text2Option) text2Option.textContent = "テキスト2";
+  if ((cloze || choice) && state.activePane === "text2") setActivePane("text1");
   applySourceLock({ silent: true });
   updateClozeDraftGutter();
-  if (!options.silent) setStatus(cloze ? "穴埋めモードに切り替えました" : "単語帳モードに切り替えました");
+  if (!options.silent) setStatus(cloze ? "穴埋めモードに切り替えました" : choice ? "4択モードに切り替えました" : "単語帳モードに切り替えました");
 }
 
 function normalizeNewlines(text) {
@@ -213,7 +230,8 @@ function lineCount(text) {
 }
 
 function paneLabel(paneId) {
-  if (paneId === "text2") return state.mode === "cloze" ? "穴埋めdraft" : "テキスト2";
+  if (paneId === "text2") return "テキスト2";
+  if (state.mode === "choice") return "4択問題テキスト";
   return state.mode === "cloze" ? "テキスト1（元本文）" : "テキスト1";
 }
 
@@ -309,6 +327,388 @@ function resetDelimiters() {
   setStatus("区切り文字を初期値に戻しました");
 }
 
+function romanChoiceNumber(token) {
+  const map = {
+    "Ⅰ": 1, "Ⅱ": 2, "Ⅲ": 3, "Ⅳ": 4,
+    "ⅰ": 1, "ⅱ": 2, "ⅲ": 3, "ⅳ": 4
+  };
+  return map[String(token || "").trim()] || 0;
+}
+
+function markerNumberFromToken(token) {
+  const raw = String(token || "").trim();
+  const circled = "①②③④";
+  const circledIndex = circled.indexOf(raw);
+  if (circledIndex >= 0) return circledIndex + 1;
+  const roman = romanChoiceNumber(raw);
+  if (roman) return roman;
+  const normalized = raw.normalize("NFKC").replace(/^[\s(（\[]+/, "").replace(/[\s)）\].．。、,]+$/, "").trim();
+  if (/^[1-4]$/.test(normalized)) return parseInt(normalized, 10);
+  if (/^[A-Da-d]$/.test(normalized)) return normalized.toUpperCase().charCodeAt(0) - 64;
+  return 0;
+}
+
+function choiceMarkerPatternForStyle(style) {
+  const sourceByStyle = {
+    circled: String.raw`([①②③④])`,
+    digit: String.raw`([1-4])(?=[ \t\u3000]+)`,
+    "digit-dot": String.raw`([1-4]\s*[.．])`,
+    "digit-paren": String.raw`([（(]\s*[1-4]\s*[)）]|[1-4]\s*[)）])`,
+    fullwidth: String.raw`([１-４])(?=[ \t\u3000]+)`,
+    "fullwidth-dot": String.raw`([１-４]\s*[.．])`,
+    "fullwidth-paren": String.raw`([（(]\s*[１-４]\s*[)）]|[１-４]\s*[)）])`,
+    "alpha-upper": String.raw`([A-DＡ-Ｄ]\s*[.．、)）:：]?)(?=[ \t\u3000\n]|$)`,
+    "alpha-lower": String.raw`([a-dａ-ｄ]\s*[.．、)）:：]?)(?=[ \t\u3000\n]|$)`,
+    roman: String.raw`([ⅠⅡⅢⅣⅰⅱⅲⅳ]\s*[.．、)）:：]?)(?=[ \t\u3000\n]|$)`,
+    auto: String.raw`([①②③④]|[（(]\s*[1-4１-４]\s*[)）]|[1-4１-４]\s*[.．、)）]|[1-4１-４](?=[ \t\u3000]+)|[A-Da-dＡ-Ｄａ-ｄ]\s*[.．、)）:：]|[ⅠⅡⅢⅣⅰⅱⅲⅳ]\s*[.．、)）:：]?)`
+  };
+  return sourceByStyle[String(style || "auto")] || sourceByStyle.auto;
+}
+
+function findChoiceMarkerCandidates(text, style) {
+  const source = String(text || "");
+  const markers = [];
+  const pattern = choiceMarkerPatternForStyle(style);
+  const lineRe = new RegExp(`(^|\\n)([ \\t\\u3000]*)${pattern}`, "g");
+  let match;
+  while ((match = lineRe.exec(source)) !== null) {
+    const prefix = match[1] || "";
+    const space = match[2] || "";
+    const token = match[3] || "";
+    const number = markerNumberFromToken(token);
+    if (number >= 1 && number <= 4) {
+      markers.push({
+        index: match.index + prefix.length,
+        length: space.length + token.length,
+        number
+      });
+    }
+  }
+
+  if (style === "auto" || style === "circled") {
+    const inlineRe = /[①②③④]/g;
+    while ((match = inlineRe.exec(source)) !== null) {
+      markers.push({ index: match.index, length: match[0].length, number: markerNumberFromToken(match[0]) });
+    }
+  }
+
+  return markers
+    .sort((a, b) => a.index - b.index)
+    .filter((marker, index, all) => index === 0 || marker.index !== all[index - 1].index);
+}
+
+function choiceMarkerRuns(markers) {
+  const convert = new Map();
+  for (let i = 0; i < markers.length; i++) {
+    if (markers[i].number !== 1) continue;
+    let expected = 1;
+    const run = [];
+    for (let j = i; j < markers.length && expected <= 4; j++) {
+      if (markers[j].number === expected) {
+        run.push(markers[j]);
+        expected++;
+      } else if (markers[j].number === 1 && expected > 1) {
+        break;
+      }
+    }
+    if (run.length >= 2) run.forEach(marker => convert.set(marker.index, marker.number));
+  }
+  return convert;
+}
+
+function splitAnswerSection(text) {
+  const match = String(text || "").match(/\n\s*(答案|参考答案|正解|答え)\s*[:：]?/);
+  if (!match) return { body: String(text || ""), answer: "" };
+  return {
+    body: String(text || "").slice(0, match.index),
+    answer: String(text || "").slice(match.index)
+  };
+}
+
+function normalizeChoiceMarkersText(text, style) {
+  const { body, answer } = splitAnswerSection(text);
+  const markers = findChoiceMarkerCandidates(body, style);
+  const convert = choiceMarkerRuns(markers);
+  if (!convert.size) return { text, count: 0 };
+  const circled = ["", "①", "②", "③", "④"];
+  let cursor = 0;
+  let out = "";
+  let count = 0;
+  markers.forEach(marker => {
+    const number = convert.get(marker.index);
+    if (!number) return;
+    out += body.slice(cursor, marker.index) + circled[number];
+    cursor = marker.index + marker.length;
+    count++;
+  });
+  out += body.slice(cursor);
+  return { text: out + answer, count };
+}
+
+function escapeRegExp(text) {
+  return String(text || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function choiceTokenPatternForStyle(style) {
+  const sourceByStyle = {
+    circled: String.raw`[①②③④]`,
+    digit: String.raw`[1-4]`,
+    "digit-dot": String.raw`[1-4]\s*[.．]`,
+    "digit-paren": String.raw`[（(]\s*[1-4]\s*[)）]|[1-4]\s*[)）]`,
+    fullwidth: String.raw`[１-４]`,
+    "fullwidth-dot": String.raw`[１-４]\s*[.．]`,
+    "fullwidth-paren": String.raw`[（(]\s*[１-４]\s*[)）]|[１-４]\s*[)）]`,
+    "alpha-upper": String.raw`[A-DＡ-Ｄ]\s*[.．、,)]?`,
+    "alpha-lower": String.raw`[a-dａ-ｄ]\s*[.．、,)]?`,
+    roman: String.raw`[ⅠⅡⅢⅣⅰⅱⅲⅳ]\s*[.．、,)]?`,
+    auto: String.raw`[①②③④]|[（(]\s*[1-4１-４A-Da-dＡ-Ｄａ-ｄ]\s*[)）]|[1-4１-４A-Da-dＡ-Ｄａ-ｄ]\s*[.．、,)]?|[ⅠⅡⅢⅣⅰⅱⅲⅳ]\s*[.．、,)]?`
+  };
+  return sourceByStyle[String(style || "auto")] || sourceByStyle.auto;
+}
+
+function customChoiceMarkerTokens(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return [];
+  const compact = raw.normalize("NFKC").replace(/\s+/g, "");
+  const joined = compact.match(/^([1-4A-Da-d])([^1-4A-Da-d]+)([1-4A-Da-d])\2([1-4A-Da-d])\2([1-4A-Da-d])$/);
+  if (joined) {
+    const chars = [joined[1], joined[3], joined[4], joined[5]];
+    const sep = joined[2];
+    const tokens = chars.map((ch) => ({ token: `${ch}${sep}`, number: markerNumberFromToken(ch) }));
+    if (tokens.every((entry, index) => entry.number === index + 1)) return tokens;
+  }
+  const pattern = /[①②③④]|[（(]\s*[1-4１-４A-Da-dＡ-Ｄａ-ｄ]\s*[)）]|[1-4１-４A-Da-dＡ-Ｄａ-ｄ]\s*[.．、,)]?|[ⅠⅡⅢⅣⅰⅱⅲⅳ]\s*[.．、,)]?/g;
+  const tokens = [];
+  const used = new Set();
+  let match;
+  while ((match = pattern.exec(raw)) !== null) {
+    const token = match[0].trim();
+    const number = markerNumberFromToken(token);
+    if (number >= 1 && number <= 4 && !used.has(number)) {
+      tokens.push({ token, number });
+      used.add(number);
+    }
+  }
+  return tokens.length >= 2 ? tokens : [];
+}
+
+function isCircledChoiceToken(token) {
+  return /^[①②③④]$/.test(String(token || "").trim());
+}
+
+function findLooseChoiceMarkers(text, style, custom) {
+  const source = String(text || "");
+  const customTokens = customChoiceMarkerTokens(custom);
+  const markers = [];
+  if (customTokens.length) {
+    const alternatives = customTokens
+      .map(({ token }) => escapeRegExp(token))
+      .sort((a, b) => b.length - a.length)
+      .join("|");
+    const tokenNumbers = new Map(customTokens.map(({ token, number }) => [token.replace(/\s+/g, ""), number]));
+    const addMarker = (index, token, end) => {
+      const compact = token.replace(/\s+/g, "");
+      const number = tokenNumbers.get(compact) || markerNumberFromToken(token);
+      if (number >= 1 && number <= 4) markers.push({ index, end, number });
+    };
+    if (customTokens.some(({ token }) => isCircledChoiceToken(token))) {
+      const inlineRe = new RegExp(alternatives, "g");
+      let match;
+      while ((match = inlineRe.exec(source)) !== null) addMarker(match.index, match[0], inlineRe.lastIndex);
+    }
+    const looseRe = new RegExp(`(^|[\\n,，、;；\\t \\u3000])\\s*(${alternatives})\\s*`, "g");
+    let match;
+    while ((match = looseRe.exec(source)) !== null) {
+      const prefix = match[1] || "";
+      const token = match[2] || "";
+      const index = match.index + prefix.length + (match[0].slice(prefix.length).match(/^\s*/) || [""])[0].length;
+      addMarker(index, token, looseRe.lastIndex);
+    }
+  } else {
+    const tokenPattern = choiceTokenPatternForStyle(style);
+    if (style === "auto" || style === "circled") {
+      const inlineRe = /[①②③④]/g;
+      let match;
+      while ((match = inlineRe.exec(source)) !== null) {
+        markers.push({ index: match.index, end: inlineRe.lastIndex, number: markerNumberFromToken(match[0]) });
+      }
+    }
+    const looseRe = new RegExp(`(^|[\\n,，、;；\\t \\u3000])\\s*(${tokenPattern})\\s*`, "g");
+    let match;
+    while ((match = looseRe.exec(source)) !== null) {
+      const prefix = match[1] || "";
+      const token = match[2] || "";
+      const number = markerNumberFromToken(token);
+      if (number >= 1 && number <= 4) {
+        const index = match.index + prefix.length + (match[0].slice(prefix.length).match(/^\s*/) || [""])[0].length;
+        markers.push({ index, end: looseRe.lastIndex, number });
+      }
+    }
+  }
+  return markers
+    .sort((a, b) => a.index - b.index)
+    .filter((marker, index, all) => index === 0 || marker.index !== all[index - 1].index);
+}
+
+function firstChoiceRun(markers) {
+  for (let i = 0; i < markers.length; i++) {
+    if (markers[i].number !== 1) continue;
+    const run = [markers[i]];
+    let expected = 2;
+    for (let j = i + 1; j < markers.length && expected <= 4; j++) {
+      if (markers[j].number === 1 && expected > 2) break;
+      if (markers[j].number === expected) {
+        run.push(markers[j]);
+        expected++;
+      }
+    }
+    if (run.length === 4) return run;
+  }
+  return null;
+}
+
+const QUESTION_MARKERS = "⑴⑵⑶⑷⑸⑹⑺⑻⑼⑽⑾⑿⒀⒁⒂⒃⒄⒅⒆⒇";
+
+function questionNumberFromMarker(token) {
+  const raw = String(token || "").trim();
+  const circledIndex = QUESTION_MARKERS.indexOf(raw);
+  if (circledIndex >= 0) return circledIndex + 1;
+  const digits = raw.normalize("NFKC").match(/\d+/);
+  return digits ? parseInt(digits[0], 10) : 0;
+}
+
+function questionMarkerPatternFromSample(sample) {
+  const raw = String(sample || "").trim();
+  if (!raw) return String.raw`[⑴⑵⑶⑷⑸⑹⑺⑻⑼⑽⑾⑿⒀⒁⒂⒃⒄⒅⒆⒇]|[（(]\s*\d{1,3}\s*[)）]|\d{1,3}\s*[.．、]`;
+  if (/[⑴⑵⑶⑷⑸⑹⑺⑻⑼⑽⑾⑿⒀⒁⒂⒃⒄⒅⒆⒇]/.test(raw)) return String.raw`[⑴⑵⑶⑷⑸⑹⑺⑻⑼⑽⑾⑿⒀⒁⒂⒃⒄⒅⒆⒇]`;
+  const normalized = raw.normalize("NFKC");
+  if (/[()]/.test(normalized)) return String.raw`[（(]\s*\d{1,3}\s*[)）]`;
+  if (/[.．、]/.test(raw)) return String.raw`\d{1,3}\s*[.．、]`;
+  return escapeRegExp(raw).replace(/[0-9０-９]+/g, String.raw`\d{1,3}`);
+}
+
+function findQuestionMarkers(text, sample) {
+  const source = String(text || "");
+  const pattern = questionMarkerPatternFromSample(sample);
+  const re = new RegExp(`(^|\\n)\\s*(${pattern})\\s*`, "g");
+  const markers = [];
+  let match;
+  while ((match = re.exec(source)) !== null) {
+    const prefix = match[1] || "";
+    const token = match[2] || "";
+    const index = match.index + prefix.length;
+    markers.push({
+      index,
+      end: re.lastIndex,
+      number: questionNumberFromMarker(token)
+    });
+  }
+  return markers;
+}
+
+function splitChoiceQuestionBlocks(text, questionMarkerSample) {
+  const source = normalizeNewlines(text);
+  const markers = findQuestionMarkers(source, questionMarkerSample);
+  if (!markers.length) return [{ number: 1, text: source.trim() }].filter(block => block.text);
+  return markers.map((marker, index) => {
+    const next = markers[index + 1];
+    return {
+      number: marker.number || index + 1,
+      text: source.slice(marker.end, next ? next.index : source.length).trim()
+    };
+  }).filter(block => block.text);
+}
+
+function cleanChoicePart(text) {
+  return String(text || "")
+    .replace(/^[\s,，、;；:：]+/, "")
+    .replace(/[\s,，、;；]+$/, "")
+    .replace(/\n{2,}/g, "\n")
+    .trim();
+}
+
+function parseChoiceBlock(blockText) {
+  const markers = findLooseChoiceMarkers(blockText, "auto", el.choiceMarkerCustom.value || "");
+  const run = firstChoiceRun(markers);
+  if (!run) return null;
+  const question = cleanChoicePart(blockText.slice(0, run[0].index));
+  const choices = run.map((marker, index) => {
+    const next = run[index + 1];
+    return cleanChoicePart(blockText.slice(marker.end, next ? next.index : blockText.length));
+  });
+  if (!question || choices.some(choice => !choice)) return null;
+  return { question, choices };
+}
+
+function parseChoiceAnswerSequence(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return [];
+  const compact = raw.normalize("NFKC").replace(/[,\s、，;；/／]+/g, "");
+  if (/^[1-4]+$/.test(compact)) return Array.from(compact, ch => parseInt(ch, 10) - 1);
+  if (/^[A-Da-d]+$/.test(compact)) return Array.from(compact, ch => ch.toUpperCase().charCodeAt(0) - 65);
+  const answers = [];
+  const re = /[①②③④]|[（(]?\s*[1-4１-４A-Da-dＡ-Ｄａ-ｄ]\s*[)）.．、,]?|[ⅠⅡⅢⅣⅰⅱⅲⅳ]/g;
+  let match;
+  while ((match = re.exec(raw)) !== null) {
+    const number = markerNumberFromToken(match[0]);
+    if (number >= 1 && number <= 4) answers.push(number - 1);
+  }
+  return answers;
+}
+
+function choiceLabel(index) {
+  return ["①", "②", "③", "④"][index] || "";
+}
+
+function formatChoiceCardsPreview(cards) {
+  return cards.map((card, index) => {
+    const choices = (card.choices || []).map((choice, choiceIndex) => `${choiceLabel(choiceIndex)} ${choice}`).join("\n");
+    return `(${index + 1}) ${card.q}\n${choices}`;
+  }).join("\n\n");
+}
+
+function buildChoiceCardsFromText(options = {}) {
+  const source = cleanMaterialText(el.text1.value);
+  if (!source) {
+    setStatus("4択問題テキストが空です");
+    return false;
+  }
+  const blocks = splitChoiceQuestionBlocks(source, el.choiceQuestionMarker.value);
+  const answers = parseChoiceAnswerSequence(el.choiceAnswerSequence.value);
+  const cards = [];
+  const failed = [];
+  blocks.forEach((block, index) => {
+    const parsed = parseChoiceBlock(block.text);
+    if (!parsed) {
+      failed.push(block.number || index + 1);
+      return;
+    }
+    const answerIndex = answers[index];
+    cards.push({
+      kind: "choice",
+      q: parsed.question,
+      a: Number.isInteger(answerIndex) && parsed.choices[answerIndex] ? parsed.choices[answerIndex] : "",
+      choices: parsed.choices,
+      choiceExcludeWords: "",
+      choiceGroup: ""
+    });
+  });
+  if (!cards.length) {
+    setStatus("4択カードを作れませんでした。問題番号と4択番号の設定を確認してください");
+    return false;
+  }
+  pushUndo();
+  state.cards.push(...cards);
+  updatePaneInfo("text1", `4択カード化 / ${cards.length}件`);
+  renderCards();
+  const missingAnswers = cards.filter(card => !card.a).length;
+  const parts = [`4択カードを${cards.length}件追加しました`];
+  if (missingAnswers) parts.push(`正解未設定${missingAnswers}件`);
+  if (failed.length) parts.push(`解析失敗: ${failed.join(", ")}`);
+  setStatus(parts.join(" / "));
+  return true;
+}
+
 async function decodeFile(file) {
   const buffer = await file.arrayBuffer();
   const bytes = new Uint8Array(buffer);
@@ -341,7 +741,7 @@ async function loadSourceFile(file, paneId) {
 function applySourceLock(options = {}) {
   const locked = el.sourceLock.checked;
   el.text1.readOnly = locked;
-  el.text2.readOnly = state.mode === "cloze" ? false : locked;
+  el.text2.readOnly = locked;
   if (!options.silent) {
     setStatus(locked ? "本文編集ロック中: 選択してショートカットを使えます" : "本文編集ロック解除中: 本文を直接編集できます");
   }
@@ -360,131 +760,57 @@ function appendSelectionToDraft(source, target) {
   return true;
 }
 
-function appendSelectionToClozeDraft(source = el.text1) {
+function addSelectionAsClozeCard(source = el.text1) {
   const selected = selectedTextFrom(source);
   if (!selected) {
-    setStatus("テキスト1で穴埋め問題にする文を選択してください");
+    setStatus("テキスト1で穴埋めカードにする文を選択してください");
     return false;
   }
-  pushUndo();
   const item = cleanMaterialText(selected).replace(/\n+/g, " ").trim();
   if (!item) {
     setStatus("追加できる文がありません");
     return false;
   }
-  el.text2.value = el.text2.value.trim() ? `${el.text2.value.trim()}\n${item}` : item;
-  updatePaneInfo("text2", `draft / ${lineCount(el.text2.value)}件`);
-  updateClozeDraftGutter();
-  setActivePane("text2");
-  el.text2.focus();
-  const start = el.text2.value.length - item.length;
-  el.text2.setSelectionRange(start, el.text2.value.length);
-  setStatus("穴埋めdraftへ1問追加しました。隠す箇所を選んで1-9を押してください");
-  return true;
-}
-
-function getCurrentLineRange(area) {
-  const value = area.value;
-  const start = area.selectionStart;
-  const end = area.selectionEnd;
-  if (start !== end) {
-    const lineStart = value.lastIndexOf("\n", start - 1) + 1;
-    const nextBreak = value.indexOf("\n", end);
-    return { start: lineStart, end: nextBreak < 0 ? value.length : nextBreak };
-  }
-  const lineStart = value.lastIndexOf("\n", start - 1) + 1;
-  const nextBreak = value.indexOf("\n", start);
-  return { start: lineStart, end: nextBreak < 0 ? value.length : nextBreak };
-}
-
-function replaceRange(area, start, end, replacement) {
-  area.value = `${area.value.slice(0, start)}${replacement}${area.value.slice(end)}`;
-  area.dispatchEvent(new Event("input", { bubbles: true }));
-}
-
-function removeCurrentClozeDraftLine(range) {
-  const value = el.text2.value;
-  let start = range.start;
-  let end = range.end;
-  if (end < value.length && value[end] === "\n") {
-    end += 1;
-  } else if (start > 0 && value[start - 1] === "\n") {
-    start -= 1;
-  }
-  replaceRange(el.text2, start, end, "");
-  updatePaneInfo("text2", `draft / ${lineCount(el.text2.value)}件`);
-  const caret = Math.min(start, el.text2.value.length);
-  el.text2.focus();
-  el.text2.setSelectionRange(caret, caret);
-}
-
-function registerClozeDraftCurrentItem() {
-  const range = getCurrentLineRange(el.text2);
-  const q = el.text2.value.slice(range.start, range.end).trim();
-  if (!q) {
-    setStatus("登録する穴埋めdraft行がありません");
-    return false;
-  }
-  if (!textHasCloze(q)) {
-    setStatus("先にdraft内で隠す箇所を選択し、1-9でCloze化してください");
-    return false;
-  }
   pushUndo();
   state.cards.push({
     kind: "cloze",
-    q,
+    q: item,
     a: "",
-    ...metadataFromDraft()
+    choiceExcludeWords: "",
+    choiceGroup: ""
   });
-  removeCurrentClozeDraftLine(range);
   renderCards();
-  setStatus("穴埋めカードを登録しました");
-  return true;
-}
-
-function wrapClozeDraftSelection(number) {
-  if (document.activeElement !== el.text2) el.text2.focus();
-  const start = el.text2.selectionStart;
-  const end = el.text2.selectionEnd;
-  const selected = el.text2.value.slice(start, end);
-  if (!selected.trim()) {
-    setStatus("穴埋めdraft内で隠したい箇所を選択してください");
-    return false;
-  }
-  pushUndo();
-  const wrapped = `{{c${number}::${selected}}}`;
-  replaceRange(el.text2, start, end, wrapped);
-  el.text2.focus();
-  el.text2.setSelectionRange(start, start + wrapped.length);
-  updatePaneInfo("text2", `draft / ${lineCount(el.text2.value)}件`);
-  setStatus(`draftの選択箇所を c${number} の穴埋めにしました`);
+  setStatus("穴埋めカードを一覧へ追加しました。一覧の問題欄で隠す箇所を選び、1-9を押してください");
   return true;
 }
 
 function clearDraft() {
-  const hasClozeDraft = state.mode === "cloze" && el.text2.value.trim();
-  if (!el.draftQ.value && !el.draftA.value && !el.draftExcludes.value && !el.draftGroup.value && !hasClozeDraft) return;
+  const hasClozeDraft = false;
+  const hasChoiceDraft = state.mode === "choice" && (el.choiceMarkerCustom.value || el.choiceQuestionMarker.value || el.choiceAnswerSequence.value);
+  if (!el.draftQ.value && !el.draftA.value && !el.draftExcludes.value && !el.draftGroup.value && !hasClozeDraft && !hasChoiceDraft) return;
   pushUndo();
   el.draftQ.value = "";
   el.draftA.value = "";
   el.draftExcludes.value = "";
   el.draftGroup.value = "";
   if (state.mode === "cloze") {
-    el.text2.value = "";
-    el.clozeExcludes.value = "";
-    el.clozeGroup.value = "";
-    updatePaneInfo("text2", "draft / 0件");
-    updateClozeDraftGutter();
+    setStatus("穴埋めモードにはdraftがありません");
+    return;
+  }
+  if (state.mode === "choice") {
+    el.choiceMarkerCustom.value = "";
+    el.choiceQuestionMarker.value = "";
+    el.choiceAnswerSequence.value = "";
   }
   setStatus("draftをクリアしました");
 }
 
 function metadataFromDraft() {
   if (state.mode === "cloze") {
-    return {
-      choiceExcludeWords: el.clozeExcludes.value.trim(),
-      choiceGroup: el.clozeGroup.value.trim()
-    };
+    return { choiceExcludeWords: "", choiceGroup: "" };
+  }
+  if (state.mode === "choice") {
+    return { choiceExcludeWords: "", choiceGroup: "" };
   }
   return {
     choiceExcludeWords: el.draftExcludes.value.trim(),
@@ -498,6 +824,11 @@ function cardHasCloze(card) {
 
 function textHasCloze(text) {
   return /\{\{c\d+::[^:}]+(?:::[^}]+)?\}\}/.test(String(text || ""));
+}
+
+function cardHasValidChoices(card) {
+  const choices = Array.isArray(card?.choices) ? card.choices.map(choice => String(choice || "").trim()) : [];
+  return String(card?.q || "").trim() && String(card?.a || "").trim() && choices.length >= 4 && choices.slice(0, 4).every(Boolean);
 }
 
 function addVocabCardFromDraft() {
@@ -520,59 +851,42 @@ function addVocabCardFromDraft() {
   setStatus("単語帳カードを追加しました");
 }
 
-function addSelectedClozeCard() {
-  return appendSelectionToClozeDraft(el.text1);
-}
-
-function linesFromText(text) {
-  return String(text || "").split("\n").map((line) => line.trim()).filter(Boolean);
-}
-
-function bulkAddClozeFromText(text) {
-  const lines = linesFromText(text);
-  if (!lines.length) {
-    setStatus("追加できる行がありません");
-    return;
-  }
-  pushUndo();
-  const current = el.text2.value.trim();
-  el.text2.value = `${current ? `${current}\n` : ""}${lines.join("\n")}`;
-  updatePaneInfo("text2", `draft / ${lineCount(el.text2.value)}件`);
-  updateClozeDraftGutter();
-  setActivePane("text2");
-  el.text2.focus();
-  setStatus(`${lines.length}件を穴埋めdraftへ追加しました`);
-}
-
-function bulkAddActiveCloze() {
-  bulkAddClozeFromText(el.text1.value);
-}
-
-function bulkAddSelectedCloze() {
-  const selected = selectedSourceText();
-  if (!selected) {
-    setStatus("本文で範囲を選択してください");
-    return;
-  }
-  bulkAddClozeFromText(splitDisplayText(selected, delimiterTextFor()));
-}
-
 function addCardFromDraft() {
   if (state.mode === "cloze") {
-    registerClozeDraftCurrentItem();
+    setStatus("穴埋めモードでは、テキスト1で文を選択してAを押してください");
+  } else if (state.mode === "choice") {
+    buildChoiceCardsFromText();
   } else {
     addVocabCardFromDraft();
   }
 }
 
 function addEmptyCard() {
+  if (state.mode === "choice") {
+    pushUndo();
+    state.cards.push({
+      kind: "choice",
+      q: "",
+      a: "",
+      choices: ["", "", "", ""],
+      choiceExcludeWords: "",
+      choiceGroup: ""
+    });
+    renderCards();
+    setStatus("4択の空行を追加しました");
+    return;
+  }
   if (state.mode === "cloze") {
     pushUndo();
-    el.text2.value = el.text2.value.trim() ? `${el.text2.value.trim()}\n` : "";
-    updatePaneInfo("text2", `draft / ${lineCount(el.text2.value)}件`);
-    updateClozeDraftGutter();
-    el.text2.focus();
-    setStatus("穴埋めdraftに空行を追加しました");
+    state.cards.push({
+      kind: "cloze",
+      q: "",
+      a: "",
+      choiceExcludeWords: "",
+      choiceGroup: ""
+    });
+    renderCards();
+    setStatus("穴埋めの空行をカード一覧へ追加しました");
     return;
   }
   pushUndo();
@@ -618,6 +932,8 @@ function updateCard(index, key, value) {
   if (!card) return;
   card[key] = value;
   if (key === "kind" && value === "cloze") card.a = "";
+  if (key === "kind" && value === "choice" && !Array.isArray(card.choices)) card.choices = ["", "", "", ""];
+  if (key === "choices" && Array.isArray(value)) card.choices = value.slice(0, 4);
 }
 
 function clearCards() {
@@ -644,6 +960,7 @@ function wrapSelectionAsCloze(area, number) {
   area.focus();
   area.setSelectionRange(start, start + wrapped.length);
   setStatus(`選択箇所を c${number} の穴埋めにしました`);
+  renderCards();
   return true;
 }
 
@@ -653,7 +970,7 @@ function renderCards() {
   if (!state.cards.length) {
     const row = document.createElement("tr");
     const cell = document.createElement("td");
-    cell.colSpan = 7;
+    cell.colSpan = 11;
     cell.className = "empty";
     cell.textContent = "まだカードがありません";
     row.appendChild(cell);
@@ -664,8 +981,9 @@ function renderCards() {
   state.cards.forEach((card, index) => {
     const row = document.createElement("tr");
     row.draggable = true;
-    row.className = card.kind === "cloze" ? "kind-cloze" : "kind-vocab";
+    row.className = card.kind === "cloze" ? "kind-cloze" : card.kind === "choice" ? "kind-choice" : "kind-vocab";
     if (card.kind === "cloze" && !cardHasCloze(card)) row.classList.add("invalid");
+    if (card.kind === "choice" && !cardHasValidChoices(card)) row.classList.add("invalid");
     row.addEventListener("dragstart", () => {
       state.draggedIndex = index;
       row.classList.add("dragging");
@@ -681,6 +999,9 @@ function renderCards() {
     row.appendChild(kindCell(index, card));
     row.appendChild(textareaCell(card.q, (value) => updateCard(index, "q", value), { clozeHotkeys: card.kind === "cloze", index }));
     row.appendChild(answerCell(index, card));
+    for (let choiceIndex = 0; choiceIndex < 4; choiceIndex++) {
+      row.appendChild(choiceCell(index, card, choiceIndex));
+    }
     row.appendChild(textareaCell(card.choiceExcludeWords || "", (value) => updateCard(index, "choiceExcludeWords", value), { small: true }));
     row.appendChild(inputCell(card.choiceGroup || "", (value) => updateCard(index, "choiceGroup", value)));
     row.appendChild(actionsCell(index));
@@ -697,8 +1018,8 @@ function td(text) {
 function kindCell(index, card) {
   const cell = document.createElement("td");
   const select = document.createElement("select");
-  select.innerHTML = '<option value="vocab">単語帳</option><option value="cloze">穴埋め</option>';
-  select.value = card.kind === "cloze" ? "cloze" : "vocab";
+  select.innerHTML = '<option value="vocab">単語帳</option><option value="cloze">穴埋め</option><option value="choice">4択</option>';
+  select.value = card.kind === "cloze" ? "cloze" : card.kind === "choice" ? "choice" : "vocab";
   select.addEventListener("change", () => {
     pushUndo();
     updateCard(index, "kind", select.value);
@@ -706,7 +1027,7 @@ function kindCell(index, card) {
   });
   const badge = document.createElement("span");
   badge.className = "kind-badge";
-  badge.textContent = select.value === "cloze" ? "穴埋め" : "単語帳";
+  badge.textContent = select.value === "cloze" ? "穴埋め" : select.value === "choice" ? "4択" : "単語帳";
   cell.append(select, badge);
   return cell;
 }
@@ -716,6 +1037,10 @@ function textareaCell(value, onInput, options = {}) {
   const area = document.createElement("textarea");
   area.value = value || "";
   if (options.small) area.rows = 2;
+  if (options.clozeHotkeys && el.clozeCardLock.checked) {
+    area.readOnly = true;
+    area.title = "穴埋め問題文ロック中です。隠したい範囲を選択して1-9を押してください。";
+  }
   area.addEventListener("focus", () => {
     if (!area.dataset.undoFocus) {
       pushUndo();
@@ -728,6 +1053,7 @@ function textareaCell(value, onInput, options = {}) {
   area.addEventListener("input", () => onInput(area.value));
   if (options.clozeHotkeys) {
     area.addEventListener("keydown", (event) => {
+      if (!el.clozeCardLock.checked) return;
       const digit = digitFromEvent(event);
       if (!digit || digit === "0") return;
       if (area.selectionStart === area.selectionEnd) return;
@@ -748,9 +1074,24 @@ function answerCell(index, card) {
   box.className = "auto-answer";
   box.textContent = cardHasCloze(card)
     ? "Cloze内の答えをMOZが自動抽出します"
-    : "未指定: 問題欄で隠す箇所を選び、1-9を押してください";
+    : "未指定: 問題文ロックONで隠す箇所を選び、1-9を押してください";
   cell.appendChild(box);
   return cell;
+}
+
+function choiceCell(index, card, choiceIndex) {
+  if (card.kind !== "choice") {
+    const cell = document.createElement("td");
+    cell.className = "empty";
+    cell.textContent = "-";
+    return cell;
+  }
+  const choices = Array.isArray(card.choices) ? card.choices : ["", "", "", ""];
+  return textareaCell(choices[choiceIndex] || "", (value) => {
+    const next = Array.isArray(card.choices) ? [...card.choices] : ["", "", "", ""];
+    next[choiceIndex] = value;
+    updateCard(index, "choices", next);
+  }, { small: true });
 }
 
 function inputCell(value, onInput) {
@@ -799,16 +1140,21 @@ function validExportCards() {
   const skipped = [];
   const rows = [];
   state.cards.forEach((card, index) => {
-    const kind = card.kind === "cloze" ? "cloze" : "vocab";
+    const kind = card.kind === "cloze" ? "cloze" : card.kind === "choice" ? "choice" : "vocab";
     const q = String(card.q || "").trim();
     const a = kind === "cloze" ? "" : String(card.a || "").trim();
-    if (!q || (kind === "vocab" && !a) || (kind === "cloze" && !cardHasCloze(card))) {
+    const choices = Array.isArray(card.choices) ? card.choices.map(choice => String(choice || "").trim()).slice(0, 4) : [];
+    while (choices.length < 4) choices.push("");
+    if (!q || (kind === "vocab" && !a) || (kind === "cloze" && !cardHasCloze(card)) || (kind === "choice" && (!a || choices.some(choice => !choice)))) {
       skipped.push(index + 1);
       return;
     }
     rows.push({
+      kind,
       q,
       a,
+      choices,
+      correct: kind === "choice" ? a : "",
       choiceExcludeWords: normalizeMetadata(card.choiceExcludeWords),
       choiceGroup: normalizeMetadata(card.choiceGroup)
     });
@@ -819,13 +1165,13 @@ function validExportCards() {
 function exportTsv() {
   const { rows, skipped } = validExportCards();
   if (!rows.length) {
-    alert("出力できるカードがありません。単語帳は問題と解答、穴埋めはCloze指定が必要です。");
+    alert("出力できるカードがありません。単語帳は問題と解答、穴埋めはCloze指定、4択は問題・4つの選択肢・正解が必要です。");
     return;
   }
   if (skipped.length && !confirm(`未完成カード ${skipped.join(", ")} 番をスキップして出力しますか？`)) return;
   const table = [
-    ["question", "answer", "choice_exclude_words", "choice_group"],
-    ...rows.map((card) => [card.q, card.a, card.choiceExcludeWords, card.choiceGroup])
+    ["question", "answer", "choice1", "choice2", "choice3", "choice4", "correct", "choice_exclude_words", "choice_group"],
+    ...rows.map((card) => [card.q, card.a, card.choices[0], card.choices[1], card.choices[2], card.choices[3], card.correct, card.choiceExcludeWords, card.choiceGroup])
   ];
   const text = "\ufeff" + table.map((row) => row.map(sanitizeTsvCell).join("\t")).join("\n") + "\n";
   downloadBlob(new Blob([text], { type: "text/tab-separated-values;charset=utf-8" }), `moz_deck_${timestamp()}.tsv`);
@@ -835,13 +1181,13 @@ function exportTsv() {
 function exportCsv() {
   const { rows, skipped } = validExportCards();
   if (!rows.length) {
-    alert("出力できるカードがありません。単語帳は問題と解答、穴埋めはCloze指定が必要です。");
+    alert("出力できるカードがありません。単語帳は問題と解答、穴埋めはCloze指定、4択は問題・4つの選択肢・正解が必要です。");
     return;
   }
   if (skipped.length && !confirm(`未完成カード ${skipped.join(", ")} 番をスキップして出力しますか？`)) return;
   const table = [
-    ["question", "answer", "choice_exclude_words", "choice_group"],
-    ...rows.map((card) => [card.q, card.a, card.choiceExcludeWords, card.choiceGroup])
+    ["question", "answer", "choice1", "choice2", "choice3", "choice4", "correct", "choice_exclude_words", "choice_group"],
+    ...rows.map((card) => [card.q, card.a, card.choices[0], card.choices[1], card.choices[2], card.choices[3], card.correct, card.choiceExcludeWords, card.choiceGroup])
   ];
   const text = "\ufeff" + table.map((row) => row.map(csvCell).join(",")).join("\n") + "\n";
   downloadBlob(new Blob([text], { type: "text/csv;charset=utf-8" }), `moz_deck_${timestamp()}.csv`);
@@ -862,8 +1208,10 @@ function collectWorkState() {
     draftAnswer: el.draftA.value,
     draftExcludes: el.draftExcludes.value,
     draftGroup: el.draftGroup.value,
-    clozeExcludes: el.clozeExcludes.value,
-    clozeGroup: el.clozeGroup.value,
+    clozeCardLock: el.clozeCardLock.checked,
+    choiceMarkerCustom: el.choiceMarkerCustom.value,
+    choiceQuestionMarker: el.choiceQuestionMarker.value,
+    choiceAnswerSequence: el.choiceAnswerSequence.value,
     delimiter: el.delimiter.value,
     sourceLocked: el.sourceLock.checked,
     activePane: state.activePane,
@@ -888,13 +1236,15 @@ async function openWork(file) {
   el.draftA.value = data.draftAnswer || "";
   el.draftExcludes.value = data.draftExcludes || "";
   el.draftGroup.value = data.draftGroup || "";
-  el.clozeExcludes.value = data.clozeExcludes || "";
-  el.clozeGroup.value = data.clozeGroup || "";
+  el.clozeCardLock.checked = data.clozeCardLock !== false;
+  el.choiceMarkerCustom.value = data.choiceMarkerCustom || "";
+  el.choiceQuestionMarker.value = data.choiceQuestionMarker || "";
+  el.choiceAnswerSequence.value = data.choiceAnswerSequence || "";
   el.delimiter.value = data.delimiter || DEFAULT_DELIMITERS;
   el.sourceLock.checked = data.sourceLocked !== false;
   state.cards = Array.isArray(data.cards) ? data.cards : [];
   state.createdAt = data.createdAt || state.createdAt;
-  setMode(data.mode === "cloze" ? "cloze" : "vocab", { silent: true });
+  setMode(["cloze", "choice"].includes(data.mode) ? data.mode : "vocab", { silent: true });
   setActivePane(data.activePane === "text2" ? "text2" : "text1");
   applySourceLock();
   renderCards();
@@ -976,7 +1326,7 @@ function isSourceTextarea(target) {
 }
 
 function isEditingTarget(target) {
-  return target.closest && target.closest("td, .draft-panel, .cloze-actions, .findbar");
+  return target.closest && target.closest("td, .draft-panel, .choice-tools, .findbar");
 }
 
 function digitFromEvent(event) {
@@ -995,24 +1345,27 @@ function shortcutKey(event) {
 
 function handleSourceShortcut(event, source) {
   if (state.mode === "cloze") {
-    const digit = digitFromEvent(event);
-    if (source === el.text2 && digit && digit !== "0") {
-      if (el.text2.selectionStart === el.text2.selectionEnd) return false;
+    if (source === el.text1 && digitFromEvent(event)) {
       event.preventDefault();
       event.stopPropagation();
-      setActivePane("text2");
-      return wrapClozeDraftSelection(digit);
-    }
-    if (source === el.text1 && digit === "0") {
-      event.preventDefault();
-      event.stopPropagation();
-      setStatus("穴埋めモードでは、テキスト1でAを押してdraftへ追加してください");
+      setStatus("穴埋め箇所の指定は、作成済みカード一覧の穴埋めカード問題欄で行ってください");
       return true;
     }
   }
 
   const key = shortcutKey(event);
   if (!key) return false;
+
+  if (state.mode === "choice") {
+    if (!["D", "Z", "X"].includes(key)) return false;
+    event.preventDefault();
+    event.stopPropagation();
+    setActivePane("text1");
+    if (key === "D") return buildChoiceCardsFromText();
+    if (key === "Z") undo();
+    if (key === "X") clearDraft();
+    return true;
+  }
 
   if (state.mode === "vocab") {
     if ((key === "A" || key === "S") && !selectedTextFrom(source)) return false;
@@ -1029,15 +1382,8 @@ function handleSourceShortcut(event, source) {
       event.preventDefault();
       event.stopPropagation();
       setActivePane(source.id);
-      if (key === "A") return appendSelectionToClozeDraft(el.text1);
-      if (key === "D") setStatus("穴埋めモードでは、テキスト1でAを押してdraftへ追加してください");
-    } else if (source === el.text2) {
-      if (!["A", "S", "D", "Z", "X"].includes(key)) return false;
-      event.preventDefault();
-      event.stopPropagation();
-      setActivePane(source.id);
-      if (key === "D") return registerClozeDraftCurrentItem();
-      if (key === "A" || key === "S") setStatus("穴埋めdraftでは1-9で穴埋め化し、Dで登録します");
+      if (key === "A") return addSelectionAsClozeCard(el.text1);
+      if (key === "D") setStatus("穴埋めモードでは、テキスト1で文を選択してAを押してください");
     }
   }
   if (key === "Z") undo();
@@ -1069,13 +1415,6 @@ document.querySelectorAll(".source-pane textarea").forEach((box) => {
   box.addEventListener("keydown", (event) => handleSourceShortcut(event, box), true);
   box.addEventListener("beforeinput", (event) => {
     const data = String(event.data || "").toUpperCase();
-    if (state.mode === "cloze" && box === el.text2 && /^[1-9]$/.test(data) && selectedTextFrom(box)) {
-      event.preventDefault();
-      event.stopPropagation();
-      setActivePane("text2");
-      wrapClozeDraftSelection(data);
-      return;
-    }
     if (state.mode === "vocab" && (data === "A" || data === "S") && selectedTextFrom(box)) {
       event.preventDefault();
       event.stopPropagation();
@@ -1106,18 +1445,21 @@ document.getElementById("save-work-button").addEventListener("click", saveWork);
 document.getElementById("open-work-button").addEventListener("click", () => el.workFile.click());
 document.getElementById("export-tsv-button").addEventListener("click", exportTsv);
 document.getElementById("export-csv-button").addEventListener("click", exportCsv);
-document.getElementById("add-selected-cloze-button").addEventListener("click", addSelectedClozeCard);
-document.getElementById("register-cloze-draft-button").addEventListener("click", registerClozeDraftCurrentItem);
-document.getElementById("bulk-cloze-button").addEventListener("click", bulkAddActiveCloze);
-document.getElementById("bulk-selected-cloze-button").addEventListener("click", bulkAddSelectedCloze);
 document.getElementById("find-close-button").addEventListener("click", closeFind);
 document.getElementById("find-prev-button").addEventListener("click", () => moveFind(-1));
 document.getElementById("find-next-button").addEventListener("click", () => moveFind(1));
 document.getElementById("detect-delimiters-button").addEventListener("click", detectDelimiterCandidates);
 document.getElementById("reset-delimiters-button").addEventListener("click", resetDelimiters);
+document.getElementById("build-choice-cards-button").addEventListener("click", buildChoiceCardsFromText);
 el.findInput.addEventListener("input", updateFindMatches);
 el.findScope.addEventListener("change", updateFindMatches);
 el.sourceLock.addEventListener("change", applySourceLock);
+el.clozeCardLock.addEventListener("change", () => {
+  renderCards();
+  setStatus(el.clozeCardLock.checked
+    ? "穴埋め問題文ロックON: 穴埋めカードの問題欄で範囲選択して1-9を押せます"
+    : "穴埋め問題文ロックOFF: 問題欄を通常編集できます");
+});
 el.text2.addEventListener("input", updateClozeDraftGutter);
 el.text2.addEventListener("scroll", syncClozeDraftGutterScroll);
 

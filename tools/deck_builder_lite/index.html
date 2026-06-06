@@ -25,7 +25,7 @@
 
     <section class="statusbar" aria-live="polite">
       <div class="shortcut-line" id="shortcut-line">
-        単語帳: A=問題draft / S=解答draft / D=追加　穴埋め: 元本文でA=draftへ追加 / draftで1-9=穴埋め化 / D=カード登録　共通: Z=取消 / X=draftクリア / Ctrl+F=検索 / Ctrl+S=作業保存
+        単語帳: A=問題draft / S=解答draft / D=追加　穴埋め: 元本文でA=カード追加 / 一覧の問題欄で1-9=穴埋め化　共通: Z=取消 / Ctrl+F=検索 / Ctrl+S=作業保存
       </div>
       <label class="lock-toggle">
         <input type="checkbox" id="source-lock-input" checked>
@@ -44,6 +44,10 @@
           <input type="radio" name="builder-mode" value="cloze">
           穴埋め
         </label>
+        <label>
+          <input type="radio" name="builder-mode" value="choice">
+          4択
+        </label>
       </div>
       <div class="format-tools">
         <button type="button" data-clean="text1" id="clean-text1-button">テキスト1整理</button>
@@ -58,17 +62,17 @@
         <button type="button" id="detect-delimiters-button">本文から候補</button>
         <button type="button" id="reset-delimiters-button">初期値</button>
       </div>
-      <div class="cloze-actions" id="cloze-actions" hidden>
-        <button type="button" id="add-selected-cloze-button" class="primary">選択範囲をdraftへ追加</button>
-        <button type="button" id="register-cloze-draft-button">draftの現在行をカード登録</button>
-        <button type="button" id="bulk-cloze-button">テキスト1の各行をdraftへ追加</button>
-        <button type="button" id="bulk-selected-cloze-button">選択範囲を文分割してdraftへ追加</button>
-        <label>除外語
-          <input id="cloze-excludes" type="text" spellcheck="false" placeholder="類義語、除外語">
+      <div class="choice-tools">
+        <label class="choice-only">問題番号
+          <input id="choice-question-marker" type="text" spellcheck="false" placeholder="自動 / 例: ⑴, (1), 1.">
         </label>
-        <label>グループ
-          <input id="cloze-group" type="text" spellcheck="false" placeholder="sim_00001">
+        <label class="choice-only">4択番号
+          <input id="choice-marker-custom" type="text" spellcheck="false" placeholder="自動 / 例: ①②③④, ABCD, 1.2.3.4">
         </label>
+        <label class="choice-only">答え
+          <input id="choice-answer-sequence" type="text" spellcheck="false" placeholder="例: 4212441234 / C,B,A">
+        </label>
+        <button type="button" id="build-choice-cards-button" class="primary choice-only">4択をカード化</button>
       </div>
     </section>
 
@@ -147,6 +151,10 @@
             <span id="card-count">0件</span>
           </div>
           <div class="table-actions">
+            <label class="cloze-card-lock">
+              <input type="checkbox" id="cloze-card-lock-input" checked>
+              穴埋め問題文ロック
+            </label>
             <button type="button" id="clear-cards-button" class="danger">一覧クリア</button>
           </div>
           <div class="table-wrap">
@@ -157,6 +165,10 @@
                   <th>種別</th>
                   <th>問題 / Cloze本文</th>
                   <th>解答</th>
+                  <th>選択肢1</th>
+                  <th>選択肢2</th>
+                  <th>選択肢3</th>
+                  <th>選択肢4</th>
                   <th>除外語</th>
                   <th>グループ</th>
                   <th>操作</th>

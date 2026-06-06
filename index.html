@@ -773,9 +773,10 @@
         }
 
         .hit-anim { animation: shakeMonster 0.28s ease-out; }
-        .critical-hit { animation: criticalMonsterHit 0.46s ease-out; }
-        .combo-hit { animation: comboMonsterHit 0.4s ease-out; }
+        .critical-hit { animation: shakeMonster 0.42s ease-out, criticalMonsterFlash 0.46s ease-out; }
+        .combo-hit { animation: shakeMonster 0.38s ease-out, comboMonsterGlow 0.4s ease-out; }
         .monster-lunge { animation: monsterAttackLunge 0.34s ease-in-out; }
+        .super-impact-hit { animation: superComboMonsterImpact 0.68s cubic-bezier(.12, .88, .18, 1); }
         .monster-img.state-enraged {
             filter: brightness(1.18) saturate(1.45) drop-shadow(0 0 18px rgba(255, 82, 82, 0.75));
         }
@@ -868,28 +869,49 @@
             66% { transform: translateX(calc(var(--monster-hit-x) * -0.42)); }
             82% { transform: translateX(calc(var(--monster-hit-x) * 0.22)); }
         }
-        @keyframes criticalMonsterHit {
-            0% { transform: scale(1) rotate(0deg); filter: brightness(1) drop-shadow(0 0 20px rgba(255, 255, 255, 0.1)); }
-            12% { transform: translateX(calc(var(--monster-hit-x) * -1.1)) scale(1.1) rotate(-3deg); filter: brightness(2.1) drop-shadow(0 0 28px #ffeb3b); }
-            24% { transform: translateX(calc(var(--monster-hit-x) * 1.25)) scale(1.16) rotate(3deg); filter: brightness(2.25) drop-shadow(0 0 30px #ffeb3b); }
-            38% { transform: translateX(calc(var(--monster-hit-x) * -0.9)) scale(1.06) rotate(-2deg); filter: brightness(1.55) drop-shadow(0 0 22px #ff9800); }
-            54% { transform: translateX(calc(var(--monster-hit-x) * 0.66)) scale(0.98) rotate(2deg); filter: brightness(1.3) drop-shadow(0 0 20px #ff9800); }
-            74% { transform: translateX(calc(var(--monster-hit-x) * -0.28)) scale(1.02) rotate(-1deg); }
-            100% { transform: scale(1) rotate(0deg); filter: brightness(1) drop-shadow(0 0 20px rgba(255, 255, 255, 0.1)); }
+        @keyframes criticalMonsterFlash {
+            0%, 100% { filter: brightness(1) drop-shadow(0 0 20px rgba(255, 255, 255, 0.1)); }
+            16% { filter: brightness(2.25) drop-shadow(0 0 30px #ffeb3b); }
+            42% { filter: brightness(1.65) drop-shadow(0 0 24px #ff9800); }
+            72% { filter: brightness(1.2) drop-shadow(0 0 18px #fff176); }
         }
-        @keyframes comboMonsterHit {
-            0% { transform: translateX(0) scale(1); filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.1)); }
-            16% { transform: translateX(calc(var(--monster-hit-x) * -1.0)) scale(1.08); filter: drop-shadow(0 0 22px #00e676); }
-            32% { transform: translateX(calc(var(--monster-hit-x) * 1.08)) scale(1.12); filter: drop-shadow(0 0 22px #00e676); }
-            50% { transform: translateX(calc(var(--monster-hit-x) * -0.72)) scale(1.03); }
-            68% { transform: translateX(calc(var(--monster-hit-x) * 0.42)) scale(0.98); }
-            100% { transform: translateX(0) scale(1); filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.1)); }
+        @keyframes comboMonsterGlow {
+            0%, 100% { filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.1)); }
+            22% { filter: brightness(1.4) drop-shadow(0 0 23px #00e676); }
+            52% { filter: brightness(1.22) drop-shadow(0 0 18px #69f0ae); }
         }
         @keyframes monsterAttackLunge {
             0%, 100% { transform: translateY(0) scale(1); }
             20% { transform: translateY(calc(var(--monster-lunge-y) * -0.8)) scale(1.04); }
             48% { transform: translateY(calc(var(--monster-lunge-y) * 0.78)) scale(0.98); }
             72% { transform: translateY(calc(var(--monster-lunge-y) * -0.24)) scale(1.02); }
+        }
+        @keyframes superComboMonsterImpact {
+            0%, 100% {
+                transform: translate(0, 0) scale(1) rotate(0deg);
+                filter: brightness(1) drop-shadow(0 0 20px rgba(255, 255, 255, 0.1));
+            }
+            10% {
+                transform: translate(calc(var(--monster-hit-x) * -1.8), calc(var(--monster-lunge-y) * -1.25)) scale(1.12) rotate(-7deg);
+                filter: brightness(2.35) drop-shadow(0 0 32px #fff176);
+            }
+            22% {
+                transform: translate(calc(var(--monster-hit-x) * 2.15), calc(var(--monster-lunge-y) * 1.15)) scale(0.9) rotate(8deg);
+                filter: brightness(2.05) drop-shadow(0 0 30px #ff9800);
+            }
+            36% {
+                transform: translate(calc(var(--monster-hit-x) * -1.55), calc(var(--monster-lunge-y) * 0.88)) scale(1.08) rotate(-6deg);
+            }
+            52% {
+                transform: translate(calc(var(--monster-hit-x) * 1.15), calc(var(--monster-lunge-y) * -0.65)) scale(0.96) rotate(5deg);
+                filter: brightness(1.65) drop-shadow(0 0 24px #ffeb3b);
+            }
+            70% {
+                transform: translate(calc(var(--monster-hit-x) * -0.55), calc(var(--monster-lunge-y) * 0.38)) scale(1.03) rotate(-3deg);
+            }
+            86% {
+                transform: translate(calc(var(--monster-hit-x) * 0.24), calc(var(--monster-lunge-y) * -0.16)) scale(0.99) rotate(1deg);
+            }
         }
         @keyframes monsterAuraPulse {
             0%, 100% { opacity: 0.42; transform: scale(0.96); }
@@ -1546,6 +1568,44 @@
             border-left: 3px solid var(--accent);
         }
         .detail-content.answer { border-left-color: var(--success); }
+        .detail-content.choices {
+            border-left-color: var(--link);
+            font-size: 1rem;
+        }
+        .fixed-choice-list {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+        .fixed-choice-item {
+            padding: 7px 8px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            line-height: 1.45;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .fixed-choice-item.correct {
+            border-color: rgba(102, 187, 106, 0.8);
+            background: rgba(102, 187, 106, 0.13);
+        }
+        .fixed-choice-index {
+            color: var(--accent);
+            font-weight: 700;
+            margin-right: 6px;
+        }
+        .fixed-choice-correct-label {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 1px 6px;
+            border-radius: 3px;
+            background: rgba(102, 187, 106, 0.9);
+            color: #fff;
+            font-size: 0.72rem;
+            font-weight: 700;
+            vertical-align: middle;
+        }
         .detail-content.editable { background: rgba(255, 255, 255, 0.1); cursor: text; user-select: text; }
 
         .edit-textarea {
@@ -2561,7 +2621,7 @@
                 </div>
 
                 <div style="font-size: 0.85rem; color: #888; margin-top: 8px;">
-                    💡 txt / csv / tsv / xlsx / ods / zip を読み込めます（choice_exclude_words / choice_group列対応）
+                    💡 txt / csv / tsv / xlsx / ods / zip を読み込めます（固定4択 / choice_exclude_words / choice_group列対応）
                 </div>
             </div>
 
@@ -3310,6 +3370,10 @@
                 <div class="detail-label">解答</div>
                 <div class="detail-content answer" id="ov-a">意味</div>
             </div>
+            <div class="detail-section" id="ov-choice-section" style="display:none;">
+                <div class="detail-label">選択肢</div>
+                <div class="detail-content choices" id="ov-choices"></div>
+            </div>
         </div>
 
         <div id="ov-nav" style="display:none;" class="nav-btns">
@@ -3336,6 +3400,10 @@
             <div class="detail-section">
                 <div class="detail-label">解答</div>
                 <textarea class="edit-textarea" id="edit-a"></textarea>
+            </div>
+            <div class="detail-section" id="edit-choice-section" style="display:none;">
+                <div class="detail-label">選択肢（1行に1つ）</div>
+                <textarea class="edit-textarea" id="edit-choices"></textarea>
             </div>
         </div>
         <div style="display: flex; gap: 10px;">
@@ -3884,6 +3952,7 @@
             card.choiceExcludeWords = this.parseChoiceExcludeWords(
                 card.choiceExcludeWords || card.choice_exclude_words || card.choiceExcludes || card.excludeWords || []
             );
+            card.fixedChoices = this.parseFixedChoices(card.fixedChoices || card.fixed_choices || card.choices || card.options || []);
             if (!card.choiceGroup && card.choice_group) card.choiceGroup = card.choice_group;
             if (card.choiceGroup) card.choiceGroup = String(card.choiceGroup).trim();
         },
@@ -3903,9 +3972,11 @@
                     const choiceKey = this.extractChoiceKeyFromQuestion(card.choiceKey || card.q || '');
                     const choiceExcludeWords = this.parseChoiceExcludeWords(card.choiceExcludeWords || card.choice_exclude_words || []);
                     const choiceGroup = String(card.choiceGroup || card.choice_group || '').trim();
+                    const fixedChoices = this.parseFixedChoices(card.fixedChoices || card.fixed_choices || []);
                     if (choiceKey) record.choiceKey = choiceKey;
                     if (choiceExcludeWords.length) record.choiceExcludeWords = choiceExcludeWords;
                     if (choiceGroup) record.choiceGroup = choiceGroup;
+                    if (fixedChoices.length) record.fixedChoices = fixedChoices;
                     return record;
                 });
             });
@@ -3933,6 +4004,7 @@
                     if (record.choiceKey !== undefined) card.choiceKey = this.extractChoiceKeyFromQuestion(record.choiceKey);
                     if (record.choiceExcludeWords !== undefined) card.choiceExcludeWords = this.parseChoiceExcludeWords(record.choiceExcludeWords);
                     if (record.choiceGroup !== undefined) card.choiceGroup = String(record.choiceGroup || '').trim();
+                    if (record.fixedChoices !== undefined) card.fixedChoices = this.parseFixedChoices(record.fixedChoices);
                 });
             });
         },
@@ -4325,6 +4397,15 @@
         import(txt, deckName) {
             // 1. 改行コードの正規化
             const normalizedTxt = txt.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+            const examChoiceDeck = this.parseExamChoiceText(normalizedTxt);
+            if (examChoiceDeck.length > 0) {
+                this.d.decks[deckName] = examChoiceDeck;
+                if (!this.d.selectedDeck) this.d.selectedDeck = deckName;
+                this.save();
+                this.updateUI();
+                this.loadSettings();
+                return examChoiceDeck.length;
+            }
 
             // 2. 行ごとに分割（引用符 " " 内の改行は無視して結合するロジック）
             const rawLines = normalizedTxt.split('\n');
@@ -4474,11 +4555,25 @@
 
         isDelimitedHeader(row) {
             if (!row || row.length < 2) return false;
-            const first = this.normalizeDelimitedHeader(row[0]);
-            const second = this.normalizeDelimitedHeader(row[1]);
+            return this.isQuestionHeader(row[0])
+                && (
+                    this.isAnswerHeader(row[1])
+                    || this.getFixedChoiceColumnIndexes(row).length >= 2
+                    || this.getFixedChoicesColumnIndex(row) >= 0
+                    || this.getCorrectColumnIndex(row) >= 0
+                );
+        },
+
+        isQuestionHeader(value) {
+            const first = this.normalizeDelimitedHeader(value);
             const qNames = ['question', 'front', 'prompt', 'q', '問題', '設問', '表', 'おもて', 'word', 'word_pinyin', 'term', '単語', '見出し', 'a列', 'col_a', 'column_a'];
+            return qNames.includes(first);
+        },
+
+        isAnswerHeader(value) {
+            const second = this.normalizeDelimitedHeader(value);
             const aNames = ['answer', 'back', 'a', '解答', '答え', '回答', '裏', 'うら', 'content', 'meaning', 'definition', '説明', '意味', '訳', '訳語', 'b列', 'col_b', 'column_b'];
-            return qNames.includes(first) && aNames.includes(second);
+            return aNames.includes(second);
         },
 
         normalizeDelimitedHeader(value) {
@@ -4543,18 +4638,103 @@
             return headerRow.findIndex(cell => this.isChoiceExcludeHeader(cell));
         },
 
+        getAnswerColumnIndex(headerRow) {
+            if (!headerRow || headerRow.length < 2) return -1;
+            return headerRow.findIndex((cell, index) => index > 0 && this.isAnswerHeader(cell));
+        },
+
+        getFixedChoiceNumberFromHeader(value) {
+            const raw = String(value || '').trim();
+            const circled = '①②③④⑤⑥⑦⑧⑨⑩';
+            const circledIndex = circled.indexOf(raw);
+            if (circledIndex >= 0) return circledIndex + 1;
+            const name = this.normalizeDelimitedHeader(value);
+            const direct = {
+                choice1: 1, choice_1: 1, option1: 1, option_1: 1, choices1: 1, choices_1: 1, 選択肢1: 1, 候補1: 1,
+                choice2: 2, choice_2: 2, option2: 2, option_2: 2, choices2: 2, choices_2: 2, 選択肢2: 2, 候補2: 2,
+                choice3: 3, choice_3: 3, option3: 3, option_3: 3, choices3: 3, choices_3: 3, 選択肢3: 3, 候補3: 3,
+                choice4: 4, choice_4: 4, option4: 4, option_4: 4, choices4: 4, choices_4: 4, 選択肢4: 4, 候補4: 4
+            };
+            if (direct[name]) return direct[name];
+            const match = name.match(/^(?:choice|option|choices|候補|選択肢|選択)_?([1-9])$/);
+            return match ? parseInt(match[1], 10) : 0;
+        },
+
+        getFixedChoiceColumnIndexes(headerRow) {
+            if (!headerRow || headerRow.length < 3) return [];
+            return headerRow
+                .map((cell, index) => ({ index, number: this.getFixedChoiceNumberFromHeader(cell) }))
+                .filter(item => item.index > 0 && item.number > 0)
+                .sort((a, b) => a.number - b.number)
+                .map(item => item.index);
+        },
+
+        getFixedChoicesColumnIndex(headerRow) {
+            if (!headerRow || headerRow.length < 3) return -1;
+            const names = [
+                'choices',
+                'options',
+                'fixed_choices',
+                'fixedchoices',
+                'choice_list',
+                'choicelist',
+                '選択肢',
+                '固定選択肢',
+                '四択',
+                '候補一覧'
+            ];
+            return headerRow.findIndex((cell, index) => index > 0 && names.includes(this.normalizeDelimitedHeader(cell)));
+        },
+
+        getCorrectColumnIndex(headerRow) {
+            if (!headerRow || headerRow.length < 3) return -1;
+            const names = [
+                'correct',
+                'correct_choice',
+                'correctchoice',
+                'correct_index',
+                'correct_no',
+                'answer_index',
+                'answer_no',
+                'right_answer',
+                '正解',
+                '正解番号',
+                '正答',
+                '答案'
+            ];
+            return headerRow.findIndex((cell, index) => index > 0 && names.includes(this.normalizeDelimitedHeader(cell)));
+        },
+
         getImportColumnMap(rows) {
             const firstRow = (rows || [])[0] || [];
             const hasHeader = this.isDelimitedHeader(firstRow);
             const maxColumns = (rows || []).reduce((max, row) => Math.max(max, row ? row.length : 0), 0);
+            const fixedChoiceColumnIndexes = hasHeader
+                ? this.getFixedChoiceColumnIndexes(firstRow)
+                : (maxColumns >= 6 ? [1, 2, 3, 4] : []);
+            const choicesColumnIndex = hasHeader ? this.getFixedChoicesColumnIndex(firstRow) : -1;
+            const correctColumnIndex = hasHeader
+                ? this.getCorrectColumnIndex(firstRow)
+                : (maxColumns >= 6 ? 5 : -1);
+            const answerColumnIndex = hasHeader ? this.getAnswerColumnIndex(firstRow) : -1;
+            const hasFixedChoices = fixedChoiceColumnIndexes.length >= 2 || choicesColumnIndex >= 0;
             const groupColumnIndex = hasHeader
                 ? this.getChoiceGroupColumnIndex(firstRow)
-                : (maxColumns >= 4 ? 3 : -1);
+                : (hasFixedChoices ? -1 : (maxColumns >= 4 ? 3 : -1));
             const excludeColumnIndex = hasHeader
                 ? this.getChoiceExcludeColumnIndex(firstRow)
-                : (maxColumns >= 3 ? 2 : -1);
+                : (hasFixedChoices ? -1 : (maxColumns >= 3 ? 2 : -1));
 
-            return { hasHeader, groupColumnIndex, excludeColumnIndex };
+            return {
+                hasHeader,
+                groupColumnIndex,
+                excludeColumnIndex,
+                fixedChoiceColumnIndexes,
+                choicesColumnIndex,
+                correctColumnIndex,
+                answerColumnIndex,
+                hasFixedChoices
+            };
         },
 
         extractChoiceKeyFromQuestion(question) {
@@ -4575,6 +4755,204 @@
                 .filter(Boolean);
         },
 
+        stripChoiceMarker(value) {
+            return String(value || '')
+                .replace(/^[\s\u3000]*(?:[①②③④⑤⑥⑦⑧⑨⑩]|[❶❷❸❹❺❻❼❽❾❿]|[ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅰⅱⅲⅳⅴⅵⅶⅷⅸⅹ]|[（(]?[1-9１-９][)）]?|[A-Da-dＡ-Ｄａ-ｄ])[\s\u3000、，.．:：)）-]*/u, '')
+                .trim();
+        },
+
+        getChoiceMarkerNumber(value) {
+            const raw = String(value || '').trim();
+            if (!raw) return 0;
+            const circled = '①②③④⑤⑥⑦⑧⑨⑩';
+            const circledIndex = circled.indexOf(raw);
+            if (circledIndex >= 0) return circledIndex + 1;
+            const filled = '❶❷❸❹❺❻❼❽❾❿';
+            const filledIndex = filled.indexOf(raw);
+            if (filledIndex >= 0) return filledIndex + 1;
+            const romanMap = {
+                'Ⅰ': 1, 'Ⅱ': 2, 'Ⅲ': 3, 'Ⅳ': 4, 'Ⅴ': 5, 'Ⅵ': 6, 'Ⅶ': 7, 'Ⅷ': 8, 'Ⅸ': 9, 'Ⅹ': 10,
+                'ⅰ': 1, 'ⅱ': 2, 'ⅲ': 3, 'ⅳ': 4, 'ⅴ': 5, 'ⅵ': 6, 'ⅶ': 7, 'ⅷ': 8, 'ⅸ': 9, 'ⅹ': 10
+            };
+            if (romanMap[raw]) return romanMap[raw];
+            const normalized = raw.normalize('NFKC').replace(/^[\s(（\[]+/, '').replace(/[\s)）\].．。、,]+$/, '').trim();
+            if (/^[1-9]$/.test(normalized)) return parseInt(normalized, 10);
+            if (/^[A-Ja-j]$/.test(normalized)) return normalized.toUpperCase().charCodeAt(0) - 64;
+            return 0;
+        },
+
+        findFixedChoiceMarkers(text) {
+            const source = String(text || '');
+            const markers = [];
+            const addMarker = (index, length, token) => {
+                const number = this.getChoiceMarkerNumber(token);
+                if (number > 0) markers.push({ index, length, number });
+            };
+            let match;
+            const circledRe = /[①②③④⑤⑥⑦⑧⑨⑩❶❷❸❹❺❻❼❽❾❿]/g;
+            while ((match = circledRe.exec(source)) !== null) addMarker(match.index, match[0].length, match[0]);
+            const lineRe = /(^|\n)([ \t\u3000]*)(?:([（(]\s*[1-9１-９]\s*[)）])|([1-9１-９]\s*[.．、)）])|([1-9１-９])(?=[ \t\u3000]+)|([A-Da-dＡ-Ｄａ-ｄ]\s*[.．、)）:：])|([ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅰⅱⅲⅳⅴⅵⅶⅷⅸⅹ]\s*[.．、)）:：]?))/g;
+            while ((match = lineRe.exec(source)) !== null) {
+                const prefix = match[1] || '';
+                const space = match[2] || '';
+                const token = match[3] || match[4] || match[5] || match[6] || match[7] || '';
+                addMarker(match.index + prefix.length, space.length + token.length, token);
+            }
+            return markers.sort((a, b) => a.index - b.index);
+        },
+
+        parseFixedChoices(value) {
+            if (Array.isArray(value)) {
+                return [...new Set(value.map(item => this.stripChoiceMarker(item)).filter(Boolean))];
+            }
+            const text = String(value || '').replace(/\r\n?/g, '\n').trim();
+            if (!text) return [];
+            const markers = this.findFixedChoiceMarkers(text);
+            if (markers.length >= 2) {
+                const choices = markers.map((marker, index) => {
+                    const start = marker.index + marker.length;
+                    const end = markers[index + 1]?.index ?? text.length;
+                    return this.stripChoiceMarker(text.slice(start, end));
+                }).filter(Boolean);
+                return [...new Set(choices)];
+            }
+            return [...new Set(text
+                .split(/[|｜\n]+/g)
+                .map(item => this.stripChoiceMarker(item))
+                .filter(Boolean))];
+        },
+
+        normalizeFixedChoiceAnswer(value) {
+            return this.stripChoiceMarker(value)
+                .replace(/[​﻿]/g, '')
+                .replace(/\s+/g, '')
+                .trim()
+                .toLowerCase();
+        },
+
+        parseChoiceIndex(value) {
+            let text = String(value || '').trim().replace(/^(?:correct|answer|正解|答案|答え)\s*[:：=]?\s*/i, '');
+            if (!text) return -1;
+            text = text.normalize('NFKC').replace(/^[\s(（\[]+/, '').replace(/[\s)）\].．。、,]+$/, '');
+            const markerNumber = this.getChoiceMarkerNumber(text);
+            if (markerNumber > 0) return markerNumber - 1;
+            const normalized = text.trim();
+            const letterMatch = normalized.match(/^[A-Da-d]$/);
+            if (letterMatch) {
+                return letterMatch[0].toUpperCase().charCodeAt(0) - 65;
+            }
+            const digitMatch = normalized.match(/^[1-9]$/);
+            if (digitMatch) return parseInt(digitMatch[0], 10) - 1;
+            return -1;
+        },
+
+        resolveFixedChoiceAnswer(choices, correctRaw, answerRaw = '') {
+            const list = this.parseFixedChoices(choices);
+            if (list.length < 2) return '';
+            const correctIndex = this.parseChoiceIndex(correctRaw);
+            if (correctIndex >= 0 && correctIndex < list.length) return list[correctIndex];
+            const answerIndex = this.parseChoiceIndex(answerRaw);
+            if (answerIndex >= 0 && answerIndex < list.length) return list[answerIndex];
+            const answerNorm = this.normalizeFixedChoiceAnswer(answerRaw || correctRaw);
+            if (answerNorm) {
+                const exact = list.find(choice => this.normalizeFixedChoiceAnswer(choice) === answerNorm);
+                if (exact) return exact;
+            }
+            return '';
+        },
+
+        getFixedChoiceDataFromRow(row, map, parser) {
+            if (!row || !map || !map.hasFixedChoices) return null;
+            const choices = map.choicesColumnIndex >= 0
+                ? this.parseFixedChoices(this.cleanImportedCell(row[map.choicesColumnIndex], parser))
+                : this.parseFixedChoices(map.fixedChoiceColumnIndexes.map(index => this.cleanImportedCell(row[index], parser)));
+            const correctRaw = map.correctColumnIndex >= 0 ? this.cleanImportedCell(row[map.correctColumnIndex], parser) : '';
+            const answerRaw = map.answerColumnIndex >= 0 ? this.cleanImportedCell(row[map.answerColumnIndex], parser) : '';
+            const answer = this.resolveFixedChoiceAnswer(choices, correctRaw, answerRaw);
+            return choices.length >= 2 && answer ? { choices, answer } : null;
+        },
+
+        parseQuestionNumberMarker(marker) {
+            const text = String(marker || '').trim();
+            const parenNums = ['⑴','⑵','⑶','⑷','⑸','⑹','⑺','⑻','⑼','⑽','⑾','⑿','⒀','⒁','⒂','⒃','⒄','⒅','⒆','⒇'];
+            const parenIndex = parenNums.indexOf(text);
+            if (parenIndex >= 0) return parenIndex + 1;
+            const circled = '①②③④⑤⑥⑦⑧⑨⑩';
+            const circledIndex = circled.indexOf(text);
+            if (circledIndex >= 0) return circledIndex + 1;
+            const digitMatch = text.match(/[0-9０-９]+/);
+            return digitMatch ? parseInt(digitMatch[0].normalize('NFKC'), 10) : 0;
+        },
+
+        extractExamAnswerMap(text) {
+            const answerMatch = String(text || '').match(/(?:答案|参考答案|正解|答え)\s*[:：]?\s*([\s\S]*)$/);
+            const answerMap = new Map();
+            if (!answerMatch) return { answerMap, body: String(text || '') };
+            const section = answerMatch[1] || '';
+            const body = String(text || '').slice(0, answerMatch.index).trim();
+            const answerPattern = /(⑴|⑵|⑶|⑷|⑸|⑹|⑺|⑻|⑼|⑽|⑾|⑿|⒀|⒁|⒂|⒃|⒄|⒅|⒆|⒇|[（(]?\s*[0-9０-９]{1,3}\s*[)）]?)[\s\u3000、，.．:：=-]*([①②③④⑤⑥⑦⑧⑨⑩❶❷❸❹❺❻❼❽❾❿ⅠⅡⅢⅣⅤⅥⅦⅧⅨⅩⅰⅱⅲⅳⅴⅵⅶⅷⅸⅹA-Da-dＡ-Ｄａ-ｄ1-9１-９]|[（(]\s*[1-9１-９A-Da-dＡ-Ｄａ-ｄ]\s*[)）])/g;
+            let match;
+            while ((match = answerPattern.exec(section)) !== null) {
+                const questionNo = this.parseQuestionNumberMarker(match[1]);
+                const choiceIndex = this.parseChoiceIndex(match[2]);
+                if (questionNo > 0 && choiceIndex >= 0) answerMap.set(questionNo, choiceIndex);
+            }
+            return { answerMap, body };
+        },
+
+        parseExamChoiceText(text) {
+            const normalized = String(text || '')
+                .replace(/\r\n?/g, '\n')
+                .replace(/^\uFEFF/, '')
+                .replace(/[​﻿]/g, '')
+                .trim();
+            const { answerMap, body } = this.extractExamAnswerMap(normalized);
+            if (!answerMap.size) return [];
+            const questionPattern = /(?:^|\n)\s*(⑴|⑵|⑶|⑷|⑸|⑹|⑺|⑻|⑼|⑽|⑾|⑿|⒀|⒁|⒂|⒃|⒄|⒅|⒆|⒇|[（(]\s*[0-9０-９]{1,3}\s*[)）]|[0-9０-９]{1,3}[、.．])\s*/g;
+            const starts = [];
+            let match;
+            while ((match = questionPattern.exec(body)) !== null) {
+                starts.push({
+                    index: match.index,
+                    contentStart: questionPattern.lastIndex,
+                    number: this.parseQuestionNumberMarker(match[1])
+                });
+            }
+            if (!starts.length) return [];
+            const parser = new DOMParser();
+            const cards = [];
+            starts.forEach((start, index) => {
+                const end = starts[index + 1]?.index ?? body.length;
+                const block = body.slice(start.contentStart, end).trim();
+                if (!block) return;
+                const choiceMarkers = this.findFixedChoiceMarkers(block);
+                if (choiceMarkers.length < 2) return;
+                const qRaw = block.slice(0, choiceMarkers[0].index).trim();
+                const choices = choiceMarkers.map((choiceMarker, choiceIndex) => {
+                    const choiceStart = choiceMarker.index + choiceMarker.length;
+                    const choiceEnd = choiceMarkers[choiceIndex + 1]?.index ?? block.length;
+                    return this.stripChoiceMarker(block.slice(choiceStart, choiceEnd));
+                }).filter(Boolean);
+                const answerIndex = answerMap.get(start.number);
+                if (answerIndex === undefined || answerIndex < 0 || answerIndex >= choices.length) return;
+                const q = this.cleanImportedCell(qRaw, parser);
+                const answer = choices[answerIndex];
+                if (!q || !answer) return;
+                cards.push({
+                    q,
+                    a: answer,
+                    fixedChoices: [...new Set(choices)],
+                    choiceKey: this.extractChoiceKeyFromQuestion(q),
+                    mastery: 0,
+                    totalTime: 0,
+                    attempts: 0,
+                    starred: false,
+                    lastStudied: null
+                });
+            });
+            return cards;
+        },
+
         cleanImportedCell(value, parser) {
             let text = String(value || '').replace(/[​﻿]/g, '').trim();
             text = parser.parseFromString(text, 'text/html').body.textContent || text;
@@ -4585,11 +4963,15 @@
         },
 
         scoreDeckRows(rows) {
-            const { hasHeader, groupColumnIndex, excludeColumnIndex } = this.getImportColumnMap(rows);
+            const map = this.getImportColumnMap(rows);
+            const { hasHeader, groupColumnIndex, excludeColumnIndex } = map;
+            const p = new DOMParser();
             return (rows || []).reduce((count, row, index) => {
                 if (!row || row.length < 1) return count;
                 if (index === 0 && hasHeader) return count;
                 const hasQ = String(row[0] || '').trim().length > 0;
+                const fixedChoiceData = this.getFixedChoiceDataFromRow(row, map, p);
+                if (hasQ && fixedChoiceData) return count + 1;
                 const hasCloze = this.hasClozeText(row[0]);
                 const hasA = row.some((cell, cellIndex) =>
                     cellIndex > 0
@@ -4604,7 +4986,8 @@
         importRowsAsDeck(rows, deckName) {
             const p = new DOMParser();
             const deck = [];
-            const { hasHeader, groupColumnIndex, excludeColumnIndex } = this.getImportColumnMap(rows);
+            const map = this.getImportColumnMap(rows);
+            const { hasHeader, groupColumnIndex, excludeColumnIndex } = map;
             (rows || []).forEach((row, index) => {
                 if (!row || row.length < 1) return;
                 if (index === 0 && hasHeader) return;
@@ -4615,6 +4998,24 @@
                 const choiceExcludeWords = excludeColumnIndex >= 0
                     ? this.parseChoiceExcludeWords(this.cleanImportedCell(row[excludeColumnIndex], p))
                     : [];
+                const fixedChoiceData = this.getFixedChoiceDataFromRow(row, map, p);
+                if (q && fixedChoiceData) {
+                    const card = {
+                        q,
+                        a: fixedChoiceData.answer,
+                        fixedChoices: fixedChoiceData.choices,
+                        choiceKey: this.extractChoiceKeyFromQuestion(q),
+                        choiceExcludeWords,
+                        mastery: 0,
+                        totalTime: 0,
+                        attempts: 0,
+                        starred: false,
+                        lastStudied: null
+                    };
+                    if (choiceGroup) card.choiceGroup = choiceGroup;
+                    deck.push(card);
+                    return;
+                }
                 if (this.hasClozeText(q)) {
                     deck.push(...this.createClozeCards(q, p, { choiceGroup, choiceExcludeWords }));
                     return;
@@ -4623,7 +5024,8 @@
                     .slice(1)
                     .filter((cell, offset) => {
                         const cellIndex = offset + 1;
-                        return cellIndex !== groupColumnIndex && cellIndex !== excludeColumnIndex;
+                        return cellIndex !== groupColumnIndex
+                            && cellIndex !== excludeColumnIndex;
                     })
                     .map(cell => this.cleanImportedCell(cell, p))
                     .filter(Boolean)
@@ -4755,7 +5157,7 @@
             }
         },
 
-        updateCard(oldQ, newQ, newA) {
+        updateCard(oldQ, newQ, newA, newFixedChoices = undefined) {
             const deck = this.getCurrentDeck();
             const card = deck.find(c => c.q === oldQ);
             if (card) {
@@ -4771,6 +5173,17 @@
                 }
                 card.q = newQ;
                 card.a = newA;
+                if (newFixedChoices !== undefined) {
+                    const fixedChoices = parseFixedChoices(newFixedChoices);
+                    if (fixedChoices.length) {
+                        card.fixedChoices = fixedChoices;
+                    } else {
+                        delete card.fixedChoices;
+                        delete card.fixed_choices;
+                        delete card.choices;
+                        delete card.options;
+                    }
+                }
                 this.save();
                 return true;
             }
@@ -5071,6 +5484,42 @@
             .filter(Boolean);
     }
 
+    function stripFixedChoiceMarker(value) {
+        return String(value || '')
+            .replace(/^[\s\u3000]*(?:[①②③④⑤⑥⑦⑧⑨⑩]|[❶❷❸❹❺❻❼❽❾❿]|[（(]?[1-9１-９][)）]?|[A-Da-dＡ-Ｄａ-ｄ])[\s\u3000、，.．:：)）-]*/u, '')
+            .trim();
+    }
+
+    function parseFixedChoices(value) {
+        if (Array.isArray(value)) {
+            return [...new Set(value.map(item => stripFixedChoiceMarker(item)).filter(Boolean))];
+        }
+        const text = String(value || '').replace(/\r\n?/g, '\n').trim();
+        if (!text) return [];
+        const markerMatches = [...text.matchAll(/[①②③④⑤⑥⑦⑧⑨⑩]/g)];
+        if (markerMatches.length >= 2) {
+            return [...new Set(markerMatches.map((match, index) => {
+                const start = match.index + match[0].length;
+                const end = markerMatches[index + 1]?.index ?? text.length;
+                return stripFixedChoiceMarker(text.slice(start, end));
+            }).filter(Boolean))];
+        }
+        return [...new Set(text.split(/[|｜\n]+/g).map(item => stripFixedChoiceMarker(item)).filter(Boolean))];
+    }
+
+    function normalizeFixedChoiceAnswer(value) {
+        return stripFixedChoiceMarker(value)
+            .replace(/[​﻿]/g, '')
+            .replace(/\s+/g, '')
+            .trim()
+            .toLowerCase();
+    }
+
+    function getCardFixedChoices(card) {
+        if (!card || typeof card !== 'object') return [];
+        return parseFixedChoices(card.fixedChoices || card.fixed_choices || card.choices || card.options || []);
+    }
+
     function getCardChoiceKey(card) {
         if (!card || typeof card !== 'object') return '';
         return normalizeChoiceTerm(card.choiceKey || card.choice_key || card.q || '');
@@ -5122,6 +5571,29 @@
     }
 
     function buildAnswerChoices(deck, currentCard, maxChoices = 4) {
+        const fixedChoices = getCardFixedChoices(currentCard);
+        if (fixedChoices.length >= 2) {
+            const answer = String(currentCard?.a || '').trim();
+            const answerNorm = normalizeFixedChoiceAnswer(answer);
+            const list = [...fixedChoices];
+            if (answer && !list.some(choice => normalizeFixedChoiceAnswer(choice) === answerNorm)) {
+                list.push(answer);
+            }
+            const fixedChoiceCards = list
+                .filter(Boolean)
+                .map((choice, index) => {
+                    const isCorrect = normalizeFixedChoiceAnswer(choice) === answerNorm;
+                    return {
+                        q: isCorrect ? currentCard.q : `${currentCard.q}\n__fixed_choice_${index}`,
+                        a: choice,
+                        fixedChoice: true
+                    };
+                });
+            if (fixedChoiceCards.some(choice => String(choice.q || '') === String(currentCard.q || ''))) {
+                return shuffleInPlace(fixedChoiceCards);
+            }
+        }
+
         const choices = [currentCard];
         if (!Array.isArray(deck) || !currentCard || deck.length <= 1) return choices;
 
@@ -5201,8 +5673,15 @@
         },
         addClass(el, className, duration = 300) {
             if (!this.enabled() || !el) return;
+            if (!el.__fxClassTimers) el.__fxClassTimers = {};
+            if (el.__fxClassTimers[className]) clearTimeout(el.__fxClassTimers[className]);
+            el.classList.remove(className);
+            void el.offsetWidth;
             el.classList.add(className);
-            setTimeout(() => el.classList.remove(className), duration);
+            el.__fxClassTimers[className] = setTimeout(() => {
+                el.classList.remove(className);
+                delete el.__fxClassTimers[className];
+            }, duration);
         },
         monsterHitScale(options = {}) {
             const damage = Math.max(0, Number(options.damage) || 0);
@@ -5249,12 +5728,18 @@
             this.prepareMonsterMotion(el, options);
             this.addClass(el, 'monster-lunge', 340);
         },
+        superComboImpact(el, options = {}) {
+            if (!this.enabled() || !el) return;
+            const scale = Math.max(1.8, this.monsterHitScale(options) * 1.28);
+            this.prepareMonsterMotion(el, { ...options, scale });
+            this.addClass(el, 'super-impact-hit', 680);
+        },
         shakeScreen(strong = false) {
             this.addClass(document.body, strong ? 'shake-heavy' : 'shake', strong ? 420 : 300);
         },
         resetMonsterState(el) {
             if (!el) return;
-            el.classList.remove('state-enraged', 'state-wounded', 'state-defeated', 'finisher-decay', 'hit-anim', 'critical-hit', 'combo-hit', 'monster-lunge');
+            el.classList.remove('state-enraged', 'state-wounded', 'state-defeated', 'finisher-decay', 'hit-anim', 'critical-hit', 'combo-hit', 'monster-lunge', 'super-impact-hit');
             el.style.opacity = '';
             el.style.removeProperty('--monster-hit-x');
             el.style.removeProperty('--monster-lunge-y');
@@ -5412,7 +5897,7 @@
             if (!field) return;
             if (!layer) return;
 
-            el.classList.remove('state-defeated', 'hit-anim', 'critical-hit', 'combo-hit', 'monster-lunge');
+            el.classList.remove('state-defeated', 'hit-anim', 'critical-hit', 'combo-hit', 'monster-lunge', 'super-impact-hit');
             el.classList.add('finisher-decay');
 
             layer.querySelectorAll('.monster-piece').forEach(piece => piece.remove());
@@ -6253,6 +6738,8 @@
                 if (choiceExcludeWords.length) item.choiceExcludeWords = choiceExcludeWords;
                 const choiceGroup = getCardChoiceGroup(card);
                 if (choiceGroup) item.choiceGroup = choiceGroup;
+                const fixedChoices = getCardFixedChoices(card);
+                if (fixedChoices.length) item.fixedChoices = fixedChoices;
                 return item;
             }).filter(item => item.q && item.a);
             if (items.length !== settings.questionCount) {
@@ -7402,7 +7889,7 @@
             const monster = document.getElementById('friend-monster');
             if (monster) {
                 if (!monster.textContent.trim() && !monster.querySelector('img')) monster.textContent = '👹';
-                monster.classList.remove('state-enraged', 'state-wounded', 'state-defeated', 'friend-victory', 'friend-defeat', 'hit-anim', 'critical-hit', 'combo-hit', 'monster-lunge');
+                monster.classList.remove('state-enraged', 'state-wounded', 'state-defeated', 'friend-victory', 'friend-defeat', 'hit-anim', 'critical-hit', 'combo-hit', 'monster-lunge', 'super-impact-hit');
             }
             const layer = document.getElementById('friend-fx-layer');
             if (layer) layer.innerHTML = '';
@@ -8998,7 +9485,7 @@
             Snd.superCombo();
             if (!willFinish) FX.flash('critical');
             FX.vibrate(130);
-            FX.strongHitMonster(monster, { critical: true, combo: true });
+            FX.superComboImpact(monster, { damage: totalDamage, baseDamage: Game.atk });
             FX.damagePopup('field-area', `TOTAL -${totalDamage}`, { superTotal: true });
             if (willFinish) {
                 Snd.finisher();
@@ -9414,10 +9901,15 @@
             showDmg(true, `-${Game.dmg}`, false, false);
 
             FX.monsterAttackLunge(document.getElementById('monster'), { damage: Game.dmg, baseDamage: Game.dmg });
-            setTimeout(() => {
+            const shakeAfterMonsterLunge = () => {
                 if (!isCurrentBattle(battleToken)) return;
                 FX.shakeScreen(true);
-            }, 110);
+            };
+            if (typeof requestAnimationFrame === 'function') {
+                requestAnimationFrame(shakeAfterMonsterLunge);
+            } else {
+                setTimeout(shakeAfterMonsterLunge, 16);
+            }
 
             // バトル中のオーバーレイ表示（簡易版）
             setTimeout(() => {
@@ -9452,6 +9944,23 @@
         });
     }
 
+    function playResultSoundWhenVisible(win) {
+        const play = () => {
+            const resultView = document.getElementById('view-result');
+            if (!resultView || !resultView.classList.contains('active')) return;
+            if (win) {
+                Snd.win();
+            } else {
+                Snd.lose();
+            }
+        };
+        if (typeof requestAnimationFrame === 'function') {
+            requestAnimationFrame(() => setTimeout(play, 24));
+        } else {
+            setTimeout(play, 40);
+        }
+    }
+
     function finishBattle(win) {
         Game.battleActive = false;
         Game.battleToken++;
@@ -9462,13 +9971,6 @@
         const editView = document.getElementById('view-edit');
         if (overlay) overlay.classList.remove('active');
         if (editView) editView.classList.remove('active');
-
-        // 勝敗に応じた効果音
-        if (win) {
-            Snd.win();
-        } else {
-            Snd.lose();
-        }
 
         // 経過時間の計算（ミリ秒単位）
         const elapsedMs = Date.now() - Game.startTime;
@@ -9483,6 +9985,7 @@
         document.getElementById('res-msg').innerText = win ? '🎉 勝利！' : '💀 敗北...';
         document.getElementById('res-msg').style.color = win ? 'var(--success)' : 'var(--danger)';
         document.getElementById('res-msg').style.display = 'block'; // 確実に表示
+        playResultSoundWhenVisible(win);
 
         // 統計
         document.getElementById('res-cor').innerText = Game.correct;
@@ -9698,11 +10201,56 @@
         const item = overlayList[overlayIndex];
         document.getElementById('ov-q').innerText = item.q;
         document.getElementById('ov-a').innerText = item.a;
+        updateOverlayFixedChoices(item);
 
         document.getElementById('btn-ov-prev').disabled = (overlayIndex === 0);
         document.getElementById('btn-ov-next-item').disabled = (overlayIndex === overlayList.length - 1);
 
         updateOverlayStar();
+    }
+
+    function updateOverlayFixedChoices(item) {
+        const section = document.getElementById('ov-choice-section');
+        const container = document.getElementById('ov-choices');
+        if (!section || !container) return;
+
+        const choices = getCardFixedChoices(item);
+        container.innerHTML = '';
+        if (!choices.length) {
+            section.style.display = 'none';
+            return;
+        }
+
+        const answerKey = normalizeFixedChoiceAnswer(item.a);
+        const labels = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩'];
+        section.style.display = 'block';
+
+        const list = document.createElement('div');
+        list.className = 'fixed-choice-list';
+        choices.forEach((choice, index) => {
+            const row = document.createElement('div');
+            const isCorrect = normalizeFixedChoiceAnswer(choice) === answerKey;
+            row.className = `fixed-choice-item${isCorrect ? ' correct' : ''}`;
+
+            const label = document.createElement('span');
+            label.className = 'fixed-choice-index';
+            label.textContent = labels[index] || `${index + 1}.`;
+
+            const text = document.createElement('span');
+            text.textContent = choice;
+
+            row.appendChild(label);
+            row.appendChild(text);
+            if (isCorrect) {
+                const badge = document.createElement('span');
+                badge.className = 'fixed-choice-correct-label';
+                badge.textContent = '正解';
+                row.appendChild(badge);
+            }
+            list.appendChild(row);
+        });
+
+        container.appendChild(list);
     }
 
     function moveWordDetail(step) {
@@ -10239,6 +10787,13 @@
         editingCard = overlayList[overlayIndex];
         document.getElementById('edit-q').value = editingCard.q;
         document.getElementById('edit-a').value = editingCard.a;
+        const fixedChoices = getCardFixedChoices(editingCard);
+        const choiceSection = document.getElementById('edit-choice-section');
+        const choiceInput = document.getElementById('edit-choices');
+        if (choiceSection && choiceInput) {
+            choiceSection.style.display = fixedChoices.length ? 'block' : 'none';
+            choiceInput.value = fixedChoices.join('\n');
+        }
         document.getElementById('view-overlay').classList.remove('active');
         document.getElementById('view-edit').classList.add('active');
     }
@@ -10252,7 +10807,17 @@
             return;
         }
 
-        if (DB.updateCard(editingCard.q, newQ, newA)) {
+        const choiceSection = document.getElementById('edit-choice-section');
+        const choiceInput = document.getElementById('edit-choices');
+        const shouldUpdateChoices = choiceSection && choiceInput && choiceSection.style.display !== 'none';
+        const newFixedChoices = shouldUpdateChoices ? parseFixedChoices(choiceInput.value) : undefined;
+
+        if (shouldUpdateChoices && newFixedChoices.length && !newFixedChoices.some(choice => normalizeFixedChoiceAnswer(choice) === normalizeFixedChoiceAnswer(newA))) {
+            alert("解答が選択肢に含まれていません。選択肢欄に正解も含めてください。");
+            return;
+        }
+
+        if (DB.updateCard(editingCard.q, newQ, newA, newFixedChoices)) {
             alert("保存しました");
             cancelEdit();
             if (overlayMode === 'wordbook') renderWordBook();
@@ -10944,7 +11509,7 @@
                     failedText);
             } else {
                 alert(`❌ ZIP内のデッキを読み込めませんでした。\n\n` +
-                    `表形式は1列目を問題、2列目以降を解答にしてください。choice_exclude_words / choice_group列がある場合は選択肢除外情報として扱います。\n` +
+                    `表形式は1列目を問題、2列目以降を解答にしてください。固定4択は choice1〜choice4 と correct、または choices と answer 列を使えます。choice_exclude_words / choice_group列がある場合は選択肢除外情報として扱います。\n` +
                     `対応形式: txt / csv / tsv / xlsx / ods` +
                     failedText);
             }
@@ -11021,7 +11586,7 @@
                             DB.d.selectedDeck = Object.keys(DB.d.decks)[0];
                         }
                     } else {
-                        alert("読込失敗\n\n表形式は1列目を問題、2列目以降を解答にしてください。choice_exclude_words / choice_group列がある場合は選択肢除外情報として扱います。\n対応形式: txt / csv / tsv / xlsx / ods");
+                        alert("読込失敗\n\n表形式は1列目を問題、2列目以降を解答にしてください。固定4択は choice1〜choice4 と correct、または choices と answer 列を使えます。choice_exclude_words / choice_group列がある場合は選択肢除外情報として扱います。\n対応形式: txt / csv / tsv / xlsx / ods");
                     }
                     e.target.value = '';
                     goHome();

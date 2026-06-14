@@ -24,6 +24,9 @@ import java.io.OutputStream
 class MainActivity : AppCompatActivity() {
 
     private var fileUploadCallback: ValueCallback<Array<Uri>>? = null
+    private var pendingSaveOutputStream: OutputStream? = null
+    private var pendingSaveUri: Uri? = null
+    private var pendingSaveFileName: String? = null
 
     private val fileChooserLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -40,6 +43,26 @@ class MainActivity : AppCompatActivity() {
         @JavascriptInterface
         fun saveFile(base64Data: String, fileName: String, mimeType: String) {
             saveBase64ToDownloads(base64Data, fileName, mimeType)
+        }
+
+        @JavascriptInterface
+        fun beginSaveFile(fileName: String, mimeType: String): Boolean {
+            return beginChunkedSave(fileName, mimeType)
+        }
+
+        @JavascriptInterface
+        fun appendSaveFileChunk(base64Data: String): Boolean {
+            return appendChunkedSave(base64Data)
+        }
+
+        @JavascriptInterface
+        fun finishSaveFile(): Boolean {
+            return finishChunkedSave()
+        }
+
+        @JavascriptInterface
+        fun cancelSaveFile() {
+            cancelChunkedSave()
         }
 
         @JavascriptInterface
@@ -114,6 +137,90 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
+    }
+
+    private fun beginChunkedSave(fileName: String, mimeType: String): Boolean {
+        return try {
+            cancelChunkedSave()
+
+            val contentValues = ContentValues().apply {
+                put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+                put(MediaStore.MediaColumns.MIME_TYPE, mimeType)
+                put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+            }
+
+            val resolver = applicationContext.contentResolver
+            val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+                ?: throw Exception("URI is null")
+            val outputStream = resolver.openOutputStream(uri)
+                ?: throw Exception("OutputStream is null")
+
+            pendingSaveUri = uri
+            pendingSaveOutputStream = outputStream
+            pendingSaveFileName = fileName
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            runOnUiThread {
+                Toast.makeText(this, "保存開始失敗: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+            false
+        }
+    }
+
+    private fun appendChunkedSave(base64Data: String): Boolean {
+        return try {
+            val outputStream = pendingSaveOutputStream ?: throw Exception("保存先が開かれていません")
+            val cleanBase64 = if (base64Data.contains(",")) {
+                base64Data.substring(base64Data.indexOf(",") + 1)
+            } else {
+                base64Data
+            }
+            val bytes = Base64.decode(cleanBase64, Base64.DEFAULT)
+            outputStream.write(bytes)
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    private fun finishChunkedSave(): Boolean {
+        return try {
+            pendingSaveOutputStream?.flush()
+            pendingSaveOutputStream?.close()
+            val fileName = pendingSaveFileName ?: "backup.json"
+            pendingSaveOutputStream = null
+            pendingSaveUri = null
+            pendingSaveFileName = null
+            runOnUiThread {
+                Toast.makeText(this, "保存しました: $fileName", Toast.LENGTH_LONG).show()
+            }
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            runOnUiThread {
+                Toast.makeText(this, "保存完了失敗: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+            false
+        }
+    }
+
+    private fun cancelChunkedSave() {
+        try {
+            pendingSaveOutputStream?.close()
+        } catch (_: Exception) {
+        }
+        val uri = pendingSaveUri
+        if (uri != null) {
+            try {
+                applicationContext.contentResolver.delete(uri, null, null)
+            } catch (_: Exception) {
+            }
+        }
+        pendingSaveOutputStream = null
+        pendingSaveUri = null
+        pendingSaveFileName = null
     }
 
     // MediaStoreを使ってファイルを保存する

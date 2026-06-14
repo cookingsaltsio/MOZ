@@ -22,6 +22,8 @@ https://cookingsaltsio.github.io/MOZ/tools/deck_builder_lite/
 - `choice_exclude_words` による紛らわしい選択肢の除外
 - `choice_group` による同義語グループ除外
 
+MOZ本体は固定4択の選択肢ごとの解説、問題全体の解説、出典も読み込めます。このLiteツールは基本列の作成に絞っているため、解説列を入れたい場合は、出力後に表計算ソフトで `choice1_explanation` などの列を追加するか、MOZ本体の項目一覧から編集してください。
+
 画像問題は、現在のMOZ本体が非対応のため、このツールでも対応していません。
 
 ## 基本の画面
@@ -97,7 +99,7 @@ OFFにすると本文を直接編集できます。
 
 ## 固定4択カードの作成
 
-中国語検定などの過去問をコピーすると、選択肢番号が `1.`、`（１）`、`(1)`、`A.`、`Ⅰ` などになっていることがあります。
+番号付きの4択問題をコピーすると、選択肢番号が `1.`、`（１）`、`(1)`、`A.`、`Ⅰ` などになっていることがあります。
 
 4択モードでは、テキスト1に本文を貼り付け、`問題番号`、`4択番号`、`答え` を指定してカード化できます。
 
@@ -318,6 +320,8 @@ correct
 choice_exclude_words
 choice_group
 ```
+
+固定4択の解説列は出力しません。必要な場合は、出力後に `choice1_explanation` / `choice2_explanation` / `choice3_explanation` / `choice4_explanation` / `explanation` / `source` を追加してください。
 
 単語帳カードでは、`question` が問題、`answer` が解答です。
 

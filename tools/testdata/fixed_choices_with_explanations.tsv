@@ -1,0 +1,4 @@
+question	answer	choice1	choice2	choice3	choice4	correct	choice_exclude_words	choice_group	choice1_explanation	choice2_explanation	choice3_explanation	choice4_explanation	explanation	source
+空欄に入る最も自然な語を選んでください: 彼は責任を（　）した。	回避	回避	歓迎	保存	観察	1			責任や危険などを避けること。	相手を喜んで迎えること。	失われないように残すこと。	様子や変化を注意して見ること。	文脈上、責任を避ける意味が最も自然です。	例文データ
+空欄に入る最も自然な語を選んでください: 予定を（　）する。	延期	延長	延期	延命	延焼	2			期間や長さを伸ばすこと。	予定日や期限を先へずらすこと。	命を長らえさせること。	火が燃え広がること。	予定と結びつく場合は、先送りの意味が合います。	
+空欄に入る最も自然な語を選んでください: 記録を（　）する。	保存	提出	比較	保存	散歩	3											

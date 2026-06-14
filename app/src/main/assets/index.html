@@ -1260,18 +1260,25 @@
             pointer-events: none;
             font-family: var(--font-game);
             font-size: clamp(3.1rem, 18vw, 9.2rem);
+            line-height: 0.88;
             font-weight: 900;
             color: #fffde7;
             letter-spacing: 0;
             text-align: center;
             text-shadow:
-                0 0 10px #fff,
-                0 0 24px #fff176,
-                0 0 42px #81d4fa,
+                0 0 10px #fff176,
+                0 0 22px #81d4fa,
+                0 0 34px rgba(255, 202, 40, 0.72),
                 4px 4px 0 #263238;
             white-space: nowrap;
-            transform: translate(-50%, -50%) scale(0.34);
-            animation: finisherTitleHold var(--finisher-title-duration, 3.2s) cubic-bezier(.16, 1.1, .24, 1) forwards;
+            opacity: 0;
+            transform: translate3d(-50%, -50%, 0) scale(0.34);
+            transform-origin: 50% 50%;
+            backface-visibility: hidden;
+            transform-style: preserve-3d;
+            contain: layout paint style;
+            will-change: transform, opacity;
+            animation: finisherTitleHold var(--finisher-title-duration, 3.2s) linear forwards;
         }
         .finisher-title .finisher-sub {
             font-size: clamp(0.85rem, 3.9vw, 1.55rem);
@@ -1496,11 +1503,15 @@
             100% { opacity: 0; transform: translate(-50%, -62%) scale(1.26); }
         }
         @keyframes finisherTitleHold {
-            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.28); }
-            15% { opacity: 1; transform: translate(-50%, -50%) scale(0.78); }
-            72% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
-            92% { opacity: 1; transform: translate(-50%, -50%) scale(1.22); }
-            100% { opacity: 0; transform: translate(-50%, -54%) scale(1.3); }
+            0% { opacity: 0; transform: translate3d(-50%, -48%, 0) scale(0.28) rotate(-1deg); }
+            8% { opacity: 1; transform: translate3d(-50.4%, -50.6%, 0) scale(0.72) rotate(0.7deg); }
+            22% { opacity: 1; transform: translate3d(-49.6%, -51.4%, 0) scale(0.94) rotate(-0.5deg); }
+            36% { opacity: 1; transform: translate3d(-50.3%, -52.1%, 0) scale(1.04) rotate(0.45deg); }
+            50% { opacity: 1; transform: translate3d(-49.8%, -52.8%, 0) scale(1.12) rotate(-0.35deg); }
+            64% { opacity: 1; transform: translate3d(-50.2%, -53.6%, 0) scale(1.18) rotate(0.28deg); }
+            78% { opacity: 1; transform: translate3d(-49.9%, -54.5%, 0) scale(1.24) rotate(-0.2deg); }
+            90% { opacity: 1; transform: translate3d(-50.1%, -55.4%, 0) scale(1.31) rotate(0.16deg); }
+            100% { opacity: 0; transform: translate3d(-50%, -57.5%, 0) scale(1.38) rotate(0deg); }
         }
 
         @keyframes floatUpHeal {
@@ -1567,7 +1578,10 @@
             border-radius: 4px;
             border-left: 3px solid var(--accent);
         }
-        .detail-content.answer { border-left-color: var(--success); }
+        .detail-content.question { border-left-color: var(--accent); }
+        .detail-content.answer { border-left-color: #26c6da; }
+        .detail-content.result { border-left-color: #ab47bc; }
+        .detail-content.user-answer { border-left-color: #ffb74d; }
         .detail-content.choices {
             border-left-color: var(--link);
             font-size: 1rem;
@@ -1605,6 +1619,38 @@
             font-size: 0.72rem;
             font-weight: 700;
             vertical-align: middle;
+        }
+        .fixed-choice-explanation {
+            margin: 6px 0 0 27px;
+            color: #d6e0e7;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+        .choice-explanation-toggle {
+            margin-top: 10px;
+            border: 1px solid rgba(66, 165, 245, 0.5);
+            border-radius: 4px;
+            background: rgba(66, 165, 245, 0.08);
+        }
+        .choice-explanation-toggle summary {
+            cursor: pointer;
+            padding: 9px 10px;
+            color: #90caf9;
+            font-weight: 700;
+        }
+        .choice-explanation-body {
+            padding: 0 10px 10px;
+        }
+        .card-note-block {
+            margin-top: 10px;
+            padding: 9px 10px;
+            border-left: 3px solid rgba(255, 202, 40, 0.9);
+            border-radius: 4px;
+            background: rgba(255, 202, 40, 0.08);
+            color: #f2f2f2;
+            white-space: pre-wrap;
+            line-height: 1.55;
         }
         .detail-content.editable { background: rgba(255, 255, 255, 0.1); cursor: text; user-select: text; }
 
@@ -3364,11 +3410,19 @@
             </div>
             <div class="detail-section">
                 <div class="detail-label">問題</div>
-                <div class="detail-content" id="ov-q">問題</div>
+                <div class="detail-content question" id="ov-q">問題</div>
             </div>
             <div class="detail-section" id="ov-answer-section">
                 <div class="detail-label">解答</div>
                 <div class="detail-content answer" id="ov-a">意味</div>
+            </div>
+            <div class="detail-section" id="ov-result-section" style="display:none;">
+                <div class="detail-label">判定</div>
+                <div class="detail-content result" id="ov-result"></div>
+            </div>
+            <div class="detail-section" id="ov-user-answer-section" style="display:none;">
+                <div class="detail-label">あなたの回答</div>
+                <div class="detail-content user-answer" id="ov-user-answer"></div>
             </div>
             <div class="detail-section" id="ov-choice-section" style="display:none;">
                 <div class="detail-label">選択肢</div>
@@ -3404,6 +3458,18 @@
             <div class="detail-section" id="edit-choice-section" style="display:none;">
                 <div class="detail-label">選択肢（1行に1つ）</div>
                 <textarea class="edit-textarea" id="edit-choices"></textarea>
+            </div>
+            <div class="detail-section" id="edit-choice-explanation-section" style="display:none;">
+                <div class="detail-label">選択肢の解説（---行で区切る）</div>
+                <textarea class="edit-textarea" id="edit-choice-explanations"></textarea>
+            </div>
+            <div class="detail-section" id="edit-card-explanation-section" style="display:none;">
+                <div class="detail-label">問題全体の解説</div>
+                <textarea class="edit-textarea" id="edit-card-explanation"></textarea>
+            </div>
+            <div class="detail-section" id="edit-source-section" style="display:none;">
+                <div class="detail-label">出典</div>
+                <textarea class="edit-textarea" id="edit-source"></textarea>
             </div>
         </div>
         <div style="display: flex; gap: 10px;">
@@ -3708,9 +3774,16 @@
     const IDB = {
         dbName: 'MonsterOboeruZeDB',
         storeName: 'appData',
-        version: 1,
+        deckStoreName: 'decks',
+        version: 2,
         db: null,
         useLocalStorage: false,
+
+        localStorageKey(storeName, key) {
+            return storeName === this.storeName
+                ? key
+                : `${this.dbName}:${storeName}:${key}`;
+        },
 
         async init() {
             return new Promise((resolve, reject) => {
@@ -3754,19 +3827,22 @@
                     if (!db.objectStoreNames.contains(this.storeName)) {
                         db.createObjectStore(this.storeName);
                     }
+                    if (!db.objectStoreNames.contains(this.deckStoreName)) {
+                        db.createObjectStore(this.deckStoreName);
+                    }
                 };
             });
         },
 
-        async get(key) {
+        async get(key, storeName = this.storeName) {
             if (!this.db && !this.useLocalStorage) await this.init();
             if (this.useLocalStorage) {
-                const raw = localStorage.getItem(key);
+                const raw = localStorage.getItem(this.localStorageKey(storeName, key));
                 return raw ? JSON.parse(raw) : null;
             }
             return new Promise((resolve, reject) => {
-                const transaction = this.db.transaction([this.storeName], 'readonly');
-                const store = transaction.objectStore(this.storeName);
+                const transaction = this.db.transaction([storeName], 'readonly');
+                const store = transaction.objectStore(storeName);
                 const request = store.get(key);
 
                 request.onsuccess = () => resolve(request.result);
@@ -3774,18 +3850,66 @@
             });
         },
 
-        async set(key, value) {
+        async set(key, value, storeName = this.storeName) {
             if (!this.db && !this.useLocalStorage) await this.init();
             if (this.useLocalStorage) {
-                localStorage.setItem(key, JSON.stringify(value));
+                localStorage.setItem(this.localStorageKey(storeName, key), JSON.stringify(value));
                 return;
             }
             return new Promise((resolve, reject) => {
-                const transaction = this.db.transaction([this.storeName], 'readwrite');
-                const store = transaction.objectStore(this.storeName);
+                const transaction = this.db.transaction([storeName], 'readwrite');
+                const store = transaction.objectStore(storeName);
                 const request = store.put(value, key);
 
                 request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        },
+
+        async delete(key, storeName = this.storeName) {
+            if (!this.db && !this.useLocalStorage) await this.init();
+            if (this.useLocalStorage) {
+                localStorage.removeItem(this.localStorageKey(storeName, key));
+                return;
+            }
+            return new Promise((resolve, reject) => {
+                const transaction = this.db.transaction([storeName], 'readwrite');
+                const store = transaction.objectStore(storeName);
+                const request = store.delete(key);
+
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        },
+
+        async getAll(storeName = this.storeName) {
+            if (!this.db && !this.useLocalStorage) await this.init();
+            const entries = {};
+            if (this.useLocalStorage) {
+                const prefix = `${this.dbName}:${storeName}:`;
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (!key || !key.startsWith(prefix)) continue;
+                    const raw = localStorage.getItem(key);
+                    if (!raw) continue;
+                    entries[key.slice(prefix.length)] = JSON.parse(raw);
+                }
+                return entries;
+            }
+            return new Promise((resolve, reject) => {
+                const transaction = this.db.transaction([storeName], 'readonly');
+                const store = transaction.objectStore(storeName);
+                const request = store.openCursor();
+
+                request.onsuccess = (event) => {
+                    const cursor = event.target.result;
+                    if (!cursor) {
+                        resolve(entries);
+                        return;
+                    }
+                    entries[cursor.key] = cursor.value;
+                    cursor.continue();
+                };
                 request.onerror = () => reject(request.error);
             });
         }
@@ -3796,6 +3920,44 @@
         saveTimerIsIdle: false,
         saveInFlight: false,
         savePending: false,
+        dirtyDecks: new Set(),
+        deletedDecks: new Set(),
+
+        markDeckDirty(deckName = this.d.selectedDeck) {
+            if (deckName) this.dirtyDecks.add(deckName);
+        },
+
+        markAllDecksDirty() {
+            Object.keys(this.d.decks || {}).forEach(deckName => this.dirtyDecks.add(deckName));
+        },
+
+        buildStoredData() {
+            const data = { ...this.d };
+            delete data.decks;
+            data.deckNames = Object.keys(this.d.decks || {});
+            data.storageMode = 'split-decks-v1';
+            return data;
+        },
+
+        getDecksFromStoredData(data) {
+            if (!data || typeof data !== 'object') return {};
+            if (data.deck && !data.decks) return { 'default': data.deck };
+            return data.decks || {};
+        },
+
+        async persistSplitData(data) {
+            const decks = this.getDecksFromStoredData(data);
+            const meta = { ...(data || {}) };
+            delete meta.decks;
+            delete meta.deck;
+            meta.deckNames = Object.keys(decks);
+            meta.storageMode = 'split-decks-v1';
+
+            await IDB.set(APP_DATA_KEY, meta);
+            for (const [deckName, deck] of Object.entries(decks)) {
+                await IDB.set(deckName, deck, IDB.deckStoreName);
+            }
+        },
 
         cancelScheduledSave() {
             if (!this.saveTimer) return;
@@ -3953,32 +4115,39 @@
                 card.choiceExcludeWords || card.choice_exclude_words || card.choiceExcludes || card.excludeWords || []
             );
             card.fixedChoices = this.parseFixedChoices(card.fixedChoices || card.fixed_choices || card.choices || card.options || []);
+            card.fixedChoiceExplanations = this.parseFixedChoiceExplanations(
+                card.fixedChoiceExplanations || card.fixed_choice_explanations || card.choiceExplanations || card.choice_explanations || []
+            );
+            card.explanation = String(card.explanation || card.note || card.commentary || '').trim();
+            card.source = String(card.source || card.reference || '').trim();
             if (!card.choiceGroup && card.choice_group) card.choiceGroup = card.choice_group;
             if (card.choiceGroup) card.choiceGroup = String(card.choiceGroup).trim();
+        },
+
+        parseFixedChoiceExplanations(value) {
+            if (Array.isArray(value)) {
+                return value.map(item => String(item || '').trim());
+            }
+            const text = String(value || '').replace(/\r\n?/g, '\n').trim();
+            if (!text) return [];
+            return text.split(/[|｜\n]+/g).map(item => String(item || '').trim());
         },
 
         buildCardRecords() {
             const records = {};
             Object.entries(this.d.decks || {}).forEach(([deckName, deck]) => {
-                records[deckName] = deck.map(card => {
-                    const record = {
-                        q: card.q,
-                        mastery: card.mastery || 0,
-                        totalTime: card.totalTime || 0,
-                        attempts: card.attempts || 0,
-                        starred: !!card.starred,
-                        lastStudied: card.lastStudied || null
-                    };
-                    const choiceKey = this.extractChoiceKeyFromQuestion(card.choiceKey || card.q || '');
-                    const choiceExcludeWords = this.parseChoiceExcludeWords(card.choiceExcludeWords || card.choice_exclude_words || []);
-                    const choiceGroup = String(card.choiceGroup || card.choice_group || '').trim();
-                    const fixedChoices = this.parseFixedChoices(card.fixedChoices || card.fixed_choices || []);
-                    if (choiceKey) record.choiceKey = choiceKey;
-                    if (choiceExcludeWords.length) record.choiceExcludeWords = choiceExcludeWords;
-                    if (choiceGroup) record.choiceGroup = choiceGroup;
-                    if (fixedChoices.length) record.fixedChoices = fixedChoices;
+                const deckRecords = deck.map(card => {
+                    const hasRecord = this.hasLocalStudyRecord(card) || !!card.starred;
+                    if (!hasRecord) return null;
+                    const record = { q: card.q };
+                    if (card.mastery) record.mastery = card.mastery;
+                    if (card.totalTime) record.totalTime = card.totalTime;
+                    if (card.attempts) record.attempts = card.attempts;
+                    if (card.starred) record.starred = true;
+                    if (card.lastStudied) record.lastStudied = card.lastStudied;
                     return record;
-                });
+                }).filter(Boolean);
+                if (deckRecords.length) records[deckName] = deckRecords;
             });
             return records;
         },
@@ -4006,6 +4175,7 @@
                     if (record.choiceGroup !== undefined) card.choiceGroup = String(record.choiceGroup || '').trim();
                     if (record.fixedChoices !== undefined) card.fixedChoices = this.parseFixedChoices(record.fixedChoices);
                 });
+                this.markDeckDirty(deckName);
             });
         },
 
@@ -4030,11 +4200,20 @@
                         data = null;
                     }
                     if (data) {
-                        await IDB.set(APP_DATA_KEY, data);
+                        await this.persistSplitData(data);
                         console.log(`保存データを新しい保存キーへ移行しました: ${legacyKey}`);
                         break;
                     }
                 }
+            }
+
+            let storedDecks = {};
+            let hasStoredDecks = false;
+            try {
+                storedDecks = await IDB.getAll(IDB.deckStoreName);
+                hasStoredDecks = Object.keys(storedDecks).length > 0;
+            } catch (e) {
+                console.warn('分割保存デッキの読み込みに失敗しました。旧形式データを使用します。', e);
             }
 
             // IndexedDBにデータがない場合、LocalStorageから移行
@@ -4073,8 +4252,8 @@
 
                     data = JSON.parse(dataStr);
 
-                    // IndexedDBに保存
-                    await IDB.set(APP_DATA_KEY, data);
+                    // IndexedDBに分割保存
+                    await this.persistSplitData(data);
                     console.log('✅ IndexedDBへの移行完了');
 
                     // LocalStorageをクリア（容量節約）
@@ -4089,7 +4268,10 @@
                 try {
                     console.log('Loaded decks:', Object.keys(data.decks || {}).length);
                     // 旧形式からのマイグレーション
-                    if (data.deck && !data.decks) {
+                    if (hasStoredDecks) {
+                        this.d.decks = storedDecks;
+                        this.d.selectedDeck = data.selectedDeck || null;
+                    } else if (data.deck && !data.decks) {
                         this.d.decks = { 'default': data.deck };
                         this.d.selectedDeck = 'default';
                     } else {
@@ -4146,10 +4328,18 @@
                 } catch (e) {
                     console.error('Failed to load data:', e);
                 }
+            } else if (hasStoredDecks) {
+                this.d.decks = storedDecks;
+                this.d.selectedDeck = Object.keys(storedDecks)[0] || null;
             }
             this.ensureDataShape();
             this.loadSettings();
             this.updateUI();
+
+            if (data && !hasStoredDecks && Object.keys(this.d.decks || {}).length > 0) {
+                this.markAllDecksDirty();
+                this.scheduleSave(1200);
+            }
         },
 
         async save(options = {}) {
@@ -4165,13 +4355,28 @@
             this.savePending = false;
             try {
                 if (!opts.skipSizeLog) {
-                    const dataSize = new Blob([JSON.stringify(this.d)]).size;
-                    const dataSizeMB = (dataSize / (1024 * 1024)).toFixed(2);
-                    console.log(`💾 データ保存: ${dataSizeMB}MB`);
+                    const deckCount = Object.keys(this.d.decks || {}).length;
+                    const cardCount = Object.values(this.d.decks || {}).reduce((sum, deck) => sum + (Array.isArray(deck) ? deck.length : 0), 0);
+                    console.log(`💾 データ保存: ${deckCount}デッキ / ${cardCount}カード`);
                 }
 
-                // IndexedDBに保存（圧縮不要）
-                await IDB.set(APP_DATA_KEY, this.d);
+                const deletedDecks = Array.from(this.deletedDecks);
+                const decksToSave = opts.saveAllDecks
+                    ? Object.keys(this.d.decks || {})
+                    : Array.from(this.dirtyDecks).filter(deckName => this.d.decks && this.d.decks[deckName]);
+
+                // メタ情報は小さく保ち、デッキ本体は別ストアへ保存する
+                await IDB.set(APP_DATA_KEY, this.buildStoredData());
+
+                for (const deckName of deletedDecks) {
+                    await IDB.delete(deckName, IDB.deckStoreName);
+                    this.deletedDecks.delete(deckName);
+                }
+
+                for (const deckName of decksToSave) {
+                    await IDB.set(deckName, this.d.decks[deckName], IDB.deckStoreName);
+                    this.dirtyDecks.delete(deckName);
+                }
 
                 return true;
             } catch (e) {
@@ -4400,6 +4605,7 @@
             const examChoiceDeck = this.parseExamChoiceText(normalizedTxt);
             if (examChoiceDeck.length > 0) {
                 this.d.decks[deckName] = examChoiceDeck;
+                this.markDeckDirty(deckName);
                 if (!this.d.selectedDeck) this.d.selectedDeck = deckName;
                 this.save();
                 this.updateUI();
@@ -4502,6 +4708,7 @@
 
             if (deck.length > 0) {
                 this.d.decks[deckName] = deck;
+                this.markDeckDirty(deckName);
                 // デッキが未選択なら、今読み込んだものを選択状態にする
                 if (!this.d.selectedDeck) this.d.selectedDeck = deckName;
 
@@ -4660,13 +4867,49 @@
             return match ? parseInt(match[1], 10) : 0;
         },
 
-        getFixedChoiceColumnIndexes(headerRow) {
+        getFixedChoiceColumnDetails(headerRow) {
             if (!headerRow || headerRow.length < 3) return [];
             return headerRow
                 .map((cell, index) => ({ index, number: this.getFixedChoiceNumberFromHeader(cell) }))
                 .filter(item => item.index > 0 && item.number > 0)
-                .sort((a, b) => a.number - b.number)
-                .map(item => item.index);
+                .sort((a, b) => a.number - b.number);
+        },
+
+        getFixedChoiceColumnIndexes(headerRow) {
+            return this.getFixedChoiceColumnDetails(headerRow).map(item => item.index);
+        },
+
+        getFixedChoiceExplanationNumberFromHeader(value) {
+            const name = this.normalizeDelimitedHeader(value);
+            const direct = {
+                choice1_explanation: 1, choice_1_explanation: 1, choice1_note: 1, choice_1_note: 1, option1_explanation: 1, option_1_explanation: 1, 選択肢1解説: 1, 選択肢1_解説: 1,
+                choice2_explanation: 2, choice_2_explanation: 2, choice2_note: 2, choice_2_note: 2, option2_explanation: 2, option_2_explanation: 2, 選択肢2解説: 2, 選択肢2_解説: 2,
+                choice3_explanation: 3, choice_3_explanation: 3, choice3_note: 3, choice_3_note: 3, option3_explanation: 3, option_3_explanation: 3, 選択肢3解説: 3, 選択肢3_解説: 3,
+                choice4_explanation: 4, choice_4_explanation: 4, choice4_note: 4, choice_4_note: 4, option4_explanation: 4, option_4_explanation: 4, 選択肢4解説: 4, 選択肢4_解説: 4
+            };
+            if (direct[name]) return direct[name];
+            const match = name.match(/^(?:choice|option|choices|候補|選択肢|選択)_?([1-9])_?(?:explanation|note|解説|説明)$/);
+            return match ? parseInt(match[1], 10) : 0;
+        },
+
+        getFixedChoiceExplanationColumnDetails(headerRow) {
+            if (!headerRow || headerRow.length < 3) return [];
+            return headerRow
+                .map((cell, index) => ({ index, number: this.getFixedChoiceExplanationNumberFromHeader(cell) }))
+                .filter(item => item.index > 0 && item.number > 0)
+                .sort((a, b) => a.number - b.number);
+        },
+
+        getGeneralExplanationColumnIndex(headerRow) {
+            if (!headerRow || headerRow.length < 2) return -1;
+            const names = ['explanation', 'note', 'notes', 'commentary', 'comment', '補足', '解説', '説明', '問題解説', '全体解説'];
+            return headerRow.findIndex((cell, index) => index > 0 && names.includes(this.normalizeDelimitedHeader(cell)));
+        },
+
+        getSourceColumnIndex(headerRow) {
+            if (!headerRow || headerRow.length < 2) return -1;
+            const names = ['source', 'reference', 'ref', '出典', '参照元', '資料', 'url'];
+            return headerRow.findIndex((cell, index) => index > 0 && names.includes(this.normalizeDelimitedHeader(cell)));
         },
 
         getFixedChoicesColumnIndex(headerRow) {
@@ -4712,11 +4955,19 @@
             const fixedChoiceColumnIndexes = hasHeader
                 ? this.getFixedChoiceColumnIndexes(firstRow)
                 : (maxColumns >= 6 ? [1, 2, 3, 4] : []);
+            const fixedChoiceColumnDetails = hasHeader
+                ? this.getFixedChoiceColumnDetails(firstRow)
+                : fixedChoiceColumnIndexes.map((index, i) => ({ index, number: i + 1 }));
+            const fixedChoiceExplanationColumnDetails = hasHeader
+                ? this.getFixedChoiceExplanationColumnDetails(firstRow)
+                : [];
             const choicesColumnIndex = hasHeader ? this.getFixedChoicesColumnIndex(firstRow) : -1;
             const correctColumnIndex = hasHeader
                 ? this.getCorrectColumnIndex(firstRow)
                 : (maxColumns >= 6 ? 5 : -1);
             const answerColumnIndex = hasHeader ? this.getAnswerColumnIndex(firstRow) : -1;
+            const explanationColumnIndex = hasHeader ? this.getGeneralExplanationColumnIndex(firstRow) : -1;
+            const sourceColumnIndex = hasHeader ? this.getSourceColumnIndex(firstRow) : -1;
             const hasFixedChoices = fixedChoiceColumnIndexes.length >= 2 || choicesColumnIndex >= 0;
             const groupColumnIndex = hasHeader
                 ? this.getChoiceGroupColumnIndex(firstRow)
@@ -4730,9 +4981,13 @@
                 groupColumnIndex,
                 excludeColumnIndex,
                 fixedChoiceColumnIndexes,
+                fixedChoiceColumnDetails,
+                fixedChoiceExplanationColumnDetails,
                 choicesColumnIndex,
                 correctColumnIndex,
                 answerColumnIndex,
+                explanationColumnIndex,
+                sourceColumnIndex,
                 hasFixedChoices
             };
         },
@@ -4865,11 +5120,21 @@
             if (!row || !map || !map.hasFixedChoices) return null;
             const choices = map.choicesColumnIndex >= 0
                 ? this.parseFixedChoices(this.cleanImportedCell(row[map.choicesColumnIndex], parser))
-                : this.parseFixedChoices(map.fixedChoiceColumnIndexes.map(index => this.cleanImportedCell(row[index], parser)));
+                : this.parseFixedChoices(map.fixedChoiceColumnDetails.map(item => this.cleanImportedCell(row[item.index], parser)));
+            const explanationsByNumber = new Map();
+            (map.fixedChoiceExplanationColumnDetails || []).forEach(item => {
+                explanationsByNumber.set(item.number, this.cleanImportedCell(row[item.index], parser));
+            });
+            const explanations = (map.choicesColumnIndex >= 0
+                ? choices.map((_, index) => explanationsByNumber.get(index + 1) || '')
+                : (map.fixedChoiceColumnDetails || []).map(item => explanationsByNumber.get(item.number) || '')
+            ).slice(0, choices.length);
             const correctRaw = map.correctColumnIndex >= 0 ? this.cleanImportedCell(row[map.correctColumnIndex], parser) : '';
             const answerRaw = map.answerColumnIndex >= 0 ? this.cleanImportedCell(row[map.answerColumnIndex], parser) : '';
             const answer = this.resolveFixedChoiceAnswer(choices, correctRaw, answerRaw);
-            return choices.length >= 2 && answer ? { choices, answer } : null;
+            const explanation = map.explanationColumnIndex >= 0 ? this.cleanImportedCell(row[map.explanationColumnIndex], parser) : '';
+            const source = map.sourceColumnIndex >= 0 ? this.cleanImportedCell(row[map.sourceColumnIndex], parser) : '';
+            return choices.length >= 2 && answer ? { choices, answer, explanations, explanation, source } : null;
         },
 
         parseQuestionNumberMarker(marker) {
@@ -5004,6 +5269,9 @@
                         q,
                         a: fixedChoiceData.answer,
                         fixedChoices: fixedChoiceData.choices,
+                        fixedChoiceExplanations: fixedChoiceData.explanations || [],
+                        explanation: fixedChoiceData.explanation || '',
+                        source: fixedChoiceData.source || '',
                         choiceKey: this.extractChoiceKeyFromQuestion(q),
                         choiceExcludeWords,
                         mastery: 0,
@@ -5049,6 +5317,7 @@
 
             if (deck.length > 0) {
                 this.d.decks[deckName] = deck;
+                this.markDeckDirty(deckName);
                 if (!this.d.selectedDeck) this.d.selectedDeck = deckName;
                 this.save();
                 this.updateUI();
@@ -5118,6 +5387,8 @@
 
         removeDeck(deckName) {
             delete this.d.decks[deckName];
+            this.dirtyDecks.delete(deckName);
+            this.deletedDecks.add(deckName);
             if (this.d.selectedDeck === deckName) {
                 this.d.selectedDeck = Object.keys(this.d.decks)[0] || null;
             }
@@ -5157,7 +5428,7 @@
             }
         },
 
-        updateCard(oldQ, newQ, newA, newFixedChoices = undefined) {
+        updateCard(oldQ, newQ, newA, newFixedChoices = undefined, fixedChoiceMeta = undefined) {
             const deck = this.getCurrentDeck();
             const card = deck.find(c => c.q === oldQ);
             if (card) {
@@ -5184,6 +5455,20 @@
                         delete card.options;
                     }
                 }
+                if (fixedChoiceMeta !== undefined) {
+                    const fixedChoiceExplanations = this.parseFixedChoiceExplanations(fixedChoiceMeta.fixedChoiceExplanations || []);
+                    if (fixedChoiceExplanations.some(Boolean)) {
+                        card.fixedChoiceExplanations = fixedChoiceExplanations;
+                    } else {
+                        delete card.fixedChoiceExplanations;
+                        delete card.fixed_choice_explanations;
+                        delete card.choiceExplanations;
+                        delete card.choice_explanations;
+                    }
+                    card.explanation = String(fixedChoiceMeta.explanation || '').trim();
+                    card.source = String(fixedChoiceMeta.source || '').trim();
+                }
+                this.markDeckDirty(this.d.selectedDeck);
                 this.save();
                 return true;
             }
@@ -5287,6 +5572,7 @@
 
         updateStat(q, isCorrect, mastery, deckName = this.d.selectedDeck, options = {}) {
             this.d.deckStat = this.d.deckStat || {};
+            this.markDeckDirty(deckName);
             if (!this.d.deckStat[deckName]) this.d.deckStat[deckName] = {};
             if (!this.d.deckStat[deckName][q]) {
                 const legacy = options.useLegacy && this.d.stat && this.d.stat[q];
@@ -5415,6 +5701,7 @@
         isRetryingMistakes: false, // ミス復習中フラグ（通常モードからのミス復習）
         originalList: null, // 最初の出陣時のリスト（リトライ用）
         sessionLog: [], // 今回のセッションで出題された問題のログ
+        currentSessionEntry: null,
         isSessionReview: false // セッションレビューからの出陣フラグ
     };
 
@@ -5518,6 +5805,46 @@
     function getCardFixedChoices(card) {
         if (!card || typeof card !== 'object') return [];
         return parseFixedChoices(card.fixedChoices || card.fixed_choices || card.choices || card.options || []);
+    }
+
+    function parseFixedChoiceExplanations(value) {
+        if (Array.isArray(value)) return value.map(item => String(item || '').trim());
+        const text = String(value || '').replace(/\r\n?/g, '\n').trim();
+        return text ? text.split(/[|｜\n]+/g).map(item => String(item || '').trim()) : [];
+    }
+
+    function getCardFixedChoiceExplanations(card) {
+        if (!card || typeof card !== 'object') return [];
+        return parseFixedChoiceExplanations(
+            card.fixedChoiceExplanations || card.fixed_choice_explanations || card.choiceExplanations || card.choice_explanations || []
+        );
+    }
+
+    function getCardGeneralExplanation(card) {
+        if (!card || typeof card !== 'object') return '';
+        return String(card.explanation || card.note || card.commentary || '').trim();
+    }
+
+    function getCardSource(card) {
+        if (!card || typeof card !== 'object') return '';
+        return String(card.source || card.reference || '').trim();
+    }
+
+    function getCardFixedChoiceItems(card) {
+        const choices = getCardFixedChoices(card);
+        const explanations = getCardFixedChoiceExplanations(card);
+        const answerKey = normalizeFixedChoiceAnswer(card?.a || '');
+        return choices.map((choice, index) => ({
+            text: choice,
+            explanation: explanations[index] || '',
+            isCorrect: normalizeFixedChoiceAnswer(choice) === answerKey
+        }));
+    }
+
+    function hasAnyChoiceExplanation(card) {
+        return getCardFixedChoiceItems(card).some(item => item.explanation)
+            || !!getCardGeneralExplanation(card)
+            || !!getCardSource(card);
     }
 
     function getCardChoiceKey(card) {
@@ -5790,6 +6117,11 @@
             const lingerMs = Math.max(1600, parseInt(options.lingerMs) || 1600);
             field.classList.add('finisher-field');
             const target = document.getElementById('view-battle') || field;
+            if (this.specialFinisherTimer) {
+                clearTimeout(this.specialFinisherTimer);
+                this.specialFinisherTimer = null;
+            }
+            target.querySelectorAll('.finisher-burst, .finisher-title').forEach(node => node.remove());
             const targetRect = target.getBoundingClientRect();
             let centerX = targetRect.width / 2;
             let centerY = targetRect.height / 2;
@@ -5821,10 +6153,11 @@
                 title.appendChild(sub);
                 target.appendChild(title);
             }
-            setTimeout(() => {
+            this.specialFinisherTimer = setTimeout(() => {
                 el.remove();
                 if (title) title.remove();
                 field.classList.remove('finisher-field');
+                this.specialFinisherTimer = null;
             }, lingerMs + 80);
         },
         shatterEnemyHP() {
@@ -6740,6 +7073,12 @@
                 if (choiceGroup) item.choiceGroup = choiceGroup;
                 const fixedChoices = getCardFixedChoices(card);
                 if (fixedChoices.length) item.fixedChoices = fixedChoices;
+                const fixedChoiceExplanations = getCardFixedChoiceExplanations(card);
+                if (fixedChoiceExplanations.some(Boolean)) item.fixedChoiceExplanations = fixedChoiceExplanations;
+                const explanation = getCardGeneralExplanation(card);
+                if (explanation) item.explanation = explanation;
+                const source = getCardSource(card);
+                if (source) item.source = source;
                 return item;
             }).filter(item => item.q && item.a);
             if (items.length !== settings.questionCount) {
@@ -7057,7 +7396,11 @@
                 items: questionSet.items.map((item, index) => ({
                     n: index + 1,
                     q: String(item.q),
-                    a: String(item.a)
+                    a: String(item.a),
+                    fixedChoices: getCardFixedChoices(item),
+                    fixedChoiceExplanations: getCardFixedChoiceExplanations(item),
+                    explanation: getCardGeneralExplanation(item),
+                    source: getCardSource(item)
                 }))
             };
             this.questionSetSynced = true;
@@ -9113,6 +9456,7 @@
         Game.combo = 0;
         Game.maxC = 0;
         Game.sessionLog = []; // セッションログを初期化
+        Game.currentSessionEntry = null;
 
         // バトル設定を決定
         if (isRetryMistakes) {
@@ -9608,7 +9952,13 @@
         }
 
         Game.cur = Game.list[Game.idx++];
-        Game.sessionLog.push(Game.cur); // セッションログに追加
+        Game.currentSessionEntry = {
+            ...Game.cur,
+            sessionUserAnswer: '',
+            sessionIsCorrect: null,
+            sessionAnswerTime: null
+        };
+        Game.sessionLog.push(Game.currentSessionEntry); // セッションログに追加
         Game.questionStartTime = Date.now(); // 問題開始時刻を記録
 
         document.getElementById('q-text').innerText = Game.cur.q;
@@ -9742,6 +10092,13 @@
         }, isCorrect ? 180 : 240);
     }
 
+    function recordCurrentSessionAnswer(answerText, isCorrect, answerTime) {
+        if (!Game.currentSessionEntry) return;
+        Game.currentSessionEntry.sessionUserAnswer = String(answerText || '');
+        Game.currentSessionEntry.sessionIsCorrect = isCorrect === true;
+        Game.currentSessionEntry.sessionAnswerTime = typeof answerTime === 'number' ? answerTime : null;
+    }
+
     function processAnswer(selectedOption, choiceIndex = 0) {
         const area = document.getElementById('choices');
         if (!area || !isCurrentBattle() || !Game.cur || Game.pHP <= 0 || Game.eHP <= 0) return;
@@ -9761,6 +10118,8 @@
         });
 
         const isCorrect = (selectedOption.q === Game.cur.q);
+        const answerTimeForLog = (Date.now() - Game.questionStartTime) / 1000;
+        recordCurrentSessionAnswer(selectedOption.a, isCorrect, answerTimeForLog);
         if (Game.superComboActive) {
             processSuperComboAnswer(isCorrect, area, choiceIndex);
             return;
@@ -9922,7 +10281,7 @@
                 // ここでは簡易的に現在のカードだけを含むリストを作成して渡す。
 
                 // 簡易リスト作成
-                const tempList = [Game.cur];
+                const tempList = [Game.currentSessionEntry || Game.cur];
                 openOverlay(0, tempList);
 
                 // バトル中特有のUI調整
@@ -10201,6 +10560,7 @@
         const item = overlayList[overlayIndex];
         document.getElementById('ov-q').innerText = item.q;
         document.getElementById('ov-a').innerText = item.a;
+        updateOverlaySessionAnswer(item);
         const shouldHideAnswer = updateOverlayFixedChoices(item);
         const answerSection = document.getElementById('ov-answer-section');
         if (answerSection) answerSection.style.display = shouldHideAnswer ? 'none' : 'block';
@@ -10211,28 +10571,49 @@
         updateOverlayStar();
     }
 
+    function updateOverlaySessionAnswer(item) {
+        const answerSection = document.getElementById('ov-user-answer-section');
+        const resultSection = document.getElementById('ov-result-section');
+        const answerEl = document.getElementById('ov-user-answer');
+        const resultEl = document.getElementById('ov-result');
+        const hasAnswer = item && item.sessionUserAnswer !== undefined && item.sessionUserAnswer !== null && String(item.sessionUserAnswer).trim();
+        if (answerSection && answerEl) {
+            answerSection.style.display = hasAnswer ? 'block' : 'none';
+            answerEl.textContent = hasAnswer ? String(item.sessionUserAnswer) : '';
+        }
+        if (resultSection && resultEl) {
+            const hasResult = item && item.sessionIsCorrect !== null && item.sessionIsCorrect !== undefined;
+            resultSection.style.display = hasResult ? 'block' : 'none';
+            resultEl.textContent = hasResult ? (item.sessionIsCorrect ? '正解' : '不正解') : '';
+            resultEl.style.borderLeftColor = item.sessionIsCorrect ? 'var(--success)' : 'var(--danger)';
+        }
+    }
+
     function updateOverlayFixedChoices(item) {
         const section = document.getElementById('ov-choice-section');
         const container = document.getElementById('ov-choices');
         if (!section || !container) return false;
 
-        const choices = getCardFixedChoices(item);
+        const choices = getCardFixedChoiceItems(item);
         container.innerHTML = '';
         if (!choices.length) {
             section.style.display = 'none';
             return false;
         }
 
-        const answerKey = normalizeFixedChoiceAnswer(item.a);
         let hasCorrectChoice = false;
         const labels = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩'];
         section.style.display = 'block';
 
         const list = document.createElement('div');
         list.className = 'fixed-choice-list';
-        choices.forEach((choice, index) => {
+        const hasExplanations = hasAnyChoiceExplanation(item);
+        const explanationBody = document.createElement('div');
+        explanationBody.className = 'choice-explanation-body';
+
+        choices.forEach((choiceItem, index) => {
             const row = document.createElement('div');
-            const isCorrect = normalizeFixedChoiceAnswer(choice) === answerKey;
+            const isCorrect = choiceItem.isCorrect;
             if (isCorrect) hasCorrectChoice = true;
             row.className = `fixed-choice-item${isCorrect ? ' correct' : ''}`;
 
@@ -10241,7 +10622,7 @@
             label.textContent = labels[index] || `${index + 1}.`;
 
             const text = document.createElement('span');
-            text.textContent = choice;
+            text.textContent = choiceItem.text;
 
             row.appendChild(label);
             row.appendChild(text);
@@ -10255,6 +10636,66 @@
         });
 
         container.appendChild(list);
+        if (hasExplanations) {
+            const details = document.createElement('details');
+            details.className = 'choice-explanation-toggle';
+            const summary = document.createElement('summary');
+            summary.textContent = '解説を見る';
+            details.appendChild(summary);
+
+            choices.forEach((choiceItem, index) => {
+                if (!choiceItem.explanation) return;
+                const row = document.createElement('div');
+                row.className = `fixed-choice-item${choiceItem.isCorrect ? ' correct' : ''}`;
+                const label = document.createElement('span');
+                label.className = 'fixed-choice-index';
+                label.textContent = labels[index] || `${index + 1}.`;
+                const text = document.createElement('span');
+                text.textContent = choiceItem.text;
+                row.appendChild(label);
+                row.appendChild(text);
+                if (choiceItem.isCorrect) {
+                    const badge = document.createElement('span');
+                    badge.className = 'fixed-choice-correct-label';
+                    badge.textContent = '正解';
+                    row.appendChild(badge);
+                }
+                const exp = document.createElement('div');
+                exp.className = 'fixed-choice-explanation';
+                exp.textContent = choiceItem.explanation;
+                row.appendChild(exp);
+                explanationBody.appendChild(row);
+            });
+
+            const generalExplanation = getCardGeneralExplanation(item);
+            if (generalExplanation) {
+                const block = document.createElement('div');
+                block.className = 'card-note-block';
+                const title = document.createElement('strong');
+                title.textContent = '問題全体の解説:';
+                const body = document.createElement('div');
+                body.textContent = generalExplanation;
+                block.appendChild(title);
+                block.appendChild(body);
+                explanationBody.appendChild(block);
+            }
+
+            const source = getCardSource(item);
+            if (source) {
+                const block = document.createElement('div');
+                block.className = 'card-note-block';
+                const title = document.createElement('strong');
+                title.textContent = '出典:';
+                const body = document.createElement('div');
+                body.textContent = source;
+                block.appendChild(title);
+                block.appendChild(body);
+                explanationBody.appendChild(block);
+            }
+
+            details.appendChild(explanationBody);
+            container.appendChild(details);
+        }
         return hasCorrectChoice;
     }
 
@@ -10293,6 +10734,7 @@
         // If item is a copy (like in sessionLog), update it too
         if (item !== realCard) item.starred = realCard.starred;
 
+        DB.markDeckDirty(DB.d.selectedDeck);
         DB.save();
         updateOverlayStar();
         if (overlayMode === 'wordbook') renderWordBook();
@@ -10313,7 +10755,7 @@
     function toggleStarInList(index, event) {
         event.stopPropagation();
         const card = wbDisplayList[index];
-        if (card) { card.starred = !card.starred; DB.save(); renderWordBook(); }
+        if (card) { card.starred = !card.starred; DB.markDeckDirty(DB.d.selectedDeck); DB.save(); renderWordBook(); }
     }
 
     // WordBook
@@ -10587,6 +11029,7 @@
             starBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 d.starred = !d.starred;
+                DB.markDeckDirty(DB.d.selectedDeck);
                 DB.save();
                 renderWordBook();
             });
@@ -10795,9 +11238,30 @@
         const fixedChoices = getCardFixedChoices(editingCard);
         const choiceSection = document.getElementById('edit-choice-section');
         const choiceInput = document.getElementById('edit-choices');
+        const choiceExplanationSection = document.getElementById('edit-choice-explanation-section');
+        const choiceExplanationInput = document.getElementById('edit-choice-explanations');
+        const cardExplanationSection = document.getElementById('edit-card-explanation-section');
+        const cardExplanationInput = document.getElementById('edit-card-explanation');
+        const sourceSection = document.getElementById('edit-source-section');
+        const sourceInput = document.getElementById('edit-source');
         if (choiceSection && choiceInput) {
             choiceSection.style.display = fixedChoices.length ? 'block' : 'none';
             choiceInput.value = fixedChoices.join('\n');
+        }
+        const showChoiceMeta = fixedChoices.length > 0;
+        if (choiceExplanationSection && choiceExplanationInput) {
+            choiceExplanationSection.style.display = showChoiceMeta ? 'block' : 'none';
+            const explanations = getCardFixedChoiceExplanations(editingCard).slice(0, fixedChoices.length);
+            while (explanations.length < fixedChoices.length) explanations.push('');
+            choiceExplanationInput.value = explanations.join('\n---\n');
+        }
+        if (cardExplanationSection && cardExplanationInput) {
+            cardExplanationSection.style.display = showChoiceMeta ? 'block' : 'none';
+            cardExplanationInput.value = getCardGeneralExplanation(editingCard);
+        }
+        if (sourceSection && sourceInput) {
+            sourceSection.style.display = showChoiceMeta ? 'block' : 'none';
+            sourceInput.value = getCardSource(editingCard);
         }
         document.getElementById('view-overlay').classList.remove('active');
         document.getElementById('view-edit').classList.add('active');
@@ -10816,13 +11280,21 @@
         const choiceInput = document.getElementById('edit-choices');
         const shouldUpdateChoices = choiceSection && choiceInput && choiceSection.style.display !== 'none';
         const newFixedChoices = shouldUpdateChoices ? parseFixedChoices(choiceInput.value) : undefined;
+        const choiceExplanationInput = document.getElementById('edit-choice-explanations');
+        const cardExplanationInput = document.getElementById('edit-card-explanation');
+        const sourceInput = document.getElementById('edit-source');
+        const fixedChoiceMeta = shouldUpdateChoices ? {
+            fixedChoiceExplanations: String(choiceExplanationInput?.value || '').replace(/\r\n?/g, '\n').split(/\n---\n/g).slice(0, newFixedChoices.length),
+            explanation: cardExplanationInput?.value || '',
+            source: sourceInput?.value || ''
+        } : undefined;
 
         if (shouldUpdateChoices && newFixedChoices.length && !newFixedChoices.some(choice => normalizeFixedChoiceAnswer(choice) === normalizeFixedChoiceAnswer(newA))) {
             alert("解答が選択肢に含まれていません。選択肢欄に正解も含めてください。");
             return;
         }
 
-        if (DB.updateCard(editingCard.q, newQ, newA, newFixedChoices)) {
+        if (DB.updateCard(editingCard.q, newQ, newA, newFixedChoices, fixedChoiceMeta)) {
             alert("保存しました");
             cancelEdit();
             if (overlayMode === 'wordbook') renderWordBook();
@@ -11080,6 +11552,7 @@
 
     function toggleStarInSession(item) {
         item.starred = !item.starred;
+        DB.markDeckDirty(DB.d.selectedDeck);
         DB.save();
         renderSessionReview();
     }
@@ -11200,7 +11673,68 @@
     }
 
     // データエクスポート・インポート
-    function exportData() {
+    function safeStringSlice(text, start, maxLength) {
+        let end = Math.min(text.length, start + maxLength);
+        const last = text.charCodeAt(end - 1);
+        if (end < text.length && last >= 0xD800 && last <= 0xDBFF) end--;
+        return text.slice(start, end);
+    }
+
+    function bytesToBase64(bytes) {
+        let binary = '';
+        const step = 0x8000;
+        for (let i = 0; i < bytes.length; i += step) {
+            binary += String.fromCharCode(...bytes.subarray(i, i + step));
+        }
+        return btoa(binary);
+    }
+
+    function encodeTextChunkToBase64(text) {
+        if (typeof TextEncoder !== 'undefined') {
+            return bytesToBase64(new TextEncoder().encode(text));
+        }
+        return btoa(unescape(encodeURIComponent(text)));
+    }
+
+    async function saveJsonWithAndroidBridge(jsonStr, filename) {
+        const android = window.Android;
+        if (android && typeof android.beginSaveFile === 'function' && typeof android.appendSaveFileChunk === 'function' && typeof android.finishSaveFile === 'function') {
+            const chunkSize = 48 * 1024;
+            let offset = 0;
+            if (!android.beginSaveFile(filename, 'application/json')) {
+                throw new Error('Android側で保存ファイルを作成できませんでした');
+            }
+            try {
+                while (offset < jsonStr.length) {
+                    const chunk = safeStringSlice(jsonStr, offset, chunkSize);
+                    offset += chunk.length;
+                    if (!android.appendSaveFileChunk(encodeTextChunkToBase64(chunk))) {
+                        throw new Error('Android側への分割書き込みに失敗しました');
+                    }
+                    if (typeof Runtime !== 'undefined' && offset % (chunkSize * 16) === 0) {
+                        Runtime.showWarning(`バックアップを書き出し中... ${Math.round(offset / jsonStr.length * 100)}%`, 'info');
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 0));
+                }
+                if (!android.finishSaveFile()) {
+                    throw new Error('Android側で保存を完了できませんでした');
+                }
+                return true;
+            } catch (err) {
+                if (typeof android.cancelSaveFile === 'function') android.cancelSaveFile();
+                throw err;
+            }
+        }
+
+        if (android && typeof android.saveFile === 'function') {
+            const base64 = encodeTextChunkToBase64(jsonStr);
+            android.saveFile(base64, filename, 'application/json');
+            return true;
+        }
+        return false;
+    }
+
+    async function exportData() {
         const recordsOnly = document.getElementById('export-records-only').checked;
 
         let exportedData;
@@ -11270,14 +11804,12 @@
             ? `anki-monster-records-${timestamp}.json`
             : `anki-monster-backup-${timestamp}.json`;
 
-        const jsonStr = JSON.stringify(data, null, 2);
+        const jsonStr = JSON.stringify(data);
 
         // ★Androidアプリ連携: アプリ内ならKotlinへデータを渡す
         if (typeof Runtime !== 'undefined' && Runtime.isAndroidBridgeAvailable('saveFile')) {
             try {
-                // Base64に変換して渡す（文字化け防止のため）
-                const base64 = btoa(unescape(encodeURIComponent(jsonStr)));
-                window.Android.saveFile(base64, filename, 'application/json');
+                await saveJsonWithAndroidBridge(jsonStr, filename);
                 return;
             } catch (e) {
                 console.warn('Android.saveFile failed; falling back to browser download', e);
@@ -11354,9 +11886,11 @@
                 DB.ensureDataShape();
                 if (isRecordsOnly) {
                     DB.applyCardRecords(importedData.cardRecords);
+                } else {
+                    DB.markAllDecksDirty();
                 }
 
-                await DB.save();
+                await DB.save({ saveAllDecks: !isRecordsOnly });
                 DB.loadSettings();
                 DB.updateUI();
 

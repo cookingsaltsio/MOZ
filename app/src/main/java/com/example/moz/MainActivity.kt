@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
+import android.speech.tts.TextToSpeech
 import android.util.Base64
 import android.webkit.JavascriptInterface
 import android.webkit.ValueCallback
@@ -19,7 +20,10 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.Keep
 import androidx.appcompat.app.AppCompatActivity
+import org.json.JSONArray
+import org.json.JSONObject
 import java.io.OutputStream
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
@@ -27,6 +31,13 @@ class MainActivity : AppCompatActivity() {
     private var pendingSaveOutputStream: OutputStream? = null
     private var pendingSaveUri: Uri? = null
     private var pendingSaveFileName: String? = null
+    private var androidTts: TextToSpeech? = null
+
+    @Volatile
+    private var androidTtsReady: Boolean = false
+
+    @Volatile
+    private var androidTtsStatus: String = "initializing"
 
     private val fileChooserLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -69,6 +80,44 @@ class MainActivity : AppCompatActivity() {
         fun finishApp() {
             finish() // アプリを終了する
         }
+
+        @JavascriptInterface
+        fun getAndroidTtsStatus(): String {
+            return androidTtsStatus
+        }
+
+        @JavascriptInterface
+        fun getAndroidTtsVoices(): String {
+            return getAndroidTtsVoicesJson()
+        }
+
+        @JavascriptInterface
+        fun speakAndroidTts(
+            text: String,
+            langTag: String,
+            rate: String,
+            pitch: String,
+            volume: String
+        ): Boolean {
+            return speakWithAndroidTts(text, langTag, rate, pitch, volume)
+        }
+
+        @JavascriptInterface
+        fun speakAndroidTtsVoice(
+            text: String,
+            langTag: String,
+            voiceName: String,
+            rate: String,
+            pitch: String,
+            volume: String
+        ): Boolean {
+            return speakWithAndroidTts(text, langTag, voiceName, rate, pitch, volume)
+        }
+
+        @JavascriptInterface
+        fun stopAndroidTts(): Boolean {
+            return stopAndroidTtsPlayback()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -83,6 +132,8 @@ class MainActivity : AppCompatActivity() {
         webSettings.mediaPlaybackRequiresUserGesture = false
         webSettings.allowFileAccess = true
         webSettings.allowContentAccess = true
+
+        initAndroidTts()
 
         myWebView.webViewClient = WebViewClient()
 
@@ -137,6 +188,138 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
+    }
+
+    private fun initAndroidTts() {
+        androidTtsStatus = "initializing"
+        androidTts = TextToSpeech(this) { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                androidTtsReady = true
+                androidTtsStatus = "ready"
+            } else {
+                androidTtsReady = false
+                androidTtsStatus = "error"
+            }
+        }
+    }
+
+    private fun parseLocale(langTag: String): Locale {
+        val normalized = langTag.trim().replace('_', '-')
+        if (normalized.isBlank()) return Locale.US
+        val locale = Locale.forLanguageTag(normalized)
+        return if (locale.language.isNullOrBlank()) Locale.US else locale
+    }
+
+    private fun speakWithAndroidTts(
+        text: String,
+        langTag: String,
+        rate: String,
+        pitch: String,
+        volume: String
+    ): Boolean {
+        return speakWithAndroidTts(text, langTag, "", rate, pitch, volume)
+    }
+
+    private fun getAndroidTtsVoicesJson(): String {
+        val engine = androidTts ?: return "[]"
+        if (!androidTtsReady) return "[]"
+        return try {
+            val currentVoiceName = engine.voice?.name.orEmpty()
+            val array = JSONArray()
+            engine.voices
+                ?.sortedWith(compareBy({ it.locale?.toLanguageTag().orEmpty() }, { it.name }))
+                ?.forEach { voice ->
+                    val locale = voice.locale
+                    array.put(JSONObject().apply {
+                        put("source", "android")
+                        put("name", voice.name)
+                        put("voiceURI", voice.name)
+                        put("lang", locale?.toLanguageTag().orEmpty())
+                        put("default", voice.name == currentVoiceName)
+                        put("localService", !voice.isNetworkConnectionRequired)
+                        put("networkRequired", voice.isNetworkConnectionRequired)
+                        put("quality", voice.quality)
+                        put("latency", voice.latency)
+                    })
+                }
+            array.toString()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            "[]"
+        }
+    }
+
+    private fun speakWithAndroidTts(
+        text: String,
+        langTag: String,
+        voiceName: String,
+        rate: String,
+        pitch: String,
+        volume: String
+    ): Boolean {
+        val engine = androidTts ?: return false
+        if (!androidTtsReady) return false
+
+        val cleanText = text.trim().take(1000)
+        if (cleanText.isBlank()) return false
+
+        return try {
+            val requestedLocale = parseLocale(langTag)
+            val requestedVoice = engine.voices?.firstOrNull { it.name == voiceName }
+            if (requestedVoice != null) {
+                engine.voice = requestedVoice
+            }
+
+            val localeForCheck = requestedVoice?.locale ?: requestedLocale
+            val localeToUse = if (requestedVoice != null) {
+                localeForCheck
+            } else {
+                val requestedAvailability = engine.isLanguageAvailable(localeForCheck)
+                val fallbackLocale = if (
+                    requestedAvailability == TextToSpeech.LANG_MISSING_DATA ||
+                    requestedAvailability == TextToSpeech.LANG_NOT_SUPPORTED
+                ) {
+                    Locale.US
+                } else {
+                    localeForCheck
+                }
+
+                val fallbackAvailability = engine.isLanguageAvailable(fallbackLocale)
+                if (
+                    fallbackAvailability == TextToSpeech.LANG_MISSING_DATA ||
+                    fallbackAvailability == TextToSpeech.LANG_NOT_SUPPORTED
+                ) {
+                    return false
+                }
+                fallbackLocale
+            }
+
+            if (requestedVoice == null) {
+                engine.language = localeToUse
+            }
+            engine.setSpeechRate((rate.toFloatOrNull() ?: 1.0f).coerceIn(0.1f, 3.0f))
+            engine.setPitch((pitch.toFloatOrNull() ?: 1.0f).coerceIn(0.1f, 2.0f))
+            engine.stop()
+
+            val params = Bundle().apply {
+                putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, (volume.toFloatOrNull() ?: 1.0f).coerceIn(0.0f, 1.0f))
+            }
+            val utteranceId = "moz-android-tts-${System.currentTimeMillis()}"
+            engine.speak(cleanText, TextToSpeech.QUEUE_FLUSH, params, utteranceId) == TextToSpeech.SUCCESS
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
+    }
+
+    private fun stopAndroidTtsPlayback(): Boolean {
+        return try {
+            androidTts?.stop()
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
+        }
     }
 
     private fun beginChunkedSave(fileName: String, mimeType: String): Boolean {
@@ -259,5 +442,12 @@ class MainActivity : AppCompatActivity() {
                 Toast.makeText(this, "保存失敗: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    override fun onDestroy() {
+        androidTts?.stop()
+        androidTts?.shutdown()
+        androidTts = null
+        super.onDestroy()
     }
 }

@@ -411,6 +411,357 @@
             font-family: var(--font-game);
         }
 
+        .tts-test-panel summary {
+            cursor: pointer;
+            color: var(--accent);
+            font-family: var(--font-game);
+            font-size: 1.05rem;
+            list-style: none;
+            outline: none;
+        }
+
+        .tts-test-panel summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .tts-test-panel summary::before {
+            content: "▶";
+            display: inline-block;
+            margin-right: 8px;
+            transition: transform 0.15s;
+        }
+
+        .tts-test-panel[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        .tts-test-body {
+            margin-top: 12px;
+            font-family: var(--font-ui);
+            font-size: 0.9rem;
+        }
+
+        .tts-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .tts-info-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+        }
+
+        .tts-label {
+            color: #aaa;
+            font-size: 0.82rem;
+        }
+
+        .tts-value {
+            color: #fff;
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .tts-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .tts-field label,
+        .tts-setting label {
+            color: #aaa;
+            font-size: 0.82rem;
+        }
+
+        .tts-select,
+        .tts-free-input {
+            width: 100%;
+            background: #222;
+            color: #fff;
+            border: 1px solid #555;
+            border-radius: 4px;
+            padding: 9px;
+            font-family: var(--font-ui);
+            font-size: 0.9rem;
+        }
+
+        .tts-free-input {
+            min-height: 72px;
+            resize: vertical;
+            text-align: left;
+        }
+
+        .tts-setting-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .tts-setting {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .tts-setting input[type="range"] {
+            width: 100%;
+        }
+
+        .tts-setting-value {
+            color: var(--accent);
+            font-family: var(--font-game);
+            text-align: right;
+        }
+
+        .tts-cleanup-panel {
+            margin-top: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 6px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.18);
+        }
+
+        .tts-cleanup-panel h4 {
+            margin: 0 0 10px 0;
+            color: var(--accent);
+            font-size: 0.92rem;
+        }
+
+        .tts-cleanup-rule-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .tts-cleanup-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #ddd;
+            cursor: pointer;
+            line-height: 1.35;
+        }
+
+        .tts-cleanup-toggle input {
+            width: auto;
+            flex: 0 0 auto;
+        }
+
+        .tts-symbol-list {
+            min-height: 110px;
+        }
+
+        .tts-symbol-actions {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto auto auto;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .tts-symbol-actions .btn {
+            width: auto;
+            margin: 0;
+            min-height: 40px;
+            white-space: nowrap;
+        }
+
+        .tts-symbol-actions .btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .tts-cleanup-preview {
+            min-height: 40px;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 9px;
+            background: #151515;
+            color: #fff;
+            line-height: 1.45;
+            word-break: break-word;
+        }
+
+        .tts-button-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .tts-button-grid .btn {
+            width: 100%;
+            margin: 0;
+            font-size: 0.9rem;
+            min-height: 44px;
+        }
+
+        .tts-button-grid .btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .tts-button-grid .tts-wide {
+            grid-column: 1 / -1;
+        }
+
+        .tts-language-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .tts-language-card {
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 6px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.18);
+        }
+
+        .tts-language-card h4 {
+            margin: 0 0 8px 0;
+            color: var(--accent);
+            font-size: 0.92rem;
+        }
+
+        .tts-language-card label {
+            display: block;
+            color: #aaa;
+            font-size: 0.78rem;
+            margin: 8px 0 4px;
+        }
+
+        .tts-language-card .btn {
+            width: 100%;
+            margin-top: 8px;
+            font-size: 0.85rem;
+            min-height: 40px;
+        }
+
+        .tts-note {
+            color: #aaa;
+            font-size: 0.82rem;
+            line-height: 1.45;
+            margin-top: 10px;
+        }
+
+        .q-line {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .tts-speaker-btn,
+        .tts-inline-btn {
+            width: auto;
+            min-height: 36px;
+            padding: 8px 12px;
+            margin: 0;
+            font-size: 0.86rem;
+        }
+
+        .tts-speaker-btn {
+            flex: 0 0 auto;
+            width: 42px;
+            height: 42px;
+            min-height: 42px;
+            padding: 0;
+            border-radius: 50%;
+            font-size: 1.15rem;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tts-detail-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .tts-detail-actions .btn {
+            width: auto;
+            min-height: 36px;
+            padding: 8px 12px;
+            font-size: 0.82rem;
+        }
+
+        .tts-status {
+            min-height: 22px;
+            margin-top: 10px;
+            color: #aaa;
+            line-height: 1.35;
+        }
+
+        .tts-status.ok {
+            color: #69f0ae;
+        }
+
+        .tts-status.error {
+            color: #ff8a80;
+        }
+
+        .tts-voice-list {
+            margin: 8px 0 0 0;
+            padding-left: 18px;
+            max-height: 180px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            color: #ddd;
+            line-height: 1.45;
+        }
+
+        .tts-voice-list li {
+            margin-bottom: 6px;
+            word-break: break-word;
+        }
+
+        .tts-empty {
+            color: #aaa;
+            font-size: 0.85rem;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 600px) {
+            .tts-info-grid,
+            .tts-setting-grid,
+            .tts-language-grid,
+            .tts-cleanup-rule-grid,
+            .tts-button-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tts-symbol-actions {
+                grid-template-columns: 1fr;
+            }
+
+            .tts-symbol-actions .btn {
+                width: 100%;
+            }
+
+            .tts-button-grid .tts-wide {
+                grid-column: auto;
+            }
+        }
+
         /* ★戦闘画面のレイアウト修正（Flexboxで余白を埋める） */
         #view-battle {
             display: none;
@@ -977,6 +1328,8 @@
             font-weight: bold;
             color: var(--accent);
             line-height: 1.2;
+            min-width: 0;
+            overflow-wrap: anywhere;
         }
 
         .q-meta {
@@ -2872,6 +3225,208 @@
                 </div>
             </div>
 
+            <details class="panel tts-test-panel" id="tts-test-panel">
+                <summary>TTS設定</summary>
+                <div class="tts-test-body">
+                    <div class="tts-info-grid">
+                        <div class="tts-info-row">
+                            <span class="tts-label">speechSynthesis</span>
+                            <span class="tts-value" id="tts-available">確認中</span>
+                        </div>
+                        <div class="tts-info-row">
+                            <span class="tts-label">音声数</span>
+                            <span class="tts-value" id="tts-voice-count">0</span>
+                        </div>
+                        <div class="tts-info-row">
+                            <span class="tts-label">Android TTS</span>
+                            <span class="tts-value" id="tts-android-status">確認中</span>
+                        </div>
+                    </div>
+
+                    <div class="tts-field">
+                        <label for="tts-free-lang">自由入力の言語</label>
+                        <select class="tts-select" id="tts-free-lang">
+                            <option value="">既定</option>
+                            <option value="en-US" selected>英語 en-US</option>
+                            <option value="en-GB">英語 en-GB</option>
+                            <option value="ja-JP">日本語 ja-JP</option>
+                            <option value="zh-CN">中国語 zh-CN</option>
+                            <option value="zh-TW">中国語 zh-TW</option>
+                            <option value="de-DE">ドイツ語 de-DE</option>
+                            <option value="ko-KR">韓国語 ko-KR</option>
+                            <option value="fr-FR">フランス語 fr-FR</option>
+                            <option value="es-ES">スペイン語 es-ES</option>
+                            <option value="it-IT">イタリア語 it-IT</option>
+                            <option value="pt-BR">ポルトガル語 pt-BR</option>
+                            <option value="ru-RU">ロシア語 ru-RU</option>
+                            <option value="ar-SA">アラビア語 ar-SA</option>
+                            <option value="hi-IN">ヒンディー語 hi-IN</option>
+                            <option value="th-TH">タイ語 th-TH</option>
+                            <option value="vi-VN">ベトナム語 vi-VN</option>
+                            <option value="id-ID">インドネシア語 id-ID</option>
+                            <option value="nl-NL">オランダ語 nl-NL</option>
+                            <option value="tr-TR">トルコ語 tr-TR</option>
+                            <option value="pl-PL">ポーランド語 pl-PL</option>
+                        </select>
+                    </div>
+
+                    <div class="tts-field">
+                        <label for="tts-language-category">自由入力の音声カテゴリ</label>
+                        <select class="tts-select" id="tts-language-category"></select>
+                    </div>
+
+                    <div class="tts-field">
+                        <label for="tts-voice-select">自由入力の音声選択</label>
+                        <select class="tts-select" id="tts-voice-select"></select>
+                    </div>
+
+                    <div class="tts-field">
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                            <input type="checkbox" id="cfg-tts-auto-enabled" onchange="DB.saveSettings()" style="width:auto;">
+                            <span>出題時に問題を読み上げる</span>
+                        </label>
+                    </div>
+
+                    <div class="tts-field">
+                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                            <input type="checkbox" id="cfg-tts-repeat-enabled" onchange="DB.saveSettings()" style="width:auto;" disabled>
+                            <span>問題を何度も繰り返す</span>
+                        </label>
+                    </div>
+
+                    <div class="tts-language-grid">
+                        <div class="tts-language-card">
+                            <h4>言語未指定カード</h4>
+                            <label for="tts-card-default-lang">既定言語</label>
+                            <select class="tts-select" id="tts-card-default-lang">
+                                <option value="">音声に合わせる</option>
+                                <option value="en-US">英語 en-US</option>
+                                <option value="en-GB">英語 en-GB</option>
+                                <option value="ja-JP">日本語 ja-JP</option>
+                                <option value="zh-CN">中国語 zh-CN</option>
+                                <option value="zh-TW">中国語 zh-TW</option>
+                                <option value="de-DE">ドイツ語 de-DE</option>
+                                <option value="ko-KR">韓国語 ko-KR</option>
+                                <option value="fr-FR">フランス語 fr-FR</option>
+                                <option value="es-ES">スペイン語 es-ES</option>
+                                <option value="it-IT">イタリア語 it-IT</option>
+                                <option value="pt-BR">ポルトガル語 pt-BR</option>
+                                <option value="ru-RU">ロシア語 ru-RU</option>
+                                <option value="ar-SA">アラビア語 ar-SA</option>
+                                <option value="hi-IN">ヒンディー語 hi-IN</option>
+                                <option value="th-TH">タイ語 th-TH</option>
+                                <option value="vi-VN">ベトナム語 vi-VN</option>
+                                <option value="id-ID">インドネシア語 id-ID</option>
+                                <option value="nl-NL">オランダ語 nl-NL</option>
+                                <option value="tr-TR">トルコ語 tr-TR</option>
+                                <option value="pl-PL">ポーランド語 pl-PL</option>
+                            </select>
+                            <label for="tts-voice-default">既定音声</label>
+                            <select class="tts-select" id="tts-voice-default"></select>
+                        </div>
+                        <div class="tts-language-card">
+                            <h4>英語カード</h4>
+                            <label for="tts-voice-en">音声</label>
+                            <select class="tts-select" id="tts-voice-en"></select>
+                        </div>
+                        <div class="tts-language-card">
+                            <h4>日本語カード</h4>
+                            <label for="tts-voice-ja">音声</label>
+                            <select class="tts-select" id="tts-voice-ja"></select>
+                        </div>
+                        <div class="tts-language-card">
+                            <h4>中国語カード</h4>
+                            <label for="tts-voice-zh">音声</label>
+                            <select class="tts-select" id="tts-voice-zh"></select>
+                        </div>
+                    </div>
+
+                    <div class="tts-setting-grid">
+                        <div class="tts-setting">
+                            <label for="tts-rate">読み上げ速度</label>
+                            <input type="range" id="tts-rate" value="1" min="0.5" max="2" step="0.1">
+                            <span class="tts-setting-value" id="tts-rate-value">1.0</span>
+                        </div>
+                        <div class="tts-setting">
+                            <label for="tts-pitch">ピッチ</label>
+                            <input type="range" id="tts-pitch" value="1" min="0" max="2" step="0.1">
+                            <span class="tts-setting-value" id="tts-pitch-value">1.0</span>
+                        </div>
+                        <div class="tts-setting">
+                            <label for="tts-volume">音量</label>
+                            <input type="range" id="tts-volume" value="1" min="0" max="1" step="0.1">
+                            <span class="tts-setting-value" id="tts-volume-value">1.0</span>
+                        </div>
+                    </div>
+
+                    <div class="tts-cleanup-panel">
+                        <h4>読み上げ除外ルール</h4>
+                        <div class="tts-cleanup-rule-grid">
+                            <label class="tts-cleanup-toggle">
+                                <input type="checkbox" id="tts-rule-leading-number">
+                                <span>先頭の通し番号</span>
+                            </label>
+                            <label class="tts-cleanup-toggle">
+                                <input type="checkbox" id="tts-rule-bracketed">
+                                <span>括弧内の注記</span>
+                            </label>
+                            <label class="tts-cleanup-toggle">
+                                <input type="checkbox" id="tts-rule-pronunciation">
+                                <span>発音記号らしい末尾</span>
+                            </label>
+                            <label class="tts-cleanup-toggle">
+                                <input type="checkbox" id="tts-rule-pinyin">
+                                <span>ピンインらしい末尾</span>
+                            </label>
+                            <label class="tts-cleanup-toggle">
+                                <input type="checkbox" id="tts-rule-decorative">
+                                <span>装飾記号</span>
+                            </label>
+                        </div>
+
+                        <div class="tts-field">
+                            <label for="tts-decorative-mark-list">除外する装飾記号</label>
+                            <select class="tts-select tts-symbol-list" id="tts-decorative-mark-list" size="5" multiple></select>
+                        </div>
+                        <div class="tts-symbol-actions">
+                            <input class="tts-select" id="tts-decorative-mark-input" maxlength="24" placeholder="例: ◎ #">
+                            <button class="btn btn-green btn-small" id="tts-add-decorative-mark">追加</button>
+                            <button class="btn btn-red btn-small" id="tts-remove-decorative-mark">選択を削除</button>
+                            <button class="btn btn-indigo btn-small" id="tts-reset-cleanup-rules">初期値</button>
+                        </div>
+
+                        <div class="tts-field">
+                            <label for="tts-cleanup-preview-input">除外プレビュー</label>
+                            <textarea class="tts-free-input" id="tts-cleanup-preview-input">No.0036 communication [kəmjùːnəkéɪʃən]</textarea>
+                            <div class="tts-cleanup-preview" id="tts-cleanup-preview-output"></div>
+                        </div>
+                    </div>
+
+                    <div class="tts-field">
+                        <label for="tts-free-text">試聴テキスト</label>
+                        <textarea class="tts-free-input" id="tts-free-text">I have a dog.</textarea>
+                    </div>
+
+                    <div class="tts-button-grid">
+                        <button class="btn btn-blue btn-small" id="tts-play-free">選択中の音声を試聴</button>
+                        <button class="btn btn-orange btn-small" id="tts-play-android">Android TTSで試聴</button>
+                        <button class="btn btn-red btn-small" id="tts-stop">停止</button>
+                        <button class="btn btn-indigo btn-small tts-wide" id="tts-refresh-voices">音声一覧を再取得</button>
+                    </div>
+
+                    <div class="tts-status" id="tts-status" role="status" aria-live="polite"></div>
+
+                    <div class="tts-field">
+                        <div class="tts-label">利用可能な音声:</div>
+                        <ul class="tts-voice-list" id="tts-voice-list"></ul>
+                        <div class="tts-empty" id="tts-empty-message"></div>
+                    </div>
+                    <div class="tts-note">
+                        目的の言語音声が表示されない場合は、Androidの「音声合成設定」で優先するエンジンを Google 音声認識と音声合成サービス に変更し、必要な言語データを有効にしてください。
+                    </div>
+                </div>
+            </details>
+
             <div class="panel">
                 <h3 style="margin-top:0; color: var(--accent);">📅 SRS設定 (次回までの間隔)</h3>
                 <div class="cfg-row">
@@ -3216,7 +3771,10 @@
         </div>
 
         <div class="question-box">
-            <div class="q-text" id="q-text">問題文</div>
+            <div class="q-line">
+                <div class="q-text" id="q-text">問題文</div>
+                <button class="btn btn-blue btn-small tts-speaker-btn" id="q-tts-btn" onclick="playCurrentQuestionTts()" title="問題文を読み上げる" aria-label="問題文を読み上げる" style="display:none;">🔊</button>
+            </div>
             <div class="q-meta">
                 <span id="q-progress">1/10</span> | コンボ:<span id="q-combo">0</span>
                 <span id="q-feedback" class="q-feedback"></span>
@@ -3428,6 +3986,16 @@
                 <div class="detail-label">選択肢</div>
                 <div class="detail-content choices" id="ov-choices"></div>
             </div>
+            <div class="detail-section" id="ov-tts-section" style="display:none;">
+                <div class="detail-label">TTS</div>
+                <div class="detail-content" id="ov-tts-info"></div>
+                <div class="tts-detail-actions" id="ov-tts-actions"></div>
+            </div>
+            <div class="detail-section" id="ov-example-tts-section" style="display:none;">
+                <div class="detail-label">例文音声</div>
+                <div class="detail-content" id="ov-example-tts-info"></div>
+                <div class="tts-detail-actions" id="ov-example-tts-actions"></div>
+            </div>
         </div>
 
         <div id="ov-nav" style="display:none;" class="nav-btns">
@@ -3486,6 +4054,52 @@
     const APP_DATA_KEY = 'monsterStudyData';
     const LEGACY_DATA_KEYS = [17, 16, 15, 14, 13].map(versionNumber => `ankiMonsterDataV${versionNumber}`);
     const LEGACY_COMPRESSED_FLAGS = [17].map(versionNumber => `ankiMonsterDataV${versionNumber}_compressed`);
+    const TTS_DEFAULT_DECORATIVE_MARKS = '●○◎◯∙•‣▪▫■□◆◇★☆※＊*';
+    const TTS_DECORATIVE_EDGE_MARKS = '"\'“”‘’';
+
+    function createDefaultTtsCleanupRules() {
+        return {
+            stripLeadingNumber: true,
+            stripBracketedAnnotations: true,
+            stripPronunciationGuide: true,
+            stripPinyinGuide: true,
+            stripDecorativeMarks: true,
+            decorativeMarks: TTS_DEFAULT_DECORATIVE_MARKS
+        };
+    }
+
+    function normalizeTtsDecorativeMarks(value, options = {}) {
+        const allowEmpty = options.allowEmpty === true;
+        if (value === undefined || value === null) {
+            return allowEmpty ? '' : TTS_DEFAULT_DECORATIVE_MARKS;
+        }
+        const source = Array.isArray(value) ? value.join('') : String(value || '');
+        const seen = new Set();
+        let result = '';
+        Array.from(source).forEach(char => {
+            if (!char || /\s/u.test(char) || seen.has(char)) return;
+            seen.add(char);
+            result += char;
+        });
+        return result || (allowEmpty ? '' : TTS_DEFAULT_DECORATIVE_MARKS);
+    }
+
+    function normalizeTtsCleanupRules(raw) {
+        const defaults = createDefaultTtsCleanupRules();
+        const input = raw && typeof raw === 'object' ? raw : {};
+        const hasDecorativeMarks = Object.prototype.hasOwnProperty.call(input, 'decorativeMarks');
+        return {
+            stripLeadingNumber: input.stripLeadingNumber !== false,
+            stripBracketedAnnotations: input.stripBracketedAnnotations !== false,
+            stripPronunciationGuide: input.stripPronunciationGuide !== false,
+            stripPinyinGuide: input.stripPinyinGuide !== false,
+            stripDecorativeMarks: input.stripDecorativeMarks !== false,
+            decorativeMarks: normalizeTtsDecorativeMarks(
+                hasDecorativeMarks ? input.decorativeMarks : defaults.decorativeMarks,
+                { allowEmpty: hasDecorativeMarks }
+            )
+        };
+    }
 
     const Runtime = {
         warnedMessages: new Set(),
@@ -4020,6 +4634,10 @@
             masterVolume: 0.7,
             effectsEnabled: true,
             vibrationEnabled: true,
+            ttsAutoEnabled: false,
+            ttsRepeatEnabled: false,
+            ttsDefaultLang: '',
+            ttsCleanupRules: createDefaultTtsCleanupRules(),
             skillEnabled: true,
             skillGaugeMax: 100,
             skillGainCorrect: 20,
@@ -4076,6 +4694,10 @@
             this.d.masterVolume = this.d.masterVolume !== undefined ? this.d.masterVolume : 0.7;
             this.d.effectsEnabled = this.d.effectsEnabled !== undefined ? this.d.effectsEnabled : true;
             this.d.vibrationEnabled = this.d.vibrationEnabled !== undefined ? this.d.vibrationEnabled : true;
+            this.d.ttsAutoEnabled = this.d.ttsAutoEnabled === true;
+            this.d.ttsRepeatEnabled = this.d.ttsAutoEnabled === true && this.d.ttsRepeatEnabled === true;
+            this.d.ttsDefaultLang = String(this.d.ttsDefaultLang || '').trim();
+            this.d.ttsCleanupRules = normalizeTtsCleanupRules(this.d.ttsCleanupRules);
             this.d.skillEnabled = this.d.skillEnabled !== undefined ? this.d.skillEnabled : true;
             this.d.skillGaugeMax = this.d.skillGaugeMax || 100;
             this.d.skillGainCorrect = this.d.skillGainCorrect !== undefined ? this.d.skillGainCorrect : 20;
@@ -4122,6 +4744,29 @@
             card.source = String(card.source || card.reference || '').trim();
             if (!card.choiceGroup && card.choice_group) card.choiceGroup = card.choice_group;
             if (card.choiceGroup) card.choiceGroup = String(card.choiceGroup).trim();
+            this.normalizeCardTtsMetadata(card);
+        },
+
+        normalizeCardTtsMetadata(card) {
+            if (!card || typeof card !== 'object') return;
+            card.ttsText = String(card.ttsText || card.tts_text || '').trim();
+            card.ttsLang = String(card.ttsLang || card.tts_lang || '').trim();
+            card.ttsAuto = this.parseTruthy(card.ttsAuto !== undefined ? card.ttsAuto : card.tts_auto);
+            card.exampleTts = String(card.exampleTts || card.example_tts || '').trim();
+            card.exampleTtsLang = String(card.exampleTtsLang || card.example_tts_lang || '').trim();
+            delete card.tts_text;
+            delete card.tts_lang;
+            delete card.tts_auto;
+            delete card.example_tts;
+            delete card.example_tts_lang;
+        },
+
+        parseTruthy(value) {
+            if (value === true) return true;
+            if (value === false || value === null || value === undefined) return false;
+            const text = String(value).trim().toLowerCase();
+            if (!text) return false;
+            return ['true', '1', 'yes', 'y', 'on', 'はい', '有効', 'enabled'].includes(text);
         },
 
         parseFixedChoiceExplanations(value) {
@@ -4294,6 +4939,10 @@
                     this.d.masterVolume = data.masterVolume !== undefined ? data.masterVolume : 0.7;
                     this.d.effectsEnabled = data.effectsEnabled !== undefined ? data.effectsEnabled : true;
                     this.d.vibrationEnabled = data.vibrationEnabled !== undefined ? data.vibrationEnabled : true;
+                    this.d.ttsAutoEnabled = data.ttsAutoEnabled === true;
+                    this.d.ttsRepeatEnabled = data.ttsAutoEnabled === true && data.ttsRepeatEnabled === true;
+                    this.d.ttsDefaultLang = String(data.ttsDefaultLang || '').trim();
+                    this.d.ttsCleanupRules = normalizeTtsCleanupRules(data.ttsCleanupRules);
                     this.d.skillEnabled = data.skillEnabled !== undefined ? data.skillEnabled : true;
                     this.d.skillGaugeMax = data.skillGaugeMax || 100;
                     this.d.skillGainCorrect = data.skillGainCorrect !== undefined ? data.skillGainCorrect : 20;
@@ -4401,6 +5050,14 @@
             document.getElementById('cfg-volume').value = Math.round(this.d.masterVolume * 100);
             document.getElementById('cfg-effects-enabled').checked = this.d.effectsEnabled;
             document.getElementById('cfg-vibration-enabled').checked = this.d.vibrationEnabled;
+            const ttsAutoEl = document.getElementById('cfg-tts-auto-enabled');
+            if (ttsAutoEl) ttsAutoEl.checked = this.d.ttsAutoEnabled === true;
+            const ttsRepeatEl = document.getElementById('cfg-tts-repeat-enabled');
+            if (ttsRepeatEl) ttsRepeatEl.checked = this.d.ttsAutoEnabled === true && this.d.ttsRepeatEnabled === true;
+            const ttsDefaultLangEl = document.getElementById('tts-card-default-lang');
+            if (ttsDefaultLangEl) ttsDefaultLangEl.value = this.d.ttsDefaultLang || '';
+            this.d.ttsCleanupRules = normalizeTtsCleanupRules(this.d.ttsCleanupRules);
+            this.updateTtsRepeatUI();
             this.updateVolumeLabel();
             document.getElementById('cfg-skill-enabled').checked = this.d.skillEnabled;
             document.getElementById('cfg-skill-max').value = this.d.skillGaugeMax;
@@ -4455,6 +5112,15 @@
             document.getElementById('cfg-volume-label').innerText = `${volume}%`;
         },
 
+        updateTtsRepeatUI() {
+            const autoEl = document.getElementById('cfg-tts-auto-enabled');
+            const repeatEl = document.getElementById('cfg-tts-repeat-enabled');
+            if (!repeatEl) return;
+            const autoEnabled = autoEl ? autoEl.checked : this.d.ttsAutoEnabled === true;
+            repeatEl.disabled = !autoEnabled;
+            if (!autoEnabled) repeatEl.checked = false;
+        },
+
         saveSettings() {
             const getVal = (id, type) => type === 'float' ? parseFloat(document.getElementById(id).value) : type === 'int' ? parseInt(document.getElementById(id).value) : document.getElementById(id).checked;
             this.d.criticalMultiplier = getVal('cfg-critical', 'float');
@@ -4467,6 +5133,25 @@
             this.d.masterVolume = (parseInt(document.getElementById('cfg-volume').value) || 0) / 100;
             this.d.effectsEnabled = document.getElementById('cfg-effects-enabled').checked;
             this.d.vibrationEnabled = document.getElementById('cfg-vibration-enabled').checked;
+            const ttsAutoEl = document.getElementById('cfg-tts-auto-enabled');
+            this.d.ttsAutoEnabled = ttsAutoEl ? ttsAutoEl.checked : false;
+            const ttsRepeatEl = document.getElementById('cfg-tts-repeat-enabled');
+            this.d.ttsRepeatEnabled = this.d.ttsAutoEnabled === true && !!ttsRepeatEl?.checked;
+            const ttsDefaultLangEl = document.getElementById('tts-card-default-lang');
+            this.d.ttsDefaultLang = ttsDefaultLangEl ? String(ttsDefaultLangEl.value || '').trim() : '';
+            try {
+                if (typeof TtsTest !== 'undefined' && TtsTest.initialized && typeof TtsTest.readCleanupRulesFromUi === 'function') {
+                    this.d.ttsCleanupRules = TtsTest.readCleanupRulesFromUi();
+                } else {
+                    this.d.ttsCleanupRules = normalizeTtsCleanupRules(this.d.ttsCleanupRules);
+                }
+            } catch (e) {
+                this.d.ttsCleanupRules = normalizeTtsCleanupRules(this.d.ttsCleanupRules);
+            }
+            this.updateTtsRepeatUI();
+            if (!this.d.ttsAutoEnabled && typeof QuestionTtsLoop !== 'undefined') {
+                QuestionTtsLoop.stop({ cancelSpeech: true });
+            }
             this.updateVolumeLabel();
             this.d.skillEnabled = document.getElementById('cfg-skill-enabled').checked;
             this.d.skillGaugeMax = parseInt(document.getElementById('cfg-skill-max').value) || 100;
@@ -4593,6 +5278,7 @@
                         lastStudied: null
                     };
                     if (metadata.choiceGroup) card.choiceGroup = metadata.choiceGroup;
+                    this.applyTtsMetadataToCard(card, metadata);
                     cards.push(card);
                 }
             }
@@ -4912,6 +5598,25 @@
             return headerRow.findIndex((cell, index) => index > 0 && names.includes(this.normalizeDelimitedHeader(cell)));
         },
 
+        getColumnIndexByNames(headerRow, names) {
+            if (!headerRow || !Array.isArray(names)) return -1;
+            const normalizedNames = names.map(name => this.normalizeDelimitedHeader(name));
+            return headerRow.findIndex((cell, index) => index > 0 && normalizedNames.includes(this.normalizeDelimitedHeader(cell)));
+        },
+
+        getTtsColumnMap(headerRow) {
+            if (!headerRow || headerRow.length < 2) {
+                return { text: -1, lang: -1, auto: -1, exampleText: -1, exampleLang: -1 };
+            }
+            return {
+                text: this.getColumnIndexByNames(headerRow, ['tts_text', 'tts text', '読み上げ', '読み上げテキスト', '音声テキスト']),
+                lang: this.getColumnIndexByNames(headerRow, ['tts_lang', 'tts lang', 'tts_language', '読み上げ言語', '音声言語']),
+                auto: this.getColumnIndexByNames(headerRow, ['tts_auto', 'tts auto', 'auto_tts', '自動読み上げ', '音声自動再生']),
+                exampleText: this.getColumnIndexByNames(headerRow, ['example_tts', 'example tts', '例文音声', '例文読み上げ', 'example_audio_text']),
+                exampleLang: this.getColumnIndexByNames(headerRow, ['example_tts_lang', 'example tts lang', 'example_tts_language', '例文音声言語', '例文読み上げ言語'])
+            };
+        },
+
         getFixedChoicesColumnIndex(headerRow) {
             if (!headerRow || headerRow.length < 3) return -1;
             const names = [
@@ -4968,6 +5673,7 @@
             const answerColumnIndex = hasHeader ? this.getAnswerColumnIndex(firstRow) : -1;
             const explanationColumnIndex = hasHeader ? this.getGeneralExplanationColumnIndex(firstRow) : -1;
             const sourceColumnIndex = hasHeader ? this.getSourceColumnIndex(firstRow) : -1;
+            const ttsColumnMap = hasHeader ? this.getTtsColumnMap(firstRow) : { text: -1, lang: -1, auto: -1, exampleText: -1, exampleLang: -1 };
             const hasFixedChoices = fixedChoiceColumnIndexes.length >= 2 || choicesColumnIndex >= 0;
             const groupColumnIndex = hasHeader
                 ? this.getChoiceGroupColumnIndex(firstRow)
@@ -4988,6 +5694,7 @@
                 answerColumnIndex,
                 explanationColumnIndex,
                 sourceColumnIndex,
+                ttsColumnMap,
                 hasFixedChoices
             };
         },
@@ -5227,9 +5934,50 @@
                 .trim();
         },
 
+        getTtsMetadataFromRow(row, map, parser) {
+            const columns = map?.ttsColumnMap || {};
+            const read = index => index >= 0 ? this.cleanImportedCell(row[index], parser) : '';
+            return {
+                ttsText: read(columns.text),
+                ttsLang: read(columns.lang),
+                ttsAuto: columns.auto >= 0 ? this.parseTruthy(read(columns.auto)) : false,
+                exampleTts: read(columns.exampleText),
+                exampleTtsLang: read(columns.exampleLang)
+            };
+        },
+
+        applyTtsMetadataToCard(card, metadata = {}) {
+            if (!card || typeof card !== 'object') return card;
+            if (metadata.ttsText) card.ttsText = metadata.ttsText;
+            if (metadata.ttsLang) card.ttsLang = metadata.ttsLang;
+            if (metadata.ttsAuto) card.ttsAuto = true;
+            if (metadata.exampleTts) card.exampleTts = metadata.exampleTts;
+            if (metadata.exampleTtsLang) card.exampleTtsLang = metadata.exampleTtsLang;
+            return card;
+        },
+
+        getNonAnswerColumnIndexes(map) {
+            const indexes = new Set([
+                map?.groupColumnIndex,
+                map?.excludeColumnIndex,
+                map?.explanationColumnIndex,
+                map?.sourceColumnIndex,
+                map?.choicesColumnIndex,
+                map?.correctColumnIndex
+            ]);
+            (map?.fixedChoiceColumnIndexes || []).forEach(index => indexes.add(index));
+            (map?.fixedChoiceExplanationColumnDetails || []).forEach(item => indexes.add(item.index));
+            Object.values(map?.ttsColumnMap || {}).forEach(index => indexes.add(index));
+            indexes.delete(-1);
+            indexes.delete(undefined);
+            indexes.delete(null);
+            return indexes;
+        },
+
         scoreDeckRows(rows) {
             const map = this.getImportColumnMap(rows);
             const { hasHeader, groupColumnIndex, excludeColumnIndex } = map;
+            const nonAnswerColumnIndexes = this.getNonAnswerColumnIndexes(map);
             const p = new DOMParser();
             return (rows || []).reduce((count, row, index) => {
                 if (!row || row.length < 1) return count;
@@ -5242,6 +5990,7 @@
                     cellIndex > 0
                     && cellIndex !== groupColumnIndex
                     && cellIndex !== excludeColumnIndex
+                    && !nonAnswerColumnIndexes.has(cellIndex)
                     && String(cell || '').trim().length > 0
                 );
                 return count + (hasQ && (hasA || hasCloze) ? 1 : 0);
@@ -5253,10 +6002,12 @@
             const deck = [];
             const map = this.getImportColumnMap(rows);
             const { hasHeader, groupColumnIndex, excludeColumnIndex } = map;
+            const nonAnswerColumnIndexes = this.getNonAnswerColumnIndexes(map);
             (rows || []).forEach((row, index) => {
                 if (!row || row.length < 1) return;
                 if (index === 0 && hasHeader) return;
                 const q = this.cleanImportedCell(row[0], p);
+                const ttsMetadata = this.getTtsMetadataFromRow(row, map, p);
                 const choiceGroup = groupColumnIndex >= 0
                     ? this.cleanImportedCell(row[groupColumnIndex], p)
                     : '';
@@ -5281,23 +6032,22 @@
                         lastStudied: null
                     };
                     if (choiceGroup) card.choiceGroup = choiceGroup;
+                    this.applyTtsMetadataToCard(card, ttsMetadata);
                     deck.push(card);
                     return;
                 }
                 if (this.hasClozeText(q)) {
-                    deck.push(...this.createClozeCards(q, p, { choiceGroup, choiceExcludeWords }));
+                    deck.push(...this.createClozeCards(q, p, { choiceGroup, choiceExcludeWords, ...ttsMetadata }));
                     return;
                 }
-                const a = row
-                    .slice(1)
-                    .filter((cell, offset) => {
-                        const cellIndex = offset + 1;
-                        return cellIndex !== groupColumnIndex
-                            && cellIndex !== excludeColumnIndex;
-                    })
-                    .map(cell => this.cleanImportedCell(cell, p))
-                    .filter(Boolean)
-                    .join('\n');
+                const a = map.answerColumnIndex >= 0
+                    ? this.cleanImportedCell(row[map.answerColumnIndex], p)
+                    : row
+                        .slice(1)
+                        .filter((cell, offset) => !nonAnswerColumnIndexes.has(offset + 1))
+                        .map(cell => this.cleanImportedCell(cell, p))
+                        .filter(Boolean)
+                        .join('\n');
                 if (q && a) {
                     const card = {
                         q,
@@ -5311,6 +6061,7 @@
                         lastStudied: null
                     };
                     if (choiceGroup) card.choiceGroup = choiceGroup;
+                    this.applyTtsMetadataToCard(card, ttsMetadata);
                     deck.push(card);
                 }
             });
@@ -5865,6 +6616,231 @@
     function getCardChoiceGroup(card) {
         if (!card || typeof card !== 'object') return '';
         return normalizeChoiceGroup(card.choiceGroup || card.choice_group || card.synonymGroup || card.group);
+    }
+
+    function getCardTtsText(card) {
+        if (!card || typeof card !== 'object') return '';
+        return String(card.ttsText || card.tts_text || '').trim();
+    }
+
+    function getCardTtsLang(card) {
+        if (!card || typeof card !== 'object') return '';
+        return String(card.ttsLang || card.tts_lang || '').trim();
+    }
+
+    function getCardTtsAuto(card) {
+        if (!card || typeof card !== 'object') return false;
+        const raw = card.ttsAuto !== undefined ? card.ttsAuto : card.tts_auto;
+        if (raw === true) return true;
+        if (raw === false || raw === null || raw === undefined) return false;
+        return ['true', '1', 'yes', 'y', 'on', 'はい', '有効', 'enabled'].includes(String(raw).trim().toLowerCase());
+    }
+
+    function getCardExampleTts(card) {
+        if (!card || typeof card !== 'object') return '';
+        return String(card.exampleTts || card.example_tts || '').trim();
+    }
+
+    function getCardExampleTtsLang(card) {
+        if (!card || typeof card !== 'object') return '';
+        return String(card.exampleTtsLang || card.example_tts_lang || '').trim();
+    }
+
+    function getTtsCleanupRules() {
+        try {
+            if (typeof DB !== 'undefined' && DB.d) {
+                DB.d.ttsCleanupRules = normalizeTtsCleanupRules(DB.d.ttsCleanupRules);
+                return DB.d.ttsCleanupRules;
+            }
+        } catch (e) { }
+        return createDefaultTtsCleanupRules();
+    }
+
+    function escapeRegExpForTts(value) {
+        return String(value || '').replace(/[-.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    function getTtsDecorativeCharClassContent(rules, extraMarks = '') {
+        const normalized = normalizeTtsCleanupRules(rules);
+        const source = normalizeTtsDecorativeMarks(
+            `${normalized.decorativeMarks || ''}${extraMarks || ''}`,
+            { allowEmpty: true }
+        );
+        return Array.from(source).map(escapeRegExpForTts).join('');
+    }
+
+    function stripLeadingQuestionNumberForTts(text, rules = getTtsCleanupRules()) {
+        const normalizedRules = normalizeTtsCleanupRules(rules);
+        let result = String(text || '');
+        if (!normalizedRules.stripLeadingNumber) return result;
+
+        result = result
+            .replace(/^\s*第\s*[0-9０-９一二三四五六七八九十百千]+\s*(?:問|题|題)\s*[.)\]、。．:：\-－]?\s*/u, '')
+            .replace(/^\s*[\(（]\s*[0-9０-９]{1,5}\s*[\)）]\s*/u, '')
+            .replace(/^\s*(?:Q|No\.?|№|#)\s*[0-9０-９]{1,6}(?=[A-Za-z\u3400-\u9FFF])/iu, '')
+            .replace(/^\s*(?:Q|No\.?|№|#)\s*[0-9０-９]{1,6}\s*[.)\]、。．:：\-－]?\s+/iu, '')
+            .replace(/^\s*(?:Q|No\.?|№|#)?\s*[0-9０-９]{1,6}\s*[.)\]、。．:：\-－]\s*/iu, '')
+            .replace(/^\s*[0-9０-９]{1,6}\s+/u, '')
+            .replace(/^\s*[\u2460-\u2473\u3251-\u325F]\s*/u, '');
+
+        const markClass = normalizedRules.stripDecorativeMarks
+            ? getTtsDecorativeCharClassContent(normalizedRules)
+            : '';
+        if (markClass) {
+            result = result
+                .replace(new RegExp(`^\\s*[${markClass}]*\\s*(?:Q|No\\.?|№|#)\\s*[0-9０-９]{1,6}(?=[A-Za-z\\u3400-\\u9FFF])`, 'iu'), '')
+                .replace(new RegExp(`^\\s*[${markClass}]*\\s*[0０][0-9０-９]{1,5}(?=[A-Za-z\\u3400-\\u9FFF])`, 'u'), '')
+                .replace(new RegExp(`^\\s*[${markClass}]+\\s*(?:Q|No\\.?|№|#)?\\s*[0-9０-９]{1,6}(?=[A-Za-z\\u3400-\\u9FFF])`, 'iu'), '')
+                .replace(new RegExp(`^\\s*[${markClass}]+\\s*(?:Q|No\\.?|№|#)?\\s*[0-9０-９]{1,6}\\s*[.)\\]、。．:：\\-－]?\\s+`, 'iu'), '')
+                .replace(new RegExp(`^\\s*[${markClass}]+\\s*(?:Q|No\\.?|№|#)?\\s*[0-9０-９]{1,6}\\s*[.)\\]、。．:：\\-－]\\s*`, 'iu'), '');
+        }
+
+        return result;
+    }
+
+    function stripBracketedAnnotationsForTts(text, rules = getTtsCleanupRules()) {
+        const normalizedRules = normalizeTtsCleanupRules(rules);
+        if (!normalizedRules.stripBracketedAnnotations) return String(text || '');
+        let result = String(text || '');
+        const pairs = [
+            [/\s*\(([^()\n]{1,100})\)\s*$/u, /^\s*\(([^()\n]{1,100})\)\s*/u],
+            [/\s*（([^（）\n]{1,100})）\s*$/u, /^\s*（([^（）\n]{1,100})）\s*/u],
+            [/\s*\[([^\[\]\n]{1,100})\]\s*$/u, /^\s*\[([^\[\]\n]{1,100})\]\s*/u],
+            [/\s*［([^［］\n]{1,100})］\s*$/u, /^\s*［([^［］\n]{1,100})］\s*/u],
+            [/\s*【([^【】\n]{1,100})】\s*$/u, /^\s*【([^【】\n]{1,100})】\s*/u],
+            [/\s*〔([^〔〕\n]{1,100})〕\s*$/u, /^\s*〔([^〔〕\n]{1,100})〕\s*/u],
+            [/\s*〈([^〈〉\n]{1,100})〉\s*$/u, /^\s*〈([^〈〉\n]{1,100})〉\s*/u],
+            [/\s*《([^《》\n]{1,100})》\s*$/u, /^\s*《([^《》\n]{1,100})》\s*/u],
+            [/\s*「([^「」\n]{1,100})」\s*$/u, /^\s*「([^「」\n]{1,100})」\s*/u],
+            [/\s*『([^『』\n]{1,100})』\s*$/u, /^\s*『([^『』\n]{1,100})』\s*/u],
+            [/\s*<([^<>\n]{1,100})>\s*$/u, /^\s*<([^<>\n]{1,100})>\s*/u],
+            [/\s*\{([^{}\n]{1,100})\}\s*$/u, /^\s*\{([^{}\n]{1,100})\}\s*/u],
+            [/\s*｛([^｛｝\n]{1,100})｝\s*$/u, /^\s*｛([^｛｝\n]{1,100})｝\s*/u],
+            [/\s*[\/／∕⁄]\s*([^\/／∕⁄\n]{1,100})\s*[\/／∕⁄]\s*$/u, null]
+        ];
+
+        for (let i = 0; i < 4; i++) {
+            const before = result;
+            for (const [trailingPattern, leadingPattern] of pairs) {
+                result = result.replace(trailingPattern, (match, body, offset, fullText) => (
+                    fullText.slice(0, offset).trim() ? '' : match
+                ));
+                if (leadingPattern) {
+                    result = result.replace(leadingPattern, (match, body, offset, fullText) => (
+                        fullText.slice(match.length).trim() ? '' : match
+                    ));
+                }
+            }
+            result = result.trim();
+            if (result === before) break;
+        }
+
+        return result;
+    }
+
+    function stripDecorativeMarksForTts(text, rules = getTtsCleanupRules()) {
+        const normalizedRules = normalizeTtsCleanupRules(rules);
+        if (!normalizedRules.stripDecorativeMarks) return String(text || '').trim();
+        const markClass = getTtsDecorativeCharClassContent(normalizedRules);
+        const edgeClass = getTtsDecorativeCharClassContent(normalizedRules, TTS_DECORATIVE_EDGE_MARKS);
+        if (!markClass && !edgeClass) return String(text || '').trim();
+        let result = String(text || '');
+        if (markClass) {
+            result = result.replace(new RegExp(`[${markClass}]+`, 'gu'), ' ');
+        }
+        if (edgeClass) {
+            result = result
+                .replace(new RegExp(`^[\\s${edgeClass}]+`, 'u'), '')
+                .replace(new RegExp(`[\\s${edgeClass}]+$`, 'u'), '');
+        }
+        return result.trim();
+    }
+
+    function looksLikePronunciationGuide(value) {
+        const text = String(value || '').trim();
+        if (!text || text.length > 80) return false;
+        return /[ˈˌːɑɐɒæɓʙβɔɕçɗɖðəɚɜɝɛɡɣɤɥɦɨɪʝɯɲŋøɵœɸɹɾɻʁʂʃʈθʊʋʌʐʑʒʔ]/u.test(text)
+            || /[əɪʊæʌɔɑː]/u.test(text)
+            || /^[A-Za-z\s.'’\-ˈˌ:]+$/.test(text) && /[ˈˌ]/u.test(text);
+    }
+
+    function stripTrailingPronunciationGuideForTts(text, rules = getTtsCleanupRules()) {
+        const normalizedRules = normalizeTtsCleanupRules(rules);
+        if (!normalizedRules.stripPronunciationGuide) return String(text || '');
+        let result = String(text || '');
+        const stripPair = (pattern) => {
+            result = result.replace(pattern, (match, body) => (
+                looksLikePronunciationGuide(body) ? '' : match
+            ));
+        };
+        stripPair(/\s*\/([^\/\n]{1,80})\/\s*$/u);
+        stripPair(/\s*\[([^\]\n]{1,80})\]\s*$/u);
+        stripPair(/\s*\(([^\)\n]{1,80})\)\s*$/u);
+        result = result.replace(/\s+([^\s\n]*[ˈˌːɑɐɒæɓʙβɔɕçɗɖðəɚɜɝɛɡɣɤɥɦɨɪʝɯɲŋøɵœɸɹɾɻʁʂʃʈθʊʋʌʐʑʒʔ][^\s\n]*)\s*$/u, (match, body) => (
+            looksLikePronunciationGuide(body) ? '' : match
+        ));
+        return result;
+    }
+
+    function stripToneMarks(value) {
+        return String(value || '')
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[üǖǘǚǜ]/gi, 'v');
+    }
+
+    function isPinyinSyllable(value) {
+        const syllable = stripToneMarks(value).replace(/[1-5]$/u, '').toLowerCase();
+        return /^(?:zh|ch|sh|[bpmfdtnlgkhjqxzcsywr])?(?:a|ai|an|ang|ao|e|ei|en|eng|er|o|ong|ou|i|ia|ian|iang|iao|ie|in|ing|iong|iu|u|ua|uai|uan|uang|ui|un|uo|v|ve|van|vn|ue|uan)$/u.test(syllable);
+    }
+
+    function looksLikePinyinGuide(value) {
+        const text = String(value || '').trim();
+        if (!text || text.length > 80) return false;
+        const hasToneMark = /[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜüńňǹḿ]/iu.test(text);
+        const hasToneNumber = /[a-züv][1-5]\b/iu.test(text);
+        if (hasToneMark || hasToneNumber) return true;
+        const tokens = text.split(/[\s'’\-・･·\/／∕⁄∥‖|｜]+/u).filter(Boolean);
+        return tokens.length > 0 && tokens.length <= 4 && tokens.every(isPinyinSyllable);
+    }
+
+    function stripTrailingPinyinForTts(text, rules = getTtsCleanupRules()) {
+        const normalizedRules = normalizeTtsCleanupRules(rules);
+        if (!normalizedRules.stripPinyinGuide) return String(text || '');
+        let result = String(text || '');
+        if (!/[\u3400-\u9FFF]/u.test(result)) return result;
+        result = result.replace(/\s*[\(\[（【]\s*([A-Za-züÜǖǘǚǜāáǎàēéěèīíǐìōóǒòūúǔùńňǹḿ0-9\s'’\-・･·\/／∕⁄∥‖|｜]{1,80})\s*[\)\]）】]\s*$/u, (match, body) => (
+            looksLikePinyinGuide(body) ? '' : match
+        ));
+        result = result.replace(/\s+([A-Za-züÜǖǘǚǜāáǎàēéěèīíǐìōóǒòūúǔùńňǹḿ0-9\s'’\-・･·\/／∕⁄∥‖|｜]{1,80})\s*$/u, (match, body) => (
+            looksLikePinyinGuide(body) ? '' : match
+        ));
+        return result;
+    }
+
+    function normalizeQuestionTextForTts(text, options = {}) {
+        const original = String(text || '').trim();
+        if (!original) return '';
+        const rules = normalizeTtsCleanupRules(options.rules || getTtsCleanupRules());
+        let result = stripLeadingQuestionNumberForTts(original, rules);
+        for (let i = 0; i < 3; i++) {
+            const before = result;
+            result = stripLeadingQuestionNumberForTts(result, rules);
+            result = stripBracketedAnnotationsForTts(result, rules);
+            result = stripTrailingPronunciationGuideForTts(result, rules);
+            result = stripTrailingPinyinForTts(result, rules);
+            result = stripDecorativeMarksForTts(result, rules);
+            result = result.replace(/\s{2,}/g, ' ').trim();
+            if (result === before) break;
+        }
+        return result || original;
+    }
+
+    function getCardSpeakableText(card) {
+        const explicit = getCardTtsText(card);
+        if (explicit) return explicit;
+        const question = String(card?.q || '').trim();
+        return normalizeQuestionTextForTts(question);
     }
 
     function isSameChoiceGroup(a, b) {
@@ -6459,6 +7435,7 @@
 
     function goHome() {
         if (typeof DB !== 'undefined' && DB.savePending) DB.save({ skipSizeLog: true });
+        if (typeof QuestionTtsLoop !== 'undefined') QuestionTtsLoop.stop({ cancelSpeech: true });
         if (typeof Game !== 'undefined') {
             Game.battleActive = false;
             Game.battleToken++;
@@ -7079,6 +8056,15 @@
                 if (explanation) item.explanation = explanation;
                 const source = getCardSource(card);
                 if (source) item.source = source;
+                const ttsText = getCardTtsText(card);
+                if (ttsText) item.ttsText = ttsText;
+                const ttsLang = getCardTtsLang(card);
+                if (ttsLang) item.ttsLang = ttsLang;
+                if (getCardTtsAuto(card)) item.ttsAuto = true;
+                const exampleTts = getCardExampleTts(card);
+                if (exampleTts) item.exampleTts = exampleTts;
+                const exampleTtsLang = getCardExampleTtsLang(card);
+                if (exampleTtsLang) item.exampleTtsLang = exampleTtsLang;
                 return item;
             }).filter(item => item.q && item.a);
             if (items.length !== settings.questionCount) {
@@ -7293,11 +8279,37 @@
                 transfer.receivedCount -= transfer.chunks[index].length;
                 transfer.receivedCount += items.length;
             }
-            transfer.chunks[index] = items.map((item, itemIndex) => ({
-                n: parseInt(item.n) || (index * 1000 + itemIndex + 1),
-                q: String(item.q || ''),
-                a: String(item.a || '')
-            }));
+            transfer.chunks[index] = items.map((item, itemIndex) => {
+                const received = {
+                    n: parseInt(item.n) || (index * 1000 + itemIndex + 1),
+                    q: String(item.q || ''),
+                    a: String(item.a || '')
+                };
+                const choiceKey = getCardChoiceKey(item);
+                if (choiceKey) received.choiceKey = choiceKey;
+                const choiceExcludeWords = Array.from(getCardChoiceExcludeSet(item));
+                if (choiceExcludeWords.length) received.choiceExcludeWords = choiceExcludeWords;
+                const choiceGroup = getCardChoiceGroup(item);
+                if (choiceGroup) received.choiceGroup = choiceGroup;
+                const fixedChoices = getCardFixedChoices(item);
+                if (fixedChoices.length) received.fixedChoices = fixedChoices;
+                const fixedChoiceExplanations = getCardFixedChoiceExplanations(item);
+                if (fixedChoiceExplanations.some(Boolean)) received.fixedChoiceExplanations = fixedChoiceExplanations;
+                const explanation = getCardGeneralExplanation(item);
+                if (explanation) received.explanation = explanation;
+                const source = getCardSource(item);
+                if (source) received.source = source;
+                const ttsText = getCardTtsText(item);
+                if (ttsText) received.ttsText = ttsText;
+                const ttsLang = getCardTtsLang(item);
+                if (ttsLang) received.ttsLang = ttsLang;
+                if (getCardTtsAuto(item)) received.ttsAuto = true;
+                const exampleTts = getCardExampleTts(item);
+                if (exampleTts) received.exampleTts = exampleTts;
+                const exampleTtsLang = getCardExampleTtsLang(item);
+                if (exampleTtsLang) received.exampleTtsLang = exampleTtsLang;
+                return received;
+            });
             this.updateQuestionStatus();
         },
 
@@ -7393,15 +8405,27 @@
                 deckName: String(questionSet.deckName || settings.deckName || ''),
                 questionCount: questionSet.items.length,
                 createdAt: parseInt(questionSet.createdAt) || Date.now(),
-                items: questionSet.items.map((item, index) => ({
-                    n: index + 1,
-                    q: String(item.q),
-                    a: String(item.a),
-                    fixedChoices: getCardFixedChoices(item),
-                    fixedChoiceExplanations: getCardFixedChoiceExplanations(item),
-                    explanation: getCardGeneralExplanation(item),
-                    source: getCardSource(item)
-                }))
+                items: questionSet.items.map((item, index) => {
+                    const normalized = {
+                        n: index + 1,
+                        q: String(item.q),
+                        a: String(item.a),
+                        fixedChoices: getCardFixedChoices(item),
+                        fixedChoiceExplanations: getCardFixedChoiceExplanations(item),
+                        explanation: getCardGeneralExplanation(item),
+                        source: getCardSource(item)
+                    };
+                    const ttsText = getCardTtsText(item);
+                    if (ttsText) normalized.ttsText = ttsText;
+                    const ttsLang = getCardTtsLang(item);
+                    if (ttsLang) normalized.ttsLang = ttsLang;
+                    if (getCardTtsAuto(item)) normalized.ttsAuto = true;
+                    const exampleTts = getCardExampleTts(item);
+                    if (exampleTts) normalized.exampleTts = exampleTts;
+                    const exampleTtsLang = getCardExampleTtsLang(item);
+                    if (exampleTtsLang) normalized.exampleTtsLang = exampleTtsLang;
+                    return normalized;
+                })
             };
             this.questionSetSynced = true;
             this.questionSetSent = true;
@@ -9924,6 +10948,7 @@
 
     function quitBattle() {
         if (confirm("戦闘を中断しますか？")) {
+            QuestionTtsLoop.stop({ cancelSpeech: true });
             Snd.cancel();
             Game.battleActive = false;
             Game.battleToken++;
@@ -9933,14 +10958,92 @@
         }
     }
 
+    function updateQuestionTtsControl() {
+        const btn = document.getElementById('q-tts-btn');
+        if (!btn) return;
+        const canSpeak = !!getCardSpeakableText(Game.cur);
+        btn.style.display = canSpeak ? 'inline-flex' : 'none';
+        btn.disabled = !canSpeak;
+    }
+
+    const QuestionTtsLoop = {
+        token: 0,
+        timer: null,
+        active: false,
+        card: null,
+        battleToken: 0,
+        repeatDelayMs: 500,
+
+        stop(options = {}) {
+            this.token++;
+            this.active = false;
+            this.card = null;
+            this.battleToken = 0;
+            if (this.timer) {
+                clearTimeout(this.timer);
+                this.timer = null;
+            }
+            if (options.cancelSpeech && typeof TtsTest !== 'undefined') {
+                TtsTest.stop({ skipQuestionLoop: true });
+            }
+        },
+
+        start(card, battleToken, repeat = false) {
+            this.stop({ cancelSpeech: true });
+            if (!card || !getCardSpeakableText(card) || typeof TtsTest === 'undefined') return;
+            const token = ++this.token;
+            this.active = repeat === true;
+            this.card = card;
+            this.battleToken = battleToken;
+
+            const scheduleNext = () => {
+                if (!this.active || this.token !== token) return;
+                if (!isCurrentBattle(battleToken) || Game.cur !== card || Game.pHP <= 0 || Game.eHP <= 0) return;
+                this.timer = window.setTimeout(play, this.repeatDelayMs);
+            };
+
+            const play = () => {
+                if (this.token !== token) return;
+                if (!isCurrentBattle(battleToken) || Game.cur !== card || Game.pHP <= 0 || Game.eHP <= 0) return;
+                const ok = TtsTest.speakCard(card, {
+                    auto: true,
+                    onDone: scheduleNext,
+                    onError: scheduleNext
+                });
+                if (!ok) this.active = false;
+            };
+
+            play();
+        }
+    };
+
+    function playCurrentQuestionTts() {
+        if (!Game.cur || typeof TtsTest === 'undefined') return;
+        QuestionTtsLoop.stop({ cancelSpeech: true });
+        TtsTest.speakCard(Game.cur);
+    }
+
+    function maybeAutoPlayQuestionTts(battleToken) {
+        if (!DB.d.ttsAutoEnabled || !getCardSpeakableText(Game.cur)) return;
+        const card = Game.cur;
+        const autoToken = QuestionTtsLoop.token;
+        window.setTimeout(() => {
+            if (QuestionTtsLoop.token !== autoToken) return;
+            if (!isCurrentBattle(battleToken) || Game.cur !== card || Game.pHP <= 0 || Game.eHP <= 0) return;
+            QuestionTtsLoop.start(card, battleToken, DB.d.ttsRepeatEnabled === true);
+        }, 120);
+    }
+
     function nextQuestion() {
         if (!Game.battleActive) return;
         if (Game.superComboResolving) {
             Game.superComboNeedsNextQuestion = true;
             return;
         }
+        const battleToken = Game.battleToken;
         if (Game.eHP <= 0) return finishBattle(true);
         if (Game.pHP <= 0) return finishBattle(false);
+        QuestionTtsLoop.stop({ cancelSpeech: true });
         const area = document.getElementById('choices');
         if (area) area.style.pointerEvents = 'auto';
 
@@ -9965,6 +11068,8 @@
         document.getElementById('q-progress').innerText = `${Game.idx}/${Game.list.length}`;
         document.getElementById('q-combo').innerText = Game.combo;
         FX.feedback('');
+        updateQuestionTtsControl();
+        maybeAutoPlayQuestionTts(battleToken);
 
         const deck = DB.getCurrentDeck();
         const choices = buildAnswerChoices(deck, Game.cur, 4);
@@ -10105,6 +11210,7 @@
         if (Game.superComboResolving) return;
         const battleToken = Game.battleToken;
         if (area.style.pointerEvents === 'none') return;
+        QuestionTtsLoop.stop({ cancelSpeech: true });
         area.style.pointerEvents = 'none';
 
         const btns = document.querySelectorAll('.c-btn');
@@ -10321,6 +11427,7 @@
     }
 
     function finishBattle(win) {
+        QuestionTtsLoop.stop({ cancelSpeech: true });
         Game.battleActive = false;
         Game.battleToken++;
         if (DB.savePending) DB.save({ skipSizeLog: true });
@@ -10564,11 +11671,64 @@
         const shouldHideAnswer = updateOverlayFixedChoices(item);
         const answerSection = document.getElementById('ov-answer-section');
         if (answerSection) answerSection.style.display = shouldHideAnswer ? 'none' : 'block';
+        updateOverlayTts(item);
 
         document.getElementById('btn-ov-prev').disabled = (overlayIndex === 0);
         document.getElementById('btn-ov-next-item').disabled = (overlayIndex === overlayList.length - 1);
 
         updateOverlayStar();
+    }
+
+    function updateOverlayTts(item) {
+        const questionSection = document.getElementById('ov-tts-section');
+        const questionInfo = document.getElementById('ov-tts-info');
+        const questionActions = document.getElementById('ov-tts-actions');
+        const exampleSection = document.getElementById('ov-example-tts-section');
+        const exampleInfo = document.getElementById('ov-example-tts-info');
+        const exampleActions = document.getElementById('ov-example-tts-actions');
+
+        const questionText = getCardSpeakableText(item);
+        const questionLang = getCardTtsLang(item);
+        if (questionSection && questionInfo && questionActions) {
+            questionActions.textContent = '';
+            if (questionText) {
+                questionSection.style.display = 'block';
+                questionInfo.textContent = questionLang ? `${questionText} / ${questionLang}` : questionText;
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-blue btn-small tts-inline-btn';
+                btn.textContent = '問題音声';
+                btn.onclick = () => {
+                    if (typeof TtsTest !== 'undefined') TtsTest.speakCard(item);
+                };
+                questionActions.appendChild(btn);
+            } else {
+                questionSection.style.display = 'none';
+                questionInfo.textContent = '';
+            }
+        }
+
+        const exampleText = getCardExampleTts(item);
+        const exampleLang = getCardExampleTtsLang(item) || questionLang;
+        if (exampleSection && exampleInfo && exampleActions) {
+            exampleActions.textContent = '';
+            if (exampleText) {
+                exampleSection.style.display = 'block';
+                exampleInfo.textContent = exampleLang ? `${exampleText} / ${exampleLang}` : exampleText;
+                const btn = document.createElement('button');
+                btn.className = 'btn btn-green btn-small tts-inline-btn';
+                btn.textContent = '例文音声';
+                btn.onclick = () => {
+                    if (typeof TtsTest === 'undefined') return;
+                    TtsTest.speakText(exampleText, exampleLang, {
+                        voiceSlot: TtsTest.getSlotForLang(exampleLang)
+                    });
+                };
+                exampleActions.appendChild(btn);
+            } else {
+                exampleSection.style.display = 'none';
+                exampleInfo.textContent = '';
+            }
+        }
     }
 
     function updateOverlaySessionAnswer(item) {
@@ -11754,6 +12914,10 @@
                 masterVolume: DB.d.masterVolume,
                 effectsEnabled: DB.d.effectsEnabled,
                 vibrationEnabled: DB.d.vibrationEnabled,
+                ttsAutoEnabled: DB.d.ttsAutoEnabled,
+                ttsRepeatEnabled: DB.d.ttsRepeatEnabled,
+                ttsDefaultLang: DB.d.ttsDefaultLang,
+                ttsCleanupRules: normalizeTtsCleanupRules(DB.d.ttsCleanupRules),
                 skillEnabled: DB.d.skillEnabled,
                 skillGaugeMax: DB.d.skillGaugeMax,
                 skillGainCorrect: DB.d.skillGainCorrect,
@@ -11999,6 +13163,961 @@
     function isZipFile(filename) {
         return /\.zip$/i.test(String(filename || ''));
     }
+
+    const TtsTest = {
+        webVoices: [],
+        androidVoices: [],
+        voices: [],
+        selectedVoiceKey: '',
+        storageKey: 'mozTtsTestSelectedVoice',
+        slotStoragePrefix: 'mozTtsSelectedVoice.',
+        languageCategoryStorageKey: 'mozTtsVoiceLanguageCategory',
+        initialized: false,
+        playToken: 0,
+        slotSelectIds: {
+            free: 'tts-voice-select',
+            en: 'tts-voice-en',
+            ja: 'tts-voice-ja',
+            zh: 'tts-voice-zh',
+            default: 'tts-voice-default'
+        },
+        languageCategories: [
+            { value: '', label: 'すべての言語', lang: '' },
+            { value: 'en', label: '英語 en', lang: 'en-US' },
+            { value: 'ja', label: '日本語 ja', lang: 'ja-JP' },
+            { value: 'zh', label: '中国語 zh', lang: 'zh-CN' },
+            { value: 'de', label: 'ドイツ語 de', lang: 'de-DE' },
+            { value: 'ko', label: '韓国語 ko', lang: 'ko-KR' },
+            { value: 'fr', label: 'フランス語 fr', lang: 'fr-FR' },
+            { value: 'es', label: 'スペイン語 es', lang: 'es-ES' },
+            { value: 'it', label: 'イタリア語 it', lang: 'it-IT' },
+            { value: 'pt', label: 'ポルトガル語 pt', lang: 'pt-BR' },
+            { value: 'ru', label: 'ロシア語 ru', lang: 'ru-RU' },
+            { value: 'ar', label: 'アラビア語 ar', lang: 'ar-SA' },
+            { value: 'hi', label: 'ヒンディー語 hi', lang: 'hi-IN' },
+            { value: 'th', label: 'タイ語 th', lang: 'th-TH' },
+            { value: 'vi', label: 'ベトナム語 vi', lang: 'vi-VN' },
+            { value: 'id', label: 'インドネシア語 id', lang: 'id-ID' },
+            { value: 'nl', label: 'オランダ語 nl', lang: 'nl-NL' },
+            { value: 'tr', label: 'トルコ語 tr', lang: 'tr-TR' },
+            { value: 'pl', label: 'ポーランド語 pl', lang: 'pl-PL' },
+            { value: 'other', label: 'その他', lang: '' }
+        ],
+
+        init() {
+            if (this.initialized) return;
+            this.initialized = true;
+            this.bindControls();
+            this.updateSettingLabels();
+            this.renderCleanupRuleSettings();
+            this.refreshVoices();
+            const synth = this.getSynth();
+            if (synth && typeof synth.addEventListener === 'function') {
+                synth.addEventListener('voiceschanged', () => this.refreshVoices());
+            } else if (synth) {
+                synth.onvoiceschanged = () => this.refreshVoices();
+            }
+            [400, 1200, 2500].forEach(delay => {
+                window.setTimeout(() => this.refreshVoices(), delay);
+            });
+        },
+
+        bindControls() {
+            const bind = (id, event, handler) => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener(event, handler);
+            };
+
+            Object.entries(this.slotSelectIds).forEach(([slot, id]) => {
+                bind(id, 'change', () => this.saveSelectedVoice(slot));
+            });
+            bind('tts-free-lang', 'change', () => {
+                const category = this.getCategoryForLang(document.getElementById('tts-free-lang')?.value || '');
+                this.setLanguageCategory(category, { save: true });
+                this.renderVoiceSelect('free');
+            });
+            bind('tts-language-category', 'change', () => {
+                const category = this.getSelectedLanguageCategory();
+                this.saveLanguageCategory(category);
+                this.syncFreeLangToCategory(category);
+                this.renderVoiceSelect('free');
+            });
+            bind('tts-card-default-lang', 'change', () => {
+                if (typeof DB !== 'undefined' && typeof DB.saveSettings === 'function') DB.saveSettings();
+                this.renderVoiceSelect('default');
+            });
+            bind('tts-play-free', 'click', () => {
+                const text = document.getElementById('tts-free-text')?.value || '';
+                const lang = document.getElementById('tts-free-lang')?.value || '';
+                this.speakText(text, lang, { voiceSlot: 'free' });
+            });
+            bind('tts-play-android', 'click', () => {
+                const text = document.getElementById('tts-free-text')?.value || '';
+                const lang = document.getElementById('tts-free-lang')?.value || 'en-US';
+                this.speakText(text, lang, { voiceSlot: 'free', preferAndroid: true });
+            });
+            bind('tts-stop', 'click', () => this.stop());
+            bind('tts-refresh-voices', 'click', () => this.refreshVoices({ manual: true }));
+            bind('tts-add-decorative-mark', 'click', () => this.addDecorativeMarkFromInput());
+            bind('tts-remove-decorative-mark', 'click', () => this.removeSelectedDecorativeMarks());
+            bind('tts-reset-cleanup-rules', 'click', () => this.resetCleanupRules());
+            bind('tts-cleanup-preview-input', 'input', () => this.updateCleanupPreview());
+            bind('tts-decorative-mark-list', 'change', () => this.updateCleanupRemoveButton());
+
+            [
+                'tts-rule-leading-number',
+                'tts-rule-bracketed',
+                'tts-rule-pronunciation',
+                'tts-rule-pinyin',
+                'tts-rule-decorative'
+            ].forEach(id => {
+                bind(id, 'change', () => this.saveCleanupRulesFromUi());
+            });
+
+            ['tts-rate', 'tts-pitch', 'tts-volume'].forEach(id => {
+                bind(id, 'input', () => this.updateSettingLabels());
+                bind(id, 'change', () => this.updateSettingLabels());
+            });
+        },
+
+        getCleanupRuleElementMap() {
+            return {
+                stripLeadingNumber: 'tts-rule-leading-number',
+                stripBracketedAnnotations: 'tts-rule-bracketed',
+                stripPronunciationGuide: 'tts-rule-pronunciation',
+                stripPinyinGuide: 'tts-rule-pinyin',
+                stripDecorativeMarks: 'tts-rule-decorative'
+            };
+        },
+
+        getCurrentCleanupRules() {
+            if (typeof DB !== 'undefined' && DB.d) {
+                DB.d.ttsCleanupRules = normalizeTtsCleanupRules(DB.d.ttsCleanupRules);
+                return DB.d.ttsCleanupRules;
+            }
+            return createDefaultTtsCleanupRules();
+        },
+
+        renderCleanupRuleSettings() {
+            const rules = this.getCurrentCleanupRules();
+            const map = this.getCleanupRuleElementMap();
+            Object.entries(map).forEach(([key, id]) => {
+                const el = document.getElementById(id);
+                if (el) el.checked = rules[key] !== false;
+            });
+
+            const list = document.getElementById('tts-decorative-mark-list');
+            if (list) {
+                const previousSelection = new Set(Array.from(list.selectedOptions || []).map(option => option.value));
+                list.textContent = '';
+                Array.from(rules.decorativeMarks || '').forEach(mark => {
+                    const option = document.createElement('option');
+                    option.value = mark;
+                    option.textContent = mark;
+                    option.selected = previousSelection.has(mark);
+                    list.appendChild(option);
+                });
+            }
+            this.updateCleanupRemoveButton();
+            this.updateCleanupPreview();
+        },
+
+        readCleanupRulesFromUi() {
+            const current = this.getCurrentCleanupRules();
+            const map = this.getCleanupRuleElementMap();
+            const next = { ...current };
+            Object.entries(map).forEach(([key, id]) => {
+                const el = document.getElementById(id);
+                next[key] = el ? el.checked === true : current[key] !== false;
+            });
+
+            const list = document.getElementById('tts-decorative-mark-list');
+            if (list) {
+                next.decorativeMarks = Array.from(list.options).map(option => option.value || option.textContent || '').join('');
+            }
+            return normalizeTtsCleanupRules(next);
+        },
+
+        persistCleanupRules(rules, options = {}) {
+            const normalized = normalizeTtsCleanupRules(rules);
+            if (typeof DB !== 'undefined' && DB.d) {
+                DB.d.ttsCleanupRules = normalized;
+                if (typeof DB.save === 'function') DB.save({ skipSizeLog: true });
+            }
+            if (options.render !== false) this.renderCleanupRuleSettings();
+            else {
+                this.updateCleanupRemoveButton();
+                this.updateCleanupPreview();
+            }
+            return normalized;
+        },
+
+        saveCleanupRulesFromUi() {
+            this.persistCleanupRules(this.readCleanupRulesFromUi(), { render: false });
+        },
+
+        addDecorativeMarkFromInput() {
+            const input = document.getElementById('tts-decorative-mark-input');
+            const value = input ? input.value : '';
+            const additions = normalizeTtsDecorativeMarks(value, { allowEmpty: true });
+            if (!additions) return;
+            const rules = this.readCleanupRulesFromUi();
+            rules.decorativeMarks = normalizeTtsDecorativeMarks(`${rules.decorativeMarks || ''}${additions}`, { allowEmpty: true });
+            if (input) input.value = '';
+            this.persistCleanupRules(rules);
+        },
+
+        removeSelectedDecorativeMarks() {
+            const list = document.getElementById('tts-decorative-mark-list');
+            if (!list) return;
+            const selected = new Set(Array.from(list.selectedOptions || []).map(option => option.value));
+            if (!selected.size) return;
+            const rules = this.readCleanupRulesFromUi();
+            rules.decorativeMarks = Array.from(rules.decorativeMarks || '')
+                .filter(mark => !selected.has(mark))
+                .join('');
+            this.persistCleanupRules(rules);
+        },
+
+        resetCleanupRules() {
+            this.persistCleanupRules(createDefaultTtsCleanupRules());
+        },
+
+        updateCleanupRemoveButton() {
+            const list = document.getElementById('tts-decorative-mark-list');
+            const button = document.getElementById('tts-remove-decorative-mark');
+            if (!button) return;
+            button.disabled = !list || !Array.from(list.selectedOptions || []).length;
+        },
+
+        updateCleanupPreview() {
+            const input = document.getElementById('tts-cleanup-preview-input');
+            const output = document.getElementById('tts-cleanup-preview-output');
+            if (!output) return;
+            const rules = this.readCleanupRulesFromUi();
+            output.textContent = normalizeQuestionTextForTts(input ? input.value : '', { rules });
+        },
+
+        getSynth() {
+            return typeof window !== 'undefined' && 'speechSynthesis' in window ? window.speechSynthesis : null;
+        },
+
+        canUseWebSpeech() {
+            return !!this.getSynth() && typeof SpeechSynthesisUtterance !== 'undefined';
+        },
+
+        hasAndroidTtsBridge() {
+            const android = typeof window !== 'undefined' ? window.Android : null;
+            return !!android && (
+                typeof android.speakAndroidTts === 'function'
+                || typeof android.speakAndroidTtsVoice === 'function'
+                || typeof android.getAndroidTtsVoices === 'function'
+            );
+        },
+
+        getAndroidTtsRawStatus() {
+            const android = typeof window !== 'undefined' ? window.Android : null;
+            if (!android || typeof android.getAndroidTtsStatus !== 'function') {
+                return this.hasAndroidTtsBridge() ? 'ready' : '';
+            }
+            try {
+                return String(android.getAndroidTtsStatus() || '');
+            } catch (e) {
+                return 'error';
+            }
+        },
+
+        normalizeLang(lang) {
+            return String(lang || '').replace(/_/g, '-').trim().toLowerCase();
+        },
+
+        getLanguageRoot(lang) {
+            const root = this.normalizeLang(lang).split('-')[0];
+            if (['cmn', 'yue', 'wuu'].includes(root)) return 'zh';
+            if (root === 'in') return 'id';
+            return root;
+        },
+
+        getKnownLanguageRoots() {
+            return new Set(this.languageCategories
+                .map(category => category.value)
+                .filter(value => value && value !== 'other'));
+        },
+
+        getCategoryForLang(lang) {
+            const root = this.getLanguageRoot(lang);
+            if (!root) return '';
+            return this.getKnownLanguageRoots().has(root) ? root : 'other';
+        },
+
+        getCategoryDefaultLang(categoryValue) {
+            const category = this.languageCategories.find(item => item.value === categoryValue);
+            return category?.lang || '';
+        },
+
+        getCategoryLabel(categoryValue) {
+            const category = this.languageCategories.find(item => item.value === categoryValue);
+            return category?.label || '選択中の言語';
+        },
+
+        isVoiceInLanguageCategory(voice, categoryValue) {
+            if (!categoryValue) return true;
+            const root = this.getLanguageRoot(voice?.lang || '');
+            if (categoryValue === 'other') return !root || !this.getKnownLanguageRoots().has(root);
+            return root === categoryValue;
+        },
+
+        getVoicesForCategory(categoryValue, voices = this.voices) {
+            return (Array.isArray(voices) ? voices : []).filter(voice => this.isVoiceInLanguageCategory(voice, categoryValue));
+        },
+
+        voiceMatchesLang(voice, lang) {
+            const target = this.normalizeLang(lang);
+            if (!voice || !target) return true;
+            const voiceLang = this.normalizeLang(voice.lang);
+            if (!voiceLang) return false;
+            if (voiceLang === target) return true;
+            return this.getLanguageRoot(voiceLang) === this.getLanguageRoot(target);
+        },
+
+        normalizeWebVoice(voice, index) {
+            return {
+                source: 'web',
+                sourceLabel: 'Web Speech',
+                name: String(voice?.name || ''),
+                voiceURI: String(voice?.voiceURI || voice?.name || ''),
+                lang: String(voice?.lang || ''),
+                default: voice?.default === true,
+                localService: voice?.localService,
+                rawVoice: voice,
+                index
+            };
+        },
+
+        normalizeAndroidVoice(voice, index) {
+            return {
+                source: 'android',
+                sourceLabel: 'Android TTS',
+                name: String(voice?.name || ''),
+                voiceURI: String(voice?.voiceURI || voice?.name || ''),
+                lang: String(voice?.lang || ''),
+                default: voice?.default === true,
+                localService: voice?.localService,
+                networkRequired: voice?.networkRequired,
+                quality: voice?.quality,
+                latency: voice?.latency,
+                androidName: String(voice?.name || voice?.voiceURI || ''),
+                index
+            };
+        },
+
+        readAndroidVoices() {
+            const android = typeof window !== 'undefined' ? window.Android : null;
+            if (!android || typeof android.getAndroidTtsVoices !== 'function') return [];
+            try {
+                const raw = android.getAndroidTtsVoices();
+                const parsed = JSON.parse(String(raw || '[]'));
+                return Array.isArray(parsed)
+                    ? parsed.map((voice, index) => this.normalizeAndroidVoice(voice, index)).filter(voice => voice.name || voice.lang)
+                    : [];
+            } catch (e) {
+                console.warn('Android TTS voices read failed', e);
+                return [];
+            }
+        },
+
+        refreshVoices(options = {}) {
+            const synth = this.getSynth();
+            const webAvailable = !!synth;
+            let webVoices = [];
+            let fetchError = null;
+
+            if (webAvailable && typeof synth.getVoices === 'function') {
+                try {
+                    webVoices = synth.getVoices() || [];
+                } catch (e) {
+                    fetchError = e;
+                }
+            }
+
+            this.webVoices = Array.isArray(webVoices)
+                ? webVoices.map((voice, index) => this.normalizeWebVoice(voice, index))
+                : [];
+            this.androidVoices = this.readAndroidVoices();
+            this.voices = [...this.webVoices, ...this.androidVoices];
+            this.render(webAvailable);
+
+            if (fetchError) {
+                this.setStatus(`音声一覧の取得に失敗しました。${fetchError.message || fetchError}`, 'error');
+            } else if (options.manual) {
+                this.setStatus('音声一覧を再取得しました。', 'ok');
+            }
+        },
+
+        updateAndroidTtsStatus() {
+            const el = document.getElementById('tts-android-status');
+            const btn = document.getElementById('tts-play-android');
+            if (!el) return;
+            if (!this.hasAndroidTtsBridge()) {
+                el.textContent = 'APK版のみ';
+                if (btn) btn.disabled = true;
+                return;
+            }
+            const raw = this.getAndroidTtsRawStatus();
+            if (raw === 'ready') {
+                el.textContent = `利用可能 (${this.androidVoices.length})`;
+                if (btn) btn.disabled = false;
+            } else if (raw === 'initializing') {
+                el.textContent = '初期化中';
+                if (btn) btn.disabled = false;
+            } else {
+                el.textContent = '利用不可';
+                if (btn) btn.disabled = false;
+            }
+        },
+
+        getVoiceKey(voice) {
+            if (!voice) return '';
+            return [
+                voice.source || '',
+                voice.voiceURI || voice.name || '',
+                voice.lang || '',
+                voice.index ?? ''
+            ].join('|');
+        },
+
+        formatVoiceLabel(voice) {
+            const parts = [
+                voice.sourceLabel || voice.source || 'TTS',
+                voice.name || '(名称なし)',
+                voice.lang || '言語未設定'
+            ];
+            if (voice.default) parts.push('default');
+            if ('localService' in voice && voice.localService !== undefined) parts.push(`localService: ${voice.localService}`);
+            if (voice.source === 'android' && voice.networkRequired !== undefined) parts.push(voice.networkRequired ? 'network' : 'local');
+            return parts.join(' / ');
+        },
+
+        serializeVoice(voice) {
+            return voice ? {
+                source: voice.source || '',
+                name: voice.name || '',
+                lang: voice.lang || '',
+                voiceURI: voice.voiceURI || '',
+                androidName: voice.androidName || ''
+            } : null;
+        },
+
+        getStorageKey(slot) {
+            return slot === 'free' ? this.storageKey : `${this.slotStoragePrefix}${slot}`;
+        },
+
+        readSavedVoice(slot = 'free') {
+            const keys = [this.getStorageKey(slot)];
+            if (slot === 'free') keys.push(this.storageKey);
+            for (const key of keys) {
+                try {
+                    const raw = localStorage.getItem(key);
+                    if (!raw) continue;
+                    const parsed = JSON.parse(raw);
+                    if (parsed && typeof parsed === 'object') return parsed;
+                } catch (e) { }
+            }
+            return null;
+        },
+
+        isValidLanguageCategory(categoryValue) {
+            return this.languageCategories.some(category => category.value === categoryValue);
+        },
+
+        readSavedLanguageCategory() {
+            try {
+                const value = localStorage.getItem(this.languageCategoryStorageKey);
+                return this.isValidLanguageCategory(value) ? value : null;
+            } catch (e) {
+                return null;
+            }
+        },
+
+        saveLanguageCategory(categoryValue = this.getSelectedLanguageCategory()) {
+            if (!this.isValidLanguageCategory(categoryValue)) return;
+            try {
+                localStorage.setItem(this.languageCategoryStorageKey, categoryValue);
+            } catch (e) { }
+        },
+
+        inferLanguageCategory() {
+            const savedCategory = this.readSavedLanguageCategory();
+            if (savedCategory !== null) return savedCategory;
+
+            const savedVoice = this.readSavedVoice('free');
+            const matchedVoice = this.voices.find(voice => this.matchesSavedVoice(voice, savedVoice));
+            if (matchedVoice) return this.getCategoryForLang(matchedVoice.lang);
+
+            const freeLang = document.getElementById('tts-free-lang')?.value || '';
+            return this.getCategoryForLang(freeLang) || 'en';
+        },
+
+        setLanguageCategory(categoryValue, options = {}) {
+            const select = document.getElementById('tts-language-category');
+            const value = this.isValidLanguageCategory(categoryValue) ? categoryValue : '';
+            if (select) select.value = value;
+            if (options.save) this.saveLanguageCategory(value);
+            if (options.syncLang) this.syncFreeLangToCategory(value);
+            return value;
+        },
+
+        getSelectedLanguageCategory() {
+            const select = document.getElementById('tts-language-category');
+            const value = select ? select.value : this.inferLanguageCategory();
+            return this.isValidLanguageCategory(value) ? value : '';
+        },
+
+        syncFreeLangToCategory(categoryValue) {
+            const lang = this.getCategoryDefaultLang(categoryValue);
+            const langSelect = document.getElementById('tts-free-lang');
+            if (langSelect && lang && Array.from(langSelect.options).some(option => option.value === lang)) {
+                langSelect.value = lang;
+            }
+        },
+
+        renderLanguageCategorySelect() {
+            const select = document.getElementById('tts-language-category');
+            if (!select) return;
+            const current = select.value;
+            const firstRender = !select.options.length;
+            const selected = !firstRender && this.isValidLanguageCategory(current)
+                ? current
+                : this.inferLanguageCategory();
+            select.textContent = '';
+            this.languageCategories.forEach(category => {
+                const count = this.getVoicesForCategory(category.value).length;
+                const option = document.createElement('option');
+                option.value = category.value;
+                option.textContent = category.value === ''
+                    ? `${category.label} (${this.voices.length})`
+                    : `${category.label} (${count})`;
+                select.appendChild(option);
+            });
+            select.value = this.isValidLanguageCategory(selected) ? selected : '';
+            if (firstRender) this.syncFreeLangToCategory(select.value);
+        },
+
+        matchesSavedVoice(voice, saved) {
+            if (!voice || !saved) return false;
+            const savedSource = String(saved.source || '');
+            if (savedSource && savedSource !== voice.source) return false;
+            const savedLang = this.normalizeLang(saved.lang);
+            const voiceLang = this.normalizeLang(voice.lang);
+            const langMatches = !savedLang || savedLang === voiceLang;
+            const uriMatches = saved.voiceURI && saved.voiceURI === voice.voiceURI;
+            const nameMatches = saved.name && saved.name === voice.name;
+            const androidMatches = saved.androidName && saved.androidName === voice.androidName;
+            return langMatches && (uriMatches || nameMatches || androidMatches);
+        },
+
+        saveSelectedVoice(slot = 'free') {
+            const voice = this.getSelectedVoice(slot);
+            const payload = this.serializeVoice(voice);
+            try {
+                if (payload) {
+                    localStorage.setItem(this.getStorageKey(slot), JSON.stringify(payload));
+                    if (slot === 'free') localStorage.setItem(this.storageKey, JSON.stringify(payload));
+                }
+            } catch (e) { }
+        },
+
+        getPreferredLangsForSlot(slot) {
+            if (slot === 'en') return ['en-US', 'en-GB', 'en'];
+            if (slot === 'ja') return ['ja-JP', 'ja'];
+            if (slot === 'zh') return ['zh-CN', 'zh-TW', 'zh'];
+            if (slot === 'default') {
+                const defaultLang = this.getDefaultCardLang();
+                return defaultLang ? [defaultLang] : [];
+            }
+            if (slot === 'free') {
+                const freeLang = document.getElementById('tts-free-lang')?.value || '';
+                return freeLang ? [freeLang] : ['en-US', 'en-GB', 'en'];
+            }
+            return [];
+        },
+
+        findBestVoice(lang = '', options = {}) {
+            const source = options.source || '';
+            const baseList = Array.isArray(options.list) ? options.list : this.voices;
+            const list = source ? baseList.filter(voice => voice.source === source) : baseList;
+            if (!list.length) return null;
+            const normalized = this.normalizeLang(lang);
+            if (normalized) {
+                const exact = list.find(voice => this.normalizeLang(voice.lang) === normalized);
+                if (exact) return exact;
+                const root = this.getLanguageRoot(normalized);
+                const prefix = list.find(voice => {
+                    const voiceLang = this.normalizeLang(voice.lang);
+                    return this.getLanguageRoot(voiceLang) === root;
+                });
+                if (prefix) return prefix;
+            }
+            return list.find(voice => voice.default) || list[0] || null;
+        },
+
+        getVoiceListForSlot(slot = 'free') {
+            if (slot === 'free') return this.getVoicesForCategory(this.getSelectedLanguageCategory());
+            if (slot === 'en') return this.getVoicesForCategory('en');
+            if (slot === 'ja') return this.getVoicesForCategory('ja');
+            if (slot === 'zh') return this.getVoicesForCategory('zh');
+            if (slot === 'default') {
+                const defaultLang = this.getDefaultCardLang();
+                const category = this.getCategoryForLang(defaultLang);
+                return category ? this.getVoicesForCategory(category) : this.voices;
+            }
+            return this.voices;
+        },
+
+        pickVoiceKey(slot = 'free', currentKey = '') {
+            const list = this.getVoiceListForSlot(slot);
+            if (currentKey && list.some(voice => this.getVoiceKey(voice) === currentKey)) return currentKey;
+            const saved = this.readSavedVoice(slot);
+            const savedVoice = list.find(voice => this.matchesSavedVoice(voice, saved));
+            if (savedVoice) return this.getVoiceKey(savedVoice);
+            const langs = this.getPreferredLangsForSlot(slot);
+            for (const lang of langs) {
+                const exact = this.findBestVoice(lang, { list });
+                if (exact) return this.getVoiceKey(exact);
+            }
+            if (slot === 'default') {
+                const defaultVoice = list.find(voice => voice.default) || list[0];
+                return this.getVoiceKey(defaultVoice);
+            }
+            const fallback = this.findBestVoice(langs[0] || '', { list }) || list[0];
+            return this.getVoiceKey(fallback);
+        },
+
+        renderVoiceSelect(slot = 'free') {
+            const select = document.getElementById(this.slotSelectIds[slot]);
+            if (!select) return;
+            const currentKey = select.value;
+            const voiceList = this.getVoiceListForSlot(slot);
+            const selectedKey = voiceList.length ? this.pickVoiceKey(slot, currentKey) : '';
+            select.textContent = '';
+            if (!this.voices.length) {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = '音声が取得できていません';
+                select.appendChild(option);
+                select.disabled = true;
+                return;
+            }
+            if (!voiceList.length) {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = slot === 'free'
+                    ? `${this.getCategoryLabel(this.getSelectedLanguageCategory())}の音声がありません`
+                    : 'この言語の音声がありません';
+                select.appendChild(option);
+                select.disabled = true;
+                return;
+            }
+            voiceList.forEach(voice => {
+                const option = document.createElement('option');
+                option.value = this.getVoiceKey(voice);
+                option.textContent = this.formatVoiceLabel(voice);
+                select.appendChild(option);
+            });
+            select.disabled = false;
+            select.value = selectedKey;
+            if (slot === 'free') this.selectedVoiceKey = selectedKey;
+        },
+
+        render(webAvailable) {
+            const availableEl = document.getElementById('tts-available');
+            const countEl = document.getElementById('tts-voice-count');
+            const listEl = document.getElementById('tts-voice-list');
+            const emptyEl = document.getElementById('tts-empty-message');
+
+            if (availableEl) availableEl.textContent = webAvailable ? '利用可能' : '利用不可';
+            if (countEl) countEl.textContent = String(this.voices.length);
+            this.renderLanguageCategorySelect();
+            Object.keys(this.slotSelectIds).forEach(slot => this.renderVoiceSelect(slot));
+
+            if (listEl) {
+                listEl.textContent = '';
+                this.voices.forEach(voice => {
+                    const item = document.createElement('li');
+                    item.textContent = this.formatVoiceLabel(voice);
+                    listEl.appendChild(item);
+                });
+            }
+
+            if (emptyEl) {
+                emptyEl.textContent = this.voices.length
+                    ? ''
+                    : '音声一覧はまだ取得できていない、または端末側で利用可能な音声がありません。Androidでは端末のTTSエンジンと言語設定を確認してください。';
+            }
+            this.updateAndroidTtsStatus();
+        },
+
+        getSelectedVoice(slot = 'free') {
+            const select = document.getElementById(this.slotSelectIds[slot]);
+            const key = select ? select.value : (slot === 'free' ? this.selectedVoiceKey : '');
+            if (!key) return null;
+            return this.voices.find(voice => this.getVoiceKey(voice) === key) || null;
+        },
+
+        getSlotForLang(lang = '') {
+            const normalized = this.normalizeLang(lang);
+            if (normalized.startsWith('en')) return 'en';
+            if (normalized.startsWith('ja')) return 'ja';
+            if (normalized.startsWith('zh')) return 'zh';
+            return 'default';
+        },
+
+        getDefaultCardLang() {
+            const fromUi = document.getElementById('tts-card-default-lang')?.value;
+            if (fromUi !== undefined && fromUi !== null) return String(fromUi || '').trim();
+            return String((typeof DB !== 'undefined' && DB.d ? DB.d.ttsDefaultLang : '') || '').trim();
+        },
+
+        resolveVoice(lang = '', options = {}) {
+            if (options.preferAndroid) {
+                const androidVoice = this.findBestVoice(lang, { source: 'android' });
+                if (androidVoice) return androidVoice;
+            }
+            const slot = options.voiceSlot || this.getSlotForLang(lang);
+            const selected = this.getSelectedVoice(slot);
+            if (selected && (slot === 'free' || !lang || this.voiceMatchesLang(selected, lang))) return selected;
+            return this.findBestVoice(lang) || this.findBestVoice('', { source: 'android' }) || this.findBestVoice('');
+        },
+
+        clampNumber(value, min, max, fallback) {
+            const number = parseFloat(value);
+            if (!Number.isFinite(number)) return fallback;
+            return Math.max(min, Math.min(max, number));
+        },
+
+        readSetting(id, min, max, fallback) {
+            const el = document.getElementById(id);
+            return this.clampNumber(el ? el.value : fallback, min, max, fallback);
+        },
+
+        updateSettingLabels() {
+            const settings = [
+                ['tts-rate', 'tts-rate-value', 0.1, 10, 1],
+                ['tts-pitch', 'tts-pitch-value', 0, 2, 1],
+                ['tts-volume', 'tts-volume-value', 0, 1, 1]
+            ];
+            settings.forEach(([inputId, labelId, min, max, fallback]) => {
+                const value = this.readSetting(inputId, min, max, fallback);
+                const label = document.getElementById(labelId);
+                if (label) label.textContent = value.toFixed(1);
+            });
+        },
+
+        setStatus(message, type = '') {
+            const el = document.getElementById('tts-status');
+            if (!el) return;
+            el.textContent = message || '';
+            el.className = `tts-status ${type}`.trim();
+        },
+
+        speak(text) {
+            const lang = document.getElementById('tts-free-lang')?.value || 'en-US';
+            return this.speakText(text, lang, { voiceSlot: 'free' });
+        },
+
+        speakAndroid(text) {
+            const lang = document.getElementById('tts-free-lang')?.value || 'en-US';
+            return this.speakText(text, lang, { voiceSlot: 'free', preferAndroid: true });
+        },
+
+        speakCard(card, options = {}) {
+            const text = getCardSpeakableText(card);
+            const cardLang = getCardTtsLang(card);
+            const lang = cardLang || this.getDefaultCardLang();
+            const slot = options.voiceSlot || (cardLang ? this.getSlotForLang(cardLang) : 'default');
+            return this.speakText(text, lang, { ...options, voiceSlot: slot });
+        },
+
+        speakText(text, lang = '', options = {}) {
+            const content = String(text || '').trim();
+            if (!content) {
+                this.setStatus('読み上げるテキストを入力してください。', 'error');
+                return false;
+            }
+
+            const voice = this.resolveVoice(lang, options);
+            const resolvedLang = String(lang || voice?.lang || 'en-US').trim() || 'en-US';
+            const shouldTryAndroid = voice?.source === 'android'
+                || options.preferAndroid
+                || (!this.canUseWebSpeech() && this.hasAndroidTtsBridge());
+
+            if (shouldTryAndroid && this.hasAndroidTtsBridge()) {
+                const androidVoice = voice?.source === 'android' ? voice : this.findBestVoice(resolvedLang, { source: 'android' });
+                return this.speakWithAndroid(content, resolvedLang, androidVoice, options);
+            }
+
+            if (this.canUseWebSpeech()) {
+                return this.speakWithWebSpeech(content, resolvedLang, voice?.source === 'web' ? voice : null, options);
+            }
+
+            if (this.hasAndroidTtsBridge()) {
+                const androidVoice = this.findBestVoice(resolvedLang, { source: 'android' });
+                return this.speakWithAndroid(content, resolvedLang, androidVoice, options);
+            }
+
+            this.setStatus('読み上げに失敗しました。端末のTTSエンジン、言語、ブラウザの対応状況を確認してください。', 'error');
+            return false;
+        },
+
+        estimateSpeechDurationMs(content, rate = 1) {
+            const safeRate = this.clampNumber(rate, 0.1, 10, 1);
+            const text = String(content || '');
+            const charCount = Array.from(text).length;
+            const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
+            const baseByChars = charCount * 95;
+            const baseByWords = wordCount * 360;
+            return Math.max(900, Math.min(15000, Math.max(baseByChars, baseByWords) / safeRate + 350));
+        },
+
+        speakWithWebSpeech(content, lang, voice, options = {}) {
+            const synth = this.getSynth();
+            if (!synth || typeof SpeechSynthesisUtterance === 'undefined') {
+                this.setStatus('この環境ではspeechSynthesisが利用できません。', 'error');
+                if (typeof options.onError === 'function') options.onError();
+                return false;
+            }
+
+            const webVoice = voice || this.findBestVoice(lang, { source: 'web' });
+            const utterance = new SpeechSynthesisUtterance(content);
+            const token = ++this.playToken;
+            utterance.lang = webVoice?.lang || lang || 'en-US';
+            utterance.voice = webVoice?.rawVoice || null;
+            utterance.rate = this.readSetting('tts-rate', 0.1, 10, 1);
+            utterance.pitch = this.readSetting('tts-pitch', 0, 2, 1);
+            utterance.volume = this.readSetting('tts-volume', 0, 1, 1);
+            utterance.onstart = () => {
+                if (token === this.playToken) this.setStatus('読み上げを開始しました。', 'ok');
+            };
+            utterance.onend = () => {
+                if (token !== this.playToken) return;
+                this.setStatus('読み上げが完了しました。', 'ok');
+                if (typeof options.onDone === 'function') options.onDone();
+            };
+            utterance.onerror = event => {
+                if (token !== this.playToken) return;
+                const detail = event?.error ? ` (${event.error})` : '';
+                this.setStatus(`読み上げに失敗しました。端末のTTSエンジン、言語、ブラウザの対応状況を確認してください。${detail}`, 'error');
+                if (typeof options.onError === 'function') options.onError();
+            };
+
+            try {
+                synth.cancel();
+                synth.speak(utterance);
+                this.setStatus('読み上げを要求しました。', 'ok');
+                return true;
+            } catch (e) {
+                this.setStatus(`読み上げに失敗しました。端末のTTSエンジン、言語、ブラウザの対応状況を確認してください。${e.message ? ' ' + e.message : ''}`, 'error');
+                if (typeof options.onError === 'function') options.onError();
+                return false;
+            }
+        },
+
+        speakWithAndroid(content, lang, voice, options = {}) {
+            if (!this.hasAndroidTtsBridge()) {
+                this.setStatus('Android TTSはAPK版でのみ利用できます。', 'error');
+                this.updateAndroidTtsStatus();
+                if (typeof options.onError === 'function') options.onError();
+                return false;
+            }
+
+            const rawStatus = this.getAndroidTtsRawStatus();
+            if (rawStatus && rawStatus !== 'ready') {
+                this.setStatus(rawStatus === 'initializing'
+                    ? 'Android TTSを初期化中です。少し待ってからもう一度試してください。'
+                    : 'Android TTSを利用できません。端末のTTSエンジンと言語設定を確認してください。', 'error');
+                this.updateAndroidTtsStatus();
+                if (typeof options.onError === 'function') options.onError();
+                return false;
+            }
+
+            const rate = this.readSetting('tts-rate', 0.1, 10, 1);
+            const pitch = Math.max(0.1, this.readSetting('tts-pitch', 0, 2, 1));
+            const volume = this.readSetting('tts-volume', 0, 1, 1);
+            const langTag = String(lang || voice?.lang || 'en-US').trim() || 'en-US';
+
+            try {
+                let ok = false;
+                if (voice?.androidName && typeof window.Android.speakAndroidTtsVoice === 'function') {
+                    ok = window.Android.speakAndroidTtsVoice(
+                        content,
+                        langTag,
+                        voice.androidName,
+                        rate.toFixed(2),
+                        pitch.toFixed(2),
+                        volume.toFixed(2)
+                    );
+                } else if (typeof window.Android.speakAndroidTts === 'function') {
+                    ok = window.Android.speakAndroidTts(
+                        content,
+                        langTag,
+                        rate.toFixed(2),
+                        pitch.toFixed(2),
+                        volume.toFixed(2)
+                    );
+                }
+                this.setStatus(ok
+                    ? 'Android TTSで読み上げを要求しました。'
+                    : 'Android TTSで読み上げできませんでした。端末のTTSエンジンと言語設定を確認してください。',
+                    ok ? 'ok' : 'error');
+                this.updateAndroidTtsStatus();
+                if (ok && typeof options.onDone === 'function') {
+                    window.setTimeout(options.onDone, this.estimateSpeechDurationMs(content, rate));
+                } else if (!ok && typeof options.onError === 'function') {
+                    options.onError();
+                }
+                return !!ok;
+            } catch (e) {
+                this.setStatus(`Android TTSで読み上げに失敗しました。${e.message ? ' ' + e.message : ''}`, 'error');
+                this.updateAndroidTtsStatus();
+                if (typeof options.onError === 'function') options.onError();
+                return false;
+            }
+        },
+
+        stop(options = {}) {
+            if (!options.skipQuestionLoop && typeof QuestionTtsLoop !== 'undefined') {
+                QuestionTtsLoop.stop({ cancelSpeech: false });
+            }
+            const synth = this.getSynth();
+            let stopped = false;
+            let lastError = '';
+            try {
+                if (synth) {
+                    this.playToken++;
+                    synth.cancel();
+                    stopped = true;
+                }
+            } catch (e) {
+                lastError = e.message || String(e);
+            }
+
+            if (this.hasAndroidTtsBridge() && typeof window.Android.stopAndroidTts === 'function') {
+                try {
+                    stopped = window.Android.stopAndroidTts() || stopped;
+                } catch (e) {
+                    lastError = e.message || String(e);
+                }
+            }
+
+            if (stopped) {
+                this.setStatus('停止しました。', 'ok');
+            } else if (lastError) {
+                this.setStatus(`停止に失敗しました。${lastError}`, 'error');
+            } else {
+                this.setStatus('停止できるTTS機能が見つかりません。', 'error');
+            }
+        }
+    };
 
     // ZIPファイル処理
     async function handleZipFile(file) {
@@ -12258,6 +14377,8 @@
         ['cfg-mastery-lv4', 'cfg-mastery-lv3', 'cfg-mastery-lv2'].forEach(id => {
             safeSetHandler(id, 'onchange', () => DB.saveSettings());
         });
+
+        TtsTest.init();
 
         // Nav buttons for overlay
         safeSetHandler('btn-ov-prev', 'onclick', () => moveWordDetail(-1));

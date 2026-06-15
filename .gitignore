@@ -2,14 +2,27 @@
 .gradle/
 .kotlin/
 /local.properties
+local.properties
 .idea/
 .DS_Store
+Thumbs.db
 /build
+build/
 **/build/
+app/build/
+dist/
+out/
 /captures
 .externalNativeBuild
 .cxx
-local.properties
+
+# Local secrets
+.env
+.env.*
+
+# Signing keys
+*.jks
+*.keystore
 
 # Android build artifacts
 *.apk
@@ -17,6 +30,17 @@ local.properties
 *.ap_
 *.dex
 
-# Personal exports / backups
-*.json
+# Personal exports / backups / learning data
 *.zip
+*.bak
+*.tmp
+*.log
+*.sqlite
+*.db
+
+# Personal JSON exports / backups only.
+# Do not ignore required project files such as package.json or manifest.json globally.
+*_backup.json
+*backup*.json
+learning_data*.json
+export*.json

@@ -1,0 +1,6 @@
+q	a	choice1	choice2	choice3	choice4	correct	tts_text	tts_lang	tts_auto	example_tts	example_tts_lang
+dog	犬	dog	cat	bird	fish	1	dog	en-US	true	I have a dog.	en-US
+私は犬を飼っています。	I have a dog.	私は犬を飼っています。	私は猫が好きです。	これは本です。	彼は走っています。	1	私は犬を飼っています。	ja-JP	false	毎朝、犬と散歩します。	ja-JP
+我养了一只狗。	私は犬を飼っています。	我养了一只狗。	我喜欢茶。	这是书。	他在跑步。	1	我养了一只狗。	zh-CN	false	这只狗很可爱。	zh-CN
+안녕하세요	こんにちは	안녕하세요	감사합니다	좋아요	책입니다	1	안녕하세요	ko-KR	false	안녕하세요. 만나서 반갑습니다.	ko-KR
+Bonjour	こんにちは	Bonjour	Merci	Au revoir	Oui	1	Bonjour	fr-FR	false	Bonjour, j'ai un chien.	fr-FR

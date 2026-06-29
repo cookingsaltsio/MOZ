@@ -411,7 +411,8 @@
             font-family: var(--font-game);
         }
 
-        .tts-test-panel summary {
+        .collapsible-panel > summary,
+        .tts-test-panel > summary {
             cursor: pointer;
             color: var(--accent);
             font-family: var(--font-game);
@@ -420,25 +421,56 @@
             outline: none;
         }
 
-        .tts-test-panel summary::-webkit-details-marker {
+        .collapsible-panel > summary::-webkit-details-marker,
+        .tts-test-panel > summary::-webkit-details-marker {
             display: none;
         }
 
-        .tts-test-panel summary::before {
+        .collapsible-panel > summary::before,
+        .tts-test-panel > summary::before {
             content: "▶";
             display: inline-block;
             margin-right: 8px;
             transition: transform 0.15s;
         }
 
-        .tts-test-panel[open] summary::before {
+        .collapsible-panel[open] > summary::before,
+        .tts-test-panel[open] > summary::before {
             transform: rotate(90deg);
         }
 
+        .collapsible-body,
         .tts-test-body {
             margin-top: 12px;
             font-family: var(--font-ui);
             font-size: 0.9rem;
+        }
+
+        .collapsible-panel > summary + * {
+            margin-top: 12px;
+        }
+
+        .home-action-panel {
+            margin-bottom: 0;
+        }
+
+        .home-action-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .home-action-grid .btn {
+            margin-bottom: 0;
+        }
+
+        .home-action-subgrid {
+            display: flex;
+            gap: 10px;
+        }
+
+        .home-action-subgrid .btn {
+            flex: 1;
         }
 
         .tts-info-grid {
@@ -589,6 +621,40 @@
             color: #fff;
             line-height: 1.45;
             word-break: break-word;
+        }
+
+        .tts-polyphone-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .tts-polyphone-grid label {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            color: #ddd;
+            font-size: 0.9rem;
+        }
+
+        .tts-polyphone-actions {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .tts-polyphone-actions .btn {
+            width: 100%;
+            margin: 0;
+            min-height: 40px;
+        }
+
+        .tts-preview-detail {
+            margin-top: 6px;
+            color: #aaa;
+            font-size: 0.82rem;
+            line-height: 1.45;
         }
 
         .tts-button-grid {
@@ -745,6 +811,8 @@
             .tts-setting-grid,
             .tts-language-grid,
             .tts-cleanup-rule-grid,
+            .tts-polyphone-grid,
+            .tts-polyphone-actions,
             .tts-button-grid {
                 grid-template-columns: 1fr;
             }
@@ -3011,8 +3079,25 @@
             <h1>⚔️ モンスターおぼえるぜ</h1>
 
             <div class="panel">
+                <h3 style="margin-top:0; color: var(--accent);">📥 ファイル読み込み</h3>
+                <button class="btn btn-green" type="button" onclick="document.getElementById('file-input').click()" style="margin-bottom: 10px;">📥 ファイルを選択して読み込む</button>
+                <input type="file" id="file-input" accept=".txt,.csv,.tsv,.xlsx,.ods,.zip,image/*,.png,.jpg,.jpeg,.gif,.webp" multiple style="display:none;">
+
+                <div style="font-size: 0.85rem; color: #888; margin-top: 8px;">
+                    💡 デッキ(txt/csv/tsv/xlsx/ods)、画像(png/jpg/webp/gif)、ZIPを自動判定します
+                </div>
+
+                <div id="import-message-panel" style="margin-top: 10px; border: 1px solid #333; border-radius: 8px; background: #101010; padding: 8px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px;">
+                        <strong style="color: var(--accent); font-size: 0.9rem;">読み込みメッセージ</strong>
+                        <button class="btn btn-small btn-indigo" type="button" onclick="clearImportMessages()" style="width:auto; margin:0; padding:4px 8px;">消去</button>
+                    </div>
+                    <div id="import-message-window" role="log" aria-live="polite" style="min-height: 82px; max-height: 180px; overflow: auto; white-space: pre-wrap; word-break: break-word; font-family: monospace; font-size: 0.76rem; line-height: 1.45; color: #ddd;">待機中: 上のボタンからファイルを選ぶと、判定結果と読み込み内容を表示します。</div>
+                </div>
+            </div>
+
+            <div class="panel">
                 <h3 style="margin-top:0; color: var(--accent);">📚 デッキ管理</h3>
-                <input type="file" id="file-input" accept=".txt,.csv,.tsv,.xlsx,.ods,.zip" multiple style="margin-bottom: 10px;">
 
                 <div class="deck-selector" id="deck-selector" style="display:none;">
                     <div style="font-size: 0.9rem; margin-bottom: 8px; color: #aaa;">読み込まれたデッキ (クリックで選択)</div>
@@ -3020,11 +3105,12 @@
                 </div>
 
                 <div style="font-size: 0.85rem; color: #888; margin-top: 8px;">
-                    💡 txt / csv / tsv / xlsx / ods / zip を読み込めます（固定4択 / choice_exclude_words / choice_group列対応）
+                    💡 txt / csv / tsv / xlsx / ods 対応（固定4択 / choice_exclude_words / choice_group列対応）
                 </div>
             </div>
 
             <div class="panel">
+                <h3 style="margin-top:0; color: var(--accent);">📊 学習状況</h3>
                 <div class="stat-grid">
                     <div class="stat-box"><span class="stat-val" id="st-total">0</span><span
                             class="stat-lbl">登録項目</span></div>
@@ -3038,7 +3124,44 @@
             </div>
 
             <div class="panel">
-                <h3 style="margin-top:0; color: var(--accent);">⚙️ 基本設定</h3>
+                <h3 style="margin-top:0; color: var(--accent);">💾 バックアップ管理</h3>
+                <div style="margin-bottom: 10px;">
+                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 10px;">
+                        <input type="checkbox" id="export-records-only" style="width: auto; cursor: pointer;">
+                        <span style="font-size: 0.9rem;">学習記録のみをバックアップ</span>
+                    </label>
+                </div>
+                <button class="btn btn-blue" onclick="exportData()" style="margin-bottom: 10px;">📤
+                    バックアップを書き出す</button>
+                <button class="btn btn-green" onclick="document.getElementById('import-data-input').click()"
+                        style="margin-bottom: 10px;">♻️ バックアップから復元</button>
+                <input type="file" id="import-data-input" accept=".json" style="display:none;">
+                <div style="font-size: 0.8rem; color: #888;">
+                    💡 データのバックアップを作成、またはバックアップからデータを復元できます。バックアップにデッキを含めず、学習記録のみを出力する場合はファイル容量が小さくなります。
+                </div>
+            </div>
+        </div>
+
+        <div class="view-footer">
+            <button class="btn btn-green" onclick="startBattle('srs')">🔄 間隔反復モード (SRS)</button>
+            <button class="btn btn-gold" onclick="startBattle('all')">⚔️ 全項目で出陣</button>
+            <button class="btn btn-purple" onclick="openFriendBattle()">🤝 対戦</button>
+            <div class="home-action-subgrid">
+                <button class="btn btn-indigo btn-small" onclick="goWordBook()">📖 項目一覧</button>
+                <button class="btn btn-teal btn-small" onclick="goStamp()">🗓️ 討伐記録</button>
+            </div>
+            <button class="btn btn-blue" onclick="goSettings()">⚙️ 設定</button>
+        </div>
+    </div>
+
+
+    <!-- Settings View -->
+    <div id="view-settings" class="view">
+        <div class="view-content">
+            <h1>⚙️ 設定</h1>
+
+            <details class="panel collapsible-panel">
+                <summary>⚙️ 基本設定</summary>
                 <div class="cfg-row"><span>敵HP</span><input type="number" id="cfg-mhp" value="1000" min="100"
                                                              step="100" onchange="DB.saveSettings()"></div>
                 <div class="cfg-row"><span>自HP</span><input type="number" id="cfg-php" value="300" min="100"
@@ -3047,10 +3170,10 @@
                                                                step="10" onchange="DB.saveSettings()"></div>
                 <div class="cfg-row"><span>被ダメ</span><input type="number" id="cfg-dmg" value="100" min="10"
                                                                step="10" onchange="DB.saveSettings()"></div>
-            </div>
+            </details>
 
-            <div class="panel">
-                <h3 style="margin-top:0; color: var(--accent);">💥 クリティカル設定</h3>
+            <details class="panel collapsible-panel">
+                <summary>💥 クリティカル設定</summary>
                 <div class="cfg-row">
                     <span>倍率 (0=OFF)</span>
                     <input type="number" id="cfg-critical" value="1.5" min="0" max="10" step="0.1" onchange="DB.saveSettings()">
@@ -3063,10 +3186,10 @@
                     💡 この時間以内に正解するとクリティカル発動！<br>
                     例：倍率1.5なら通常100ダメージが150ダメージに
                 </div>
-            </div>
+            </details>
 
-            <div class="panel">
-                <h3 style="margin-top:0; color: var(--accent);">🔥 コンボボーナス設定</h3>
+            <details class="panel collapsible-panel">
+                <summary>🔥 コンボボーナス設定</summary>
                 <div class="cfg-row">
                     <span>増加率 (%)</span>
                     <input type="number" id="cfg-combo-bonus" value="2" min="0" max="100" step="1" onchange="DB.saveSettings()">
@@ -3076,10 +3199,10 @@
                     例：2%設定でコンボ5なら約110ダメージ<br>
                     コンボ10なら約122ダメージ
                 </div>
-            </div>
+            </details>
 
-            <div class="panel">
-                <h3 style="margin-top:0; color: var(--accent);">✨ スキル設定</h3>
+            <details class="panel collapsible-panel">
+                <summary>✨ スキル設定</summary>
                 <div class="cfg-row">
                     <span>スキル機能</span>
                     <label>
@@ -3144,10 +3267,10 @@
                 <div style="font-size: 0.8rem; color: #888; margin-top: 5px;">
                     💡 確認時は「正解時 +」を100にすると、1問正解でスキルを試せます
                 </div>
-            </div>
+            </details>
 
-            <div class="panel">
-                <h3 style="margin-top:0; color: var(--accent);">📊 習熟度判定設定</h3>
+            <details class="panel collapsible-panel">
+                <summary>📊 習熟度判定設定</summary>
                 <div style="font-size: 0.85rem; color: #888; margin-bottom: 10px;">
                     ⚠️ 選択中のデッキ「<span id="mastery-deck-name" style="color: var(--accent); font-weight: bold;">-</span>」の設定
                 </div>
@@ -3175,10 +3298,10 @@
                 <div style="font-size: 0.8rem; color: #666; margin-top: 5px;">
                     💡 上記を超える場合は「もう一度」になります
                 </div>
-            </div>
+            </details>
 
-            <div class="panel">
-                <h3 style="margin-top:0; color: var(--accent);">🎲 出題設定</h3>
+            <details class="panel collapsible-panel">
+                <summary>🎲 出題設定</summary>
                 <div class="cfg-row">
                     <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
                         <input type="checkbox" id="cfg-random-order" onchange="DB.saveSettings()" style="width: auto; cursor: pointer;" checked>
@@ -3188,10 +3311,10 @@
                 <div style="font-size: 0.8rem; color: #888; margin-top: 5px;">
                     💡 OFFにすると順番通りに出題されます
                 </div>
-            </div>
+            </details>
 
-            <div class="panel">
-                <h3 style="margin-top:0; color: var(--accent);">🎛️ 演出・サウンド設定</h3>
+            <details class="panel collapsible-panel">
+                <summary>🎛️ 演出・サウンド設定</summary>
                 <div class="cfg-row">
                     <span>効果音</span>
                     <label>
@@ -3223,11 +3346,11 @@
                 <div style="font-size: 0.8rem; color: #888; margin-top: 5px;">
                     💡 音やアニメーションが負担なときはここで控えめにできます
                 </div>
-            </div>
+            </details>
 
-            <details class="panel tts-test-panel" id="tts-test-panel">
+            <details class="panel tts-test-panel collapsible-panel" id="tts-test-panel">
                 <summary>TTS設定</summary>
-                <div class="tts-test-body">
+                <div class="tts-test-body collapsible-body">
                     <div class="tts-info-grid">
                         <div class="tts-info-row">
                             <span class="tts-label">speechSynthesis</span>
@@ -3402,6 +3525,39 @@
                         </div>
                     </div>
 
+                    <div class="tts-cleanup-panel">
+                        <h4>中国語多音字補正</h4>
+                        <div class="tts-polyphone-grid">
+                            <label for="tts-polyphone-term">
+                                表示語
+                                <input class="tts-select" id="tts-polyphone-term" maxlength="40" placeholder="例: 行">
+                            </label>
+                            <label for="tts-polyphone-pinyin">
+                                ピンイン
+                                <input class="tts-select" id="tts-polyphone-pinyin" maxlength="80" placeholder="例: háng">
+                            </label>
+                            <label for="tts-polyphone-tts-text">
+                                TTS用テキスト
+                                <input class="tts-select" id="tts-polyphone-tts-text" maxlength="120" placeholder="例: 银行">
+                            </label>
+                        </div>
+                        <div class="tts-polyphone-actions">
+                            <button class="btn btn-green btn-small" id="tts-save-polyphone-rule">追加/更新</button>
+                            <button class="btn btn-red btn-small" id="tts-remove-polyphone-rule">選択を削除</button>
+                            <button class="btn btn-indigo btn-small" id="tts-clear-polyphone-form">入力クリア</button>
+                        </div>
+                        <div class="tts-field">
+                            <label for="tts-polyphone-rule-list">補正ルール</label>
+                            <select class="tts-select tts-symbol-list" id="tts-polyphone-rule-list" size="5"></select>
+                        </div>
+                        <div class="tts-field">
+                            <label for="tts-polyphone-preview-input">読み上げプレビュー</label>
+                            <textarea class="tts-free-input" id="tts-polyphone-preview-input">行 háng</textarea>
+                            <div class="tts-cleanup-preview" id="tts-polyphone-preview-output"></div>
+                            <div class="tts-preview-detail" id="tts-polyphone-preview-detail"></div>
+                        </div>
+                    </div>
+
                     <div class="tts-field">
                         <label for="tts-free-text">試聴テキスト</label>
                         <textarea class="tts-free-input" id="tts-free-text">I have a dog.</textarea>
@@ -3427,8 +3583,8 @@
                 </div>
             </details>
 
-            <div class="panel">
-                <h3 style="margin-top:0; color: var(--accent);">📅 SRS設定 (次回までの間隔)</h3>
+            <details class="panel collapsible-panel">
+                <summary>📅 SRS設定 (次回までの間隔)</summary>
                 <div class="cfg-row">
                     <span>もう一度:</span>
                     <div style="display:flex; align-items:center; gap:5px;">
@@ -3461,17 +3617,19 @@
                     💡 1440分 = 1日、5760分 = 4日<br>
                     正解し続けると間隔が伸びていきます
                 </div>
-            </div>
+            </details>
 
-            <div class="panel">
-                <h3 style="margin-top:0; color: var(--accent);">🖼️ カスタムモンスター</h3>
+            <details class="panel collapsible-panel">
+                <summary>🖼️ カスタムモンスター</summary>
                 <div style="margin-bottom: 10px;">
                     <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
                         <input type="checkbox" id="custom-monster-enabled" style="width: auto; cursor: pointer;">
                         <span>カスタム画像を使用</span>
                     </label>
                 </div>
-                <input type="file" id="monster-image-input" accept="image/*" multiple style="display:none;">
+                <div id="monster-import-note" style="display:none; font-size: 0.8rem; color: #888; margin-bottom: 10px;">
+                    💡 画像の追加はホーム上部のファイル読み込みから行えます
+                </div>
                 <div id="monster-images-list" style="display:none; margin-top:10px;">
                     <div style="font-size:0.9rem; color:#aaa; margin-bottom:5px;">登録画像 (クリックで削除)</div>
                     <div id="monster-images-preview" style="display:flex; flex-wrap:wrap; gap:10px;"></div>
@@ -3487,49 +3645,15 @@
                     </div>
                 </div>
                 <div style="font-size: 0.8rem; color: #888; margin-top: 5px;">
-                    💡 複数のPNG画像を選択可能（背景透過推奨）
+                    💡 PNG / JPG / WebP / GIF を追加できます（背景透過推奨）
                 </div>
-            </div>
-
-            <div class="panel">
-                <h3 style="margin-top:0; color: var(--accent);">💾 データ管理</h3>
-                <div style="margin-bottom: 10px;">
-                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 10px;">
-                        <input type="checkbox" id="export-records-only" style="width: auto; cursor: pointer;">
-                        <span style="font-size: 0.9rem;">学習記録のみをエクスポート（デッキを除外）</span>
-                    </label>
-                </div>
-                <button class="btn btn-blue" onclick="exportData()" style="margin-bottom: 10px;">📤
-                    学習データをエクスポート</button>
-                <button class="btn btn-green" onclick="document.getElementById('import-data-input').click()"
-                        style="margin-bottom: 10px;">📥 学習データをインポート</button>
-                <input type="file" id="import-data-input" accept=".json" style="display:none;">
-                <div style="font-size: 0.8rem; color: #888; margin-bottom: 15px;">
-                    💡 学習記録をバックアップ・復元できます<br>
-                    ブラウザのキャッシュクリア対策に
-                </div>
-
-                <h4 style="margin: 15px 0 10px 0; color: var(--accent); font-size: 0.95rem;">📦 ZIPファイル対応</h4>
-                <button class="btn btn-green" onclick="document.getElementById('zip-input').click()"
-                        style="margin-bottom: 10px;">📦 ZIPファイルを読み込み</button>
-                <input type="file" id="zip-input" accept=".zip" style="display:none;">
-                <div style="font-size: 0.8rem; color: #888;">
-                    💡 複数のデッキファイルや画像をまとめて読み込めます
-                </div>
-            </div>
+            </details>
         </div>
 
         <div class="view-footer">
-            <button class="btn btn-green" onclick="startBattle('srs')">🔄 間隔反復モード (SRS)</button>
-            <button class="btn btn-gold" onclick="startBattle('all')">⚔️ 全項目で出陣</button>
-            <button class="btn btn-purple" onclick="openFriendBattle()">🤝 対戦</button>
-            <div style="display:flex; gap:10px;">
-                <button class="btn btn-indigo btn-small" onclick="goWordBook()">📖 項目一覧</button>
-                <button class="btn btn-teal btn-small" onclick="goStamp()">🗓️ 討伐記録</button>
-            </div>
+            <button class="btn btn-blue" onclick="goHome()">🏠 ホーム</button>
         </div>
     </div>
-
     <!-- Friend Battle Connection View -->
     <div id="view-friend-battle" class="view">
         <div class="view-content" style="justify-content:flex-start;">
@@ -4056,6 +4180,353 @@
     const LEGACY_COMPRESSED_FLAGS = [17].map(versionNumber => `ankiMonsterDataV${versionNumber}_compressed`);
     const TTS_DEFAULT_DECORATIVE_MARKS = '●○◎◯∙•‣▪▫■□◆◇★☆※＊*';
     const TTS_DECORATIVE_EDGE_MARKS = '"\'“”‘’';
+    const TTS_PINYIN_VALID_SYLLABLES = new Set(`
+        a ai an ang ao ba bai ban bang bao bei ben beng bi bian biao bie bin bing bo bu
+        ca cai can cang cao ce cen ceng cha chai chan chang chao che chen cheng chi chong chou
+        chu chua chuai chuan chuang chui chun chuo ci cong cou cu cuan cui cun cuo
+        da dai dan dang dao de dei deng di dia dian diao die ding diu dong dou du duan dui dun duo
+        e ei en eng er fa fan fang fei fen feng fo fou fu
+        ga gai gan gang gao ge gei gen geng gong gou gu gua guai guan guang gui gun guo
+        ha hai han hang hao he hei hen heng hong hou hu hua huai huan huang hui hun huo
+        ji jia jian jiang jiao jie jin jing jiong jiu ju juan jue jun
+        ka kai kan kang kao ke kei ken keng kong kou ku kua kuai kuan kuang kui kun kuo
+        la lai lan lang lao le lei leng li lia lian liang liao lie lin ling liu lo long lou lu luan lun luo lv lve
+        ma mai man mang mao me mei men meng mi mian miao mie min ming miu mo mou mu
+        na nai nan nang nao ne nei nen neng ni nian niang niao nie nin ning niu nong nou nu nuan nuo nv nve
+        o ou pa pai pan pang pao pei pen peng pi pian piao pie pin ping po pou pu
+        qi qia qian qiang qiao qie qin qing qiong qiu qu quan que qun
+        ran rang rao re ren reng ri rong rou ru rua ruan rui run ruo
+        sa sai san sang sao se sen seng sha shai shan shang shao she shei shen sheng shi shou
+        shu shua shuai shuan shuang shui shun shuo si song sou su suan sui sun suo
+        ta tai tan tang tao te teng ti tian tiao tie ting tong tou tu tuan tui tun tuo
+        wa wai wan wang wei wen weng wo wu xi xia xian xiang xiao xie xin xing xiong xiu xu xuan xue xun
+        ya yan yang yao ye yi yin ying yo yong you yu yuan yue yun
+        za zai zan zang zao ze zei zen zeng zha zhai zhan zhang zhao zhe zhei zhen zheng zhi zhong zhou
+        zhu zhua zhuai zhuan zhuang zhui zhun zhuo zi zong zou zu zuan zui zun zuo
+    `.trim().split(/\s+/));
+    const TTS_PINYIN_TONE_MAP = Object.freeze({
+        'ā': ['a', '1'], 'á': ['a', '2'], 'ǎ': ['a', '3'], 'à': ['a', '4'],
+        'ē': ['e', '1'], 'é': ['e', '2'], 'ě': ['e', '3'], 'è': ['e', '4'],
+        'ī': ['i', '1'], 'í': ['i', '2'], 'ǐ': ['i', '3'], 'ì': ['i', '4'],
+        'ō': ['o', '1'], 'ó': ['o', '2'], 'ǒ': ['o', '3'], 'ò': ['o', '4'],
+        'ū': ['u', '1'], 'ú': ['u', '2'], 'ǔ': ['u', '3'], 'ù': ['u', '4'],
+        'ǖ': ['v', '1'], 'ǘ': ['v', '2'], 'ǚ': ['v', '3'], 'ǜ': ['v', '4'],
+        'ü': ['v', ''], 'ń': ['n', '2'], 'ň': ['n', '3'], 'ǹ': ['n', '4'], 'ḿ': ['m', '2']
+    });
+    // Generated from krmanik/HSK-3.0 2025 and 2021 HSK 7-9 vocabulary data.
+    // Kept as reference data, but automatic context-word replacement is disabled by default.
+    const TTS_ENABLE_BUILTIN_CONTEXT_REPLACEMENTS = false;
+    const TTS_BUILTIN_POLYPHONE_RULES = Object.freeze([
+        { "term": "中", "pinyin": "zhong1", "ttsText": "中性" },
+        { "term": "中", "pinyin": "zhong4", "ttsText": "看中" },
+        { "term": "为", "pinyin": "wei2", "ttsText": "为人" },
+        { "term": "为", "pinyin": "wei4", "ttsText": "定为" },
+        { "term": "乐", "pinyin": "le4", "ttsText": "乐园" },
+        { "term": "乐", "pinyin": "yue4", "ttsText": "乐队" },
+        { "term": "了", "pinyin": "le5", "ttsText": "罢了" },
+        { "term": "了", "pinyin": "liao3", "ttsText": "了结" },
+        { "term": "任", "pinyin": "ren2", "ttsText": "任性" },
+        { "term": "任", "pinyin": "ren4", "ttsText": "任意" },
+        { "term": "传", "pinyin": "chuan2", "ttsText": "传媒" },
+        { "term": "传", "pinyin": "zhuan4", "ttsText": "传记" },
+        { "term": "伺", "pinyin": "ci4", "ttsText": "伺候" },
+        { "term": "伺", "pinyin": "si4", "ttsText": "伺机" },
+        { "term": "供", "pinyin": "gong1", "ttsText": "供求" },
+        { "term": "供", "pinyin": "gong4", "ttsText": "供奉" },
+        { "term": "倒", "pinyin": "dao3", "ttsText": "倒霉" },
+        { "term": "倒", "pinyin": "dao4", "ttsText": "倒数" },
+        { "term": "倔", "pinyin": "jue2", "ttsText": "倔强" },
+        { "term": "倔", "pinyin": "jue4", "ttsText": "倔" },
+        { "term": "假", "pinyin": "jia3", "ttsText": "假装" },
+        { "term": "假", "pinyin": "jia4", "ttsText": "度假" },
+        { "term": "兴", "pinyin": "xing1", "ttsText": "兴建" },
+        { "term": "兴", "pinyin": "xing4", "ttsText": "兴致" },
+        { "term": "兹", "pinyin": "ci2", "ttsText": "兹" },
+        { "term": "兹", "pinyin": "zi1", "ttsText": "兹" },
+        { "term": "几", "pinyin": "ji1", "ttsText": "几率" },
+        { "term": "几", "pinyin": "ji3", "ttsText": "寥寥无几" },
+        { "term": "分", "pinyin": "fen1", "ttsText": "分裂" },
+        { "term": "分", "pinyin": "fen4", "ttsText": "分量" },
+        { "term": "分", "pinyin": "fen5", "ttsText": "缘分" },
+        { "term": "切", "pinyin": "qie1", "ttsText": "切除" },
+        { "term": "切", "pinyin": "qie4", "ttsText": "切忌" },
+        { "term": "划", "pinyin": "hua2", "ttsText": "划算" },
+        { "term": "划", "pinyin": "hua4", "ttsText": "筹划" },
+        { "term": "创", "pinyin": "chuang1", "ttsText": "创伤" },
+        { "term": "创", "pinyin": "chuang4", "ttsText": "首创" },
+        { "term": "别", "pinyin": "bie2", "ttsText": "别墅" },
+        { "term": "别", "pinyin": "bie4", "ttsText": "别扭" },
+        { "term": "刹", "pinyin": "cha4", "ttsText": "刹那" },
+        { "term": "刹", "pinyin": "sha1", "ttsText": "刹车" },
+        { "term": "削", "pinyin": "xiao1", "ttsText": "削" },
+        { "term": "削", "pinyin": "xue1", "ttsText": "削弱" },
+        { "term": "剥", "pinyin": "bao1", "ttsText": "剥" },
+        { "term": "剥", "pinyin": "bo1", "ttsText": "剥夺" },
+        { "term": "劲", "pinyin": "jin4", "ttsText": "劲头" },
+        { "term": "劲", "pinyin": "jing4", "ttsText": "强劲" },
+        { "term": "勒", "pinyin": "le4", "ttsText": "勾勒" },
+        { "term": "勒", "pinyin": "lei1", "ttsText": "勒" },
+        { "term": "卜", "pinyin": "bo5", "ttsText": "萝卜" },
+        { "term": "卜", "pinyin": "bu3", "ttsText": "占卜" },
+        { "term": "占", "pinyin": "zhan1", "ttsText": "占卜" },
+        { "term": "占", "pinyin": "zhan4", "ttsText": "占领" },
+        { "term": "卡", "pinyin": "ka3", "ttsText": "卡车" },
+        { "term": "卡", "pinyin": "qia3", "ttsText": "卡子" },
+        { "term": "卷", "pinyin": "juan3", "ttsText": "卷入" },
+        { "term": "卷", "pinyin": "juan4", "ttsText": "问卷" },
+        { "term": "发", "pinyin": "fa1", "ttsText": "发射" },
+        { "term": "发", "pinyin": "fa4", "ttsText": "发型" },
+        { "term": "发", "pinyin": "fa5", "ttsText": "打发" },
+        { "term": "吐", "pinyin": "tu3", "ttsText": "吐槽" },
+        { "term": "吐", "pinyin": "tu4", "ttsText": "呕吐" },
+        { "term": "吓", "pinyin": "he4", "ttsText": "恐吓" },
+        { "term": "吓", "pinyin": "xia4", "ttsText": "吓人" },
+        { "term": "呛", "pinyin": "qiang1", "ttsText": "呛" },
+        { "term": "呛", "pinyin": "qiang4", "ttsText": "够呛" },
+        { "term": "和", "pinyin": "he2", "ttsText": "和尚" },
+        { "term": "和", "pinyin": "he4", "ttsText": "附和" },
+        { "term": "咧", "pinyin": "lie1", "ttsText": "大大咧咧" },
+        { "term": "咧", "pinyin": "lie3", "ttsText": "咧嘴" },
+        { "term": "咽", "pinyin": "yan1", "ttsText": "咽喉" },
+        { "term": "咽", "pinyin": "yan4", "ttsText": "狼吞虎咽" },
+        { "term": "咽", "pinyin": "ye4", "ttsText": "哽咽" },
+        { "term": "哄", "pinyin": "hong1", "ttsText": "哄堂大笑" },
+        { "term": "哄", "pinyin": "hong3", "ttsText": "哄" },
+        { "term": "哄", "pinyin": "hong4", "ttsText": "起哄" },
+        { "term": "喝", "pinyin": "he1", "ttsText": "吃喝玩乐" },
+        { "term": "喝", "pinyin": "he4", "ttsText": "喝彩" },
+        { "term": "嚼", "pinyin": "jiao2", "ttsText": "嚼" },
+        { "term": "嚼", "pinyin": "jue2", "ttsText": "咀嚼" },
+        { "term": "圈", "pinyin": "juan1", "ttsText": "圈" },
+        { "term": "圈", "pinyin": "quan1", "ttsText": "圈子" },
+        { "term": "埋", "pinyin": "mai2", "ttsText": "埋伏" },
+        { "term": "埋", "pinyin": "man2", "ttsText": "埋怨" },
+        { "term": "处", "pinyin": "chu3", "ttsText": "处置" },
+        { "term": "处", "pinyin": "chu4", "ttsText": "住处" },
+        { "term": "处", "pinyin": "chu5", "ttsText": "难处" },
+        { "term": "奔", "pinyin": "ben1", "ttsText": "奔驰" },
+        { "term": "奔", "pinyin": "ben4", "ttsText": "投奔" },
+        { "term": "奥", "pinyin": "ao4", "ttsText": "奥秘" },
+        { "term": "奥", "pinyin": "nao4", "ttsText": "深奥" },
+        { "term": "好", "pinyin": "hao3", "ttsText": "好在" },
+        { "term": "好", "pinyin": "hao4", "ttsText": "好胜" },
+        { "term": "妨", "pinyin": "fan2", "ttsText": "妨碍" },
+        { "term": "妨", "pinyin": "fang2", "ttsText": "不妨" },
+        { "term": "宁", "pinyin": "ning2", "ttsText": "宁静" },
+        { "term": "宁", "pinyin": "ning4", "ttsText": "宁愿" },
+        { "term": "安", "pinyin": "an1", "ttsText": "安置" },
+        { "term": "安", "pinyin": "nan1", "ttsText": "心安理得" },
+        { "term": "将", "pinyin": "jiang1", "ttsText": "将就" },
+        { "term": "将", "pinyin": "jiang4", "ttsText": "麻将" },
+        { "term": "少", "pinyin": "shao3", "ttsText": "稀少" },
+        { "term": "少", "pinyin": "shao4", "ttsText": "少女" },
+        { "term": "尽", "pinyin": "jin3", "ttsText": "尽早" },
+        { "term": "尽", "pinyin": "jin4", "ttsText": "尽情" },
+        { "term": "岸", "pinyin": "an4", "ttsText": "口岸" },
+        { "term": "岸", "pinyin": "nan4", "ttsText": "沿岸" },
+        { "term": "差", "pinyin": "cha1", "ttsText": "差额" },
+        { "term": "差", "pinyin": "cha4", "ttsText": "温差" },
+        { "term": "幢", "pinyin": "chuang2", "ttsText": "幢" },
+        { "term": "幢", "pinyin": "zhuang4", "ttsText": "幢" },
+        { "term": "干", "pinyin": "gan1", "ttsText": "干预" },
+        { "term": "干", "pinyin": "gan4", "ttsText": "干部" },
+        { "term": "应", "pinyin": "ying1", "ttsText": "应有尽有" },
+        { "term": "应", "pinyin": "ying4", "ttsText": "应急" },
+        { "term": "弹", "pinyin": "dan4", "ttsText": "导弹" },
+        { "term": "弹", "pinyin": "tan2", "ttsText": "反弹" },
+        { "term": "弹", "pinyin": "tan5", "ttsText": "动弹" },
+        { "term": "强", "pinyin": "jiang4", "ttsText": "倔强" },
+        { "term": "强", "pinyin": "qiang2", "ttsText": "强劲" },
+        { "term": "强", "pinyin": "qiang3", "ttsText": "勉强" },
+        { "term": "当", "pinyin": "dang1", "ttsText": "当日" },
+        { "term": "当", "pinyin": "dang4", "ttsText": "当晚" },
+        { "term": "当", "pinyin": "dang5", "ttsText": "妥当" },
+        { "term": "得", "pinyin": "de2", "ttsText": "得手" },
+        { "term": "得", "pinyin": "de5", "ttsText": "懒得" },
+        { "term": "得", "pinyin": "dei3", "ttsText": "非得" },
+        { "term": "心", "pinyin": "xi1", "ttsText": "心安理得" },
+        { "term": "心", "pinyin": "xin1", "ttsText": "心思" },
+        { "term": "心", "pinyin": "xin5", "ttsText": "点心" },
+        { "term": "恩", "pinyin": "en1", "ttsText": "恩爱" },
+        { "term": "恩", "pinyin": "nen1", "ttsText": "感恩" },
+        { "term": "恶", "pinyin": "e4", "ttsText": "恶化" },
+        { "term": "恶", "pinyin": "wu4", "ttsText": "可恶" },
+        { "term": "感", "pinyin": "ga3", "ttsText": "感恩" },
+        { "term": "感", "pinyin": "gan3", "ttsText": "感慨" },
+        { "term": "扎", "pinyin": "za1", "ttsText": "包扎" },
+        { "term": "扎", "pinyin": "zha1", "ttsText": "扎实" },
+        { "term": "扎", "pinyin": "zha2", "ttsText": "挣扎" },
+        { "term": "扫", "pinyin": "sao3", "ttsText": "扫除" },
+        { "term": "扫", "pinyin": "sao4", "ttsText": "扫帚" },
+        { "term": "折", "pinyin": "she2", "ttsText": "折" },
+        { "term": "折", "pinyin": "zhe1", "ttsText": "折腾" },
+        { "term": "折", "pinyin": "zhe2", "ttsText": "折磨" },
+        { "term": "担", "pinyin": "dan1", "ttsText": "担保" },
+        { "term": "担", "pinyin": "dan4", "ttsText": "担子" },
+        { "term": "拧", "pinyin": "ning2", "ttsText": "拧" },
+        { "term": "拧", "pinyin": "ning3", "ttsText": "拧" },
+        { "term": "拽", "pinyin": "ye4", "ttsText": "拽" },
+        { "term": "拽", "pinyin": "zhuai4", "ttsText": "拽" },
+        { "term": "挑", "pinyin": "tiao1", "ttsText": "挑剔" },
+        { "term": "挑", "pinyin": "tiao3", "ttsText": "挑衅" },
+        { "term": "挨", "pinyin": "ai1", "ttsText": "挨家挨户" },
+        { "term": "挨", "pinyin": "ai2", "ttsText": "忍饥挨饿" },
+        { "term": "掺", "pinyin": "can4", "ttsText": "掺" },
+        { "term": "掺", "pinyin": "chan1", "ttsText": "掺" },
+        { "term": "提", "pinyin": "di1", "ttsText": "提防" },
+        { "term": "提", "pinyin": "ti2", "ttsText": "提名" },
+        { "term": "揣", "pinyin": "chuai1", "ttsText": "揣" },
+        { "term": "揣", "pinyin": "chuai3", "ttsText": "揣测" },
+        { "term": "撇", "pinyin": "pie1", "ttsText": "撇" },
+        { "term": "撇", "pinyin": "pie3", "ttsText": "撇" },
+        { "term": "敬", "pinyin": "jin4", "ttsText": "敬爱" },
+        { "term": "敬", "pinyin": "jing4", "ttsText": "敬请" },
+        { "term": "数", "pinyin": "shu3", "ttsText": "倒数" },
+        { "term": "数", "pinyin": "shu4", "ttsText": "数额" },
+        { "term": "斗", "pinyin": "dou3", "ttsText": "泰斗" },
+        { "term": "斗", "pinyin": "dou4", "ttsText": "斗志" },
+        { "term": "晃", "pinyin": "huang3", "ttsText": "一晃" },
+        { "term": "晃", "pinyin": "huang4", "ttsText": "晃荡" },
+        { "term": "晃", "pinyin": "huang5", "ttsText": "摇晃" },
+        { "term": "暗", "pinyin": "an4", "ttsText": "暗中" },
+        { "term": "暗", "pinyin": "nan4", "ttsText": "阴暗" },
+        { "term": "曲", "pinyin": "qu1", "ttsText": "曲线" },
+        { "term": "曲", "pinyin": "qu3", "ttsText": "曲艺" },
+        { "term": "朝", "pinyin": "chao2", "ttsText": "王朝" },
+        { "term": "朝", "pinyin": "zhao1", "ttsText": "朝气蓬勃" },
+        { "term": "杆", "pinyin": "gan1", "ttsText": "栏杆" },
+        { "term": "杆", "pinyin": "gan3", "ttsText": "杠杆" },
+        { "term": "模", "pinyin": "mo2", "ttsText": "模范" },
+        { "term": "模", "pinyin": "mu2", "ttsText": "大模大样" },
+        { "term": "正", "pinyin": "zheng1", "ttsText": "正月" },
+        { "term": "正", "pinyin": "zheng4", "ttsText": "正当" },
+        { "term": "毫", "pinyin": "hao2", "ttsText": "丝毫" },
+        { "term": "毫", "pinyin": "hao4", "ttsText": "毫不" },
+        { "term": "没", "pinyin": "mei2", "ttsText": "没劲" },
+        { "term": "没", "pinyin": "mo4", "ttsText": "没收" },
+        { "term": "沿", "pinyin": "ya2", "ttsText": "沿岸" },
+        { "term": "沿", "pinyin": "yan2", "ttsText": "沿途" },
+        { "term": "泊", "pinyin": "bo2", "ttsText": "漂泊" },
+        { "term": "泊", "pinyin": "po1", "ttsText": "湖泊" },
+        { "term": "涨", "pinyin": "zhang3", "ttsText": "涨幅" },
+        { "term": "涨", "pinyin": "zhang4", "ttsText": "高涨" },
+        { "term": "深", "pinyin": "she1", "ttsText": "深奥" },
+        { "term": "深", "pinyin": "shen1", "ttsText": "深化" },
+        { "term": "溜", "pinyin": "liu1", "ttsText": "溜达" },
+        { "term": "溜", "pinyin": "liu4", "ttsText": "随大溜" },
+        { "term": "漂", "pinyin": "piao1", "ttsText": "漂浮" },
+        { "term": "漂", "pinyin": "piao4", "ttsText": "漂" },
+        { "term": "煎", "pinyin": "jia1", "ttsText": "煎熬" },
+        { "term": "煎", "pinyin": "jian1", "ttsText": "煎" },
+        { "term": "熬", "pinyin": "ao2", "ttsText": "熬夜" },
+        { "term": "熬", "pinyin": "nao2", "ttsText": "煎熬" },
+        { "term": "爱", "pinyin": "ai4", "ttsText": "爱惜" },
+        { "term": "爱", "pinyin": "gai4", "ttsText": "敬爱" },
+        { "term": "爱", "pinyin": "nai4", "ttsText": "心爱" },
+        { "term": "片", "pinyin": "pian1", "ttsText": "片子" },
+        { "term": "片", "pinyin": "pian4", "ttsText": "片段" },
+        { "term": "率", "pinyin": "lv4", "ttsText": "利率" },
+        { "term": "率", "pinyin": "shuai4", "ttsText": "坦率" },
+        { "term": "琢", "pinyin": "zhuo2", "ttsText": "琢磨" },
+        { "term": "琢", "pinyin": "zuo2", "ttsText": "琢磨" },
+        { "term": "畜", "pinyin": "chu4", "ttsText": "牲畜" },
+        { "term": "畜", "pinyin": "xu4", "ttsText": "畜牧" },
+        { "term": "症", "pinyin": "zheng1", "ttsText": "症结" },
+        { "term": "症", "pinyin": "zheng4", "ttsText": "癌症" },
+        { "term": "相", "pinyin": "xiang1", "ttsText": "相继" },
+        { "term": "相", "pinyin": "xiang4", "ttsText": "相貌" },
+        { "term": "省", "pinyin": "sheng3", "ttsText": "省略" },
+        { "term": "省", "pinyin": "xing3", "ttsText": "反省" },
+        { "term": "看", "pinyin": "kan1", "ttsText": "看守" },
+        { "term": "看", "pinyin": "kan4", "ttsText": "看台" },
+        { "term": "着", "pinyin": "zhao2", "ttsText": "着迷" },
+        { "term": "着", "pinyin": "zhe5", "ttsText": "本着" },
+        { "term": "着", "pinyin": "zhuo2", "ttsText": "着手" },
+        { "term": "碍", "pinyin": "ai4", "ttsText": "碍事" },
+        { "term": "碍", "pinyin": "gai4", "ttsText": "妨碍" },
+        { "term": "禁", "pinyin": "jin1", "ttsText": "禁不住" },
+        { "term": "禁", "pinyin": "jin4", "ttsText": "禁区" },
+        { "term": "称", "pinyin": "chen4", "ttsText": "称心如意" },
+        { "term": "称", "pinyin": "cheng1", "ttsText": "简称" },
+        { "term": "空", "pinyin": "kong1", "ttsText": "空军" },
+        { "term": "空", "pinyin": "kong4", "ttsText": "空白" },
+        { "term": "笼", "pinyin": "long2", "ttsText": "笼子" },
+        { "term": "笼", "pinyin": "long3", "ttsText": "笼罩" },
+        { "term": "笼", "pinyin": "long5", "ttsText": "灯笼" },
+        { "term": "糊", "pinyin": "hu1", "ttsText": "糊" },
+        { "term": "糊", "pinyin": "hu2", "ttsText": "糊涂" },
+        { "term": "糊", "pinyin": "hu5", "ttsText": "含糊" },
+        { "term": "累", "pinyin": "lei2", "ttsText": "累赘" },
+        { "term": "累", "pinyin": "lei3", "ttsText": "累计" },
+        { "term": "累", "pinyin": "lei4", "ttsText": "劳累" },
+        { "term": "结", "pinyin": "jie1", "ttsText": "结果" },
+        { "term": "结", "pinyin": "jie2", "ttsText": "结局" },
+        { "term": "结", "pinyin": "jie5", "ttsText": "巴结" },
+        { "term": "绷", "pinyin": "beng1", "ttsText": "绷带" },
+        { "term": "绷", "pinyin": "beng3", "ttsText": "绷" },
+        { "term": "缝", "pinyin": "feng2", "ttsText": "缝合" },
+        { "term": "缝", "pinyin": "feng4", "ttsText": "裂缝" },
+        { "term": "缝", "pinyin": "feng5", "ttsText": "裁缝" },
+        { "term": "背", "pinyin": "bei1", "ttsText": "背负" },
+        { "term": "背", "pinyin": "bei4", "ttsText": "背影" },
+        { "term": "落", "pinyin": "la4", "ttsText": "丢三落四" },
+        { "term": "落", "pinyin": "luo4", "ttsText": "落实" },
+        { "term": "蒙", "pinyin": "meng1", "ttsText": "蒙" },
+        { "term": "蒙", "pinyin": "meng2", "ttsText": "启蒙" },
+        { "term": "蔓", "pinyin": "man4", "ttsText": "蔓延" },
+        { "term": "蔓", "pinyin": "wan4", "ttsText": "藤蔓" },
+        { "term": "藏", "pinyin": "cang2", "ttsText": "藏身" },
+        { "term": "藏", "pinyin": "zang4", "ttsText": "宝藏" },
+        { "term": "血", "pinyin": "xie3", "ttsText": "一针见血" },
+        { "term": "血", "pinyin": "xue4", "ttsText": "血脉" },
+        { "term": "行", "pinyin": "hang2", "ttsText": "行情" },
+        { "term": "行", "pinyin": "xing2", "ttsText": "行政" },
+        { "term": "角", "pinyin": "jiao3", "ttsText": "三角" },
+        { "term": "角", "pinyin": "jue2", "ttsText": "角逐" },
+        { "term": "调", "pinyin": "diao4", "ttsText": "调度" },
+        { "term": "调", "pinyin": "tiao2", "ttsText": "调控" },
+        { "term": "谜", "pinyin": "mei4", "ttsText": "谜" },
+        { "term": "谜", "pinyin": "mi2", "ttsText": "谜底" },
+        { "term": "豁", "pinyin": "huo1", "ttsText": "豁出去" },
+        { "term": "豁", "pinyin": "huo4", "ttsText": "豁达" },
+        { "term": "踏", "pinyin": "ta1", "ttsText": "脚踏实地" },
+        { "term": "踏", "pinyin": "ta4", "ttsText": "践踏" },
+        { "term": "转", "pinyin": "zhuan3", "ttsText": "转化" },
+        { "term": "转", "pinyin": "zhuan4", "ttsText": "转悠" },
+        { "term": "轴", "pinyin": "zhou2", "ttsText": "车轴" },
+        { "term": "轴", "pinyin": "zhou4", "ttsText": "压轴" },
+        { "term": "载", "pinyin": "zai3", "ttsText": "转载" },
+        { "term": "载", "pinyin": "zai4", "ttsText": "载体" },
+        { "term": "逮", "pinyin": "dai3", "ttsText": "逮" },
+        { "term": "逮", "pinyin": "dai4", "ttsText": "逮捕" },
+        { "term": "重", "pinyin": "chong2", "ttsText": "重组" },
+        { "term": "重", "pinyin": "zhong4", "ttsText": "重任" },
+        { "term": "量", "pinyin": "liang2", "ttsText": "考量" },
+        { "term": "量", "pinyin": "liang4", "ttsText": "量化" },
+        { "term": "量", "pinyin": "liang5", "ttsText": "打量" },
+        { "term": "钉", "pinyin": "ding1", "ttsText": "钉子" },
+        { "term": "钉", "pinyin": "ding4", "ttsText": "钉" },
+        { "term": "钻", "pinyin": "zuan1", "ttsText": "钻研" },
+        { "term": "钻", "pinyin": "zuan4", "ttsText": "钻石" },
+        { "term": "铺", "pinyin": "pu1", "ttsText": "铺路" },
+        { "term": "铺", "pinyin": "pu4", "ttsText": "卧铺" },
+        { "term": "长", "pinyin": "chang2", "ttsText": "长征" },
+        { "term": "长", "pinyin": "zhang3", "ttsText": "长相" },
+        { "term": "间", "pinyin": "jian1", "ttsText": "车间" },
+        { "term": "间", "pinyin": "jian4", "ttsText": "间隙" },
+        { "term": "闷", "pinyin": "men1", "ttsText": "闷热" },
+        { "term": "闷", "pinyin": "men4", "ttsText": "郁闷" },
+        { "term": "阴", "pinyin": "yi1", "ttsText": "阴暗" },
+        { "term": "阴", "pinyin": "yin1", "ttsText": "阴谋" },
+        { "term": "降", "pinyin": "jiang4", "ttsText": "降临" },
+        { "term": "降", "pinyin": "xiang2", "ttsText": "投降" },
+        { "term": "难", "pinyin": "nan2", "ttsText": "难怪" },
+        { "term": "难", "pinyin": "nan4", "ttsText": "遇难" },
+        { "term": "露", "pinyin": "lou4", "ttsText": "露面" },
+        { "term": "露", "pinyin": "lu4", "ttsText": "露天" },
+        { "term": "鲜", "pinyin": "xian1", "ttsText": "鲜血" },
+        { "term": "鲜", "pinyin": "xian3", "ttsText": "鲜为人知" }
+    ]);
 
     function createDefaultTtsCleanupRules() {
         return {
@@ -4099,6 +4570,164 @@
                 { allowEmpty: hasDecorativeMarks }
             )
         };
+    }
+
+    function createDefaultTtsPolyphoneRules() {
+        return [];
+    }
+
+    function getPinyinCharDataForTts(value) {
+        const letters = [];
+        const tones = [];
+        Array.from(String(value || '').normalize('NFKC').toLowerCase()).forEach(char => {
+            const toneChar = TTS_PINYIN_TONE_MAP[char];
+            if (toneChar) {
+                letters.push(toneChar[0]);
+                tones.push({ tone: toneChar[1] || '', hasTone: !!toneChar[1] });
+                return;
+            }
+            if (char >= 'a' && char <= 'z') {
+                letters.push(char === 'u' ? 'u' : char);
+                tones.push({ tone: '', hasTone: false });
+                return;
+            }
+            if (char === ':' && letters[letters.length - 1] === 'u') {
+                letters[letters.length - 1] = 'v';
+                return;
+            }
+            if (/^[1-5]$/.test(char) && tones.length) {
+                tones[tones.length - 1] = { tone: char, hasTone: true };
+            }
+        });
+        return { letters: letters.join('').replace(/u:/g, 'v'), tones };
+    }
+
+    function createPinyinSyllableForTts(base, tones, start, end) {
+        const toneInfo = tones.slice(start, end).find(item => item?.hasTone);
+        const tone = toneInfo?.tone || '5';
+        return {
+            base,
+            tone,
+            key: `${base}${tone}`,
+            hasTone: !!toneInfo?.hasTone
+        };
+    }
+
+    function getPinyinSegmentationScoreForTts(syllable, totalCount) {
+        let score = syllable.hasTone ? 5 : 0;
+        if (totalCount > 1 && syllable.base.length === 1) score -= 4;
+        if (syllable.base.length > 1) score += 1;
+        return score;
+    }
+
+    function parsePinyinSyllablesForTts(value, expectedCount) {
+        const { letters, tones } = getPinyinCharDataForTts(value);
+        if (!letters) return [];
+        const targetCount = Number.isFinite(expectedCount) && expectedCount > 0 ? expectedCount : null;
+        const maxSyllableLength = 6;
+        const memo = new Map();
+
+        function search(index, remainingCount) {
+            const memoKey = `${index}|${remainingCount ?? 'any'}`;
+            if (memo.has(memoKey)) return memo.get(memoKey);
+            if (index === letters.length) {
+                const done = remainingCount === null || remainingCount === 0
+                    ? { syllables: [], score: 0 }
+                    : null;
+                memo.set(memoKey, done);
+                return done;
+            }
+            if (remainingCount !== null) {
+                if (remainingCount <= 0) return null;
+                const remainingLetters = letters.length - index;
+                if (remainingLetters < remainingCount || remainingLetters > remainingCount * maxSyllableLength) return null;
+            }
+
+            let best = null;
+            const maxEnd = Math.min(letters.length, index + maxSyllableLength);
+            for (let end = index + 1; end <= maxEnd; end += 1) {
+                const base = letters.slice(index, end);
+                if (!TTS_PINYIN_VALID_SYLLABLES.has(base)) continue;
+                const next = search(end, remainingCount === null ? null : remainingCount - 1);
+                if (!next) continue;
+                const syllable = createPinyinSyllableForTts(base, tones, index, end);
+                const score = getPinyinSegmentationScoreForTts(syllable, targetCount || next.syllables.length + 1) + next.score;
+                const candidate = { syllables: [syllable, ...next.syllables], score };
+                if (!best || candidate.score > best.score) best = candidate;
+            }
+            memo.set(memoKey, best);
+            return best;
+        }
+
+        return search(0, targetCount)?.syllables || [];
+    }
+
+    function normalizePinyinForTts(value) {
+        return getPinyinCharDataForTts(value).letters;
+    }
+
+    function normalizePinyinToneKeyForTts(value, expectedCount) {
+        const syllables = parsePinyinSyllablesForTts(value, expectedCount);
+        if (syllables.length) {
+            return syllables.map(item => item.hasTone ? item.key : item.base).join('');
+        }
+        return normalizePinyinForTts(value);
+    }
+
+    function getPinyinMatchInfoForTts(pinyin, expectedCount) {
+        const syllables = parsePinyinSyllablesForTts(pinyin, expectedCount);
+        if (syllables.length) {
+            return {
+                syllables,
+                baseKey: syllables.map(item => item.base).join(''),
+                toneKey: syllables.map(item => item.key).join(''),
+                hasTone: syllables.some(item => item.hasTone)
+            };
+        }
+        const baseKey = normalizePinyinForTts(pinyin);
+        return { syllables: [], baseKey, toneKey: baseKey, hasTone: false };
+    }
+
+    function normalizeChineseTermForTts(value) {
+        return String(value || '')
+            .normalize('NFKC')
+            .replace(/\s+/g, '')
+            .trim();
+    }
+
+    function getTtsPolyphoneRuleKey(rule) {
+        const term = normalizeChineseTermForTts(rule?.term);
+        const pinyinKey = normalizePinyinToneKeyForTts(rule?.pinyin, Array.from(term).length) || normalizePinyinForTts(rule?.pinyin);
+        return `${term}|${pinyinKey}`;
+    }
+
+    function normalizeTtsPolyphoneRule(raw) {
+        if (!raw || typeof raw !== 'object') return null;
+        const term = String(raw.term || raw.word || raw.display || raw.displayText || '').trim();
+        const pinyin = String(raw.pinyin || raw.reading || '').trim();
+        const ttsText = String(raw.ttsText || raw.tts_text || raw.replacement || raw.speakText || '').trim();
+        if (!term || !pinyin || !ttsText) return null;
+        const normalizedTerm = normalizeChineseTermForTts(term);
+        const normalizedPinyin = normalizePinyinForTts(pinyin);
+        if (!normalizedTerm || !normalizedPinyin) return null;
+        return { term, pinyin, ttsText };
+    }
+
+    function normalizeTtsPolyphoneRules(raw) {
+        const source = Array.isArray(raw)
+            ? raw
+            : (Array.isArray(raw?.rules) ? raw.rules : createDefaultTtsPolyphoneRules());
+        const byKey = new Map();
+        source.forEach(item => {
+            const rule = normalizeTtsPolyphoneRule(item);
+            if (!rule) return;
+            byKey.set(getTtsPolyphoneRuleKey(rule), rule);
+        });
+        return Array.from(byKey.values()).slice(0, 600);
+    }
+
+    function getBuiltinTtsPolyphoneRules() {
+        return normalizeTtsPolyphoneRules(TTS_BUILTIN_POLYPHONE_RULES);
     }
 
     const Runtime = {
@@ -4168,12 +4797,18 @@
     };
 
     // Sound Engine
+    // テスト中: falseに戻すと全ボタン共通のクリック効果音を止められます。
+    const ENABLE_GLOBAL_BUTTON_SOUND = true;
+
     const Snd = {
         ctx: null,
         chargeLoop: null,
         unlockHandlersInstalled: false,
+        buttonSoundHandlersInstalled: false,
         unlocked: false,
         unavailable: false,
+        lastCursorAt: 0,
+        lastButtonSoundAt: 0,
         canPlay() {
             if (typeof DB !== 'undefined' && DB.d) {
                 return DB.d.soundEnabled !== false && (DB.d.masterVolume || 0) > 0;
@@ -4218,6 +4853,22 @@
             document.addEventListener('touchstart', unlock, { capture: true, passive: true });
             document.addEventListener('click', unlock, { capture: true, passive: true });
             document.addEventListener('keydown', unlock, { capture: true });
+        },
+        installButtonSoundHandlers() {
+            if (this.buttonSoundHandlersInstalled) return;
+            this.buttonSoundHandlersInstalled = true;
+            document.addEventListener('click', event => {
+                if (!ENABLE_GLOBAL_BUTTON_SOUND) return;
+                const button = event.target && event.target.closest ? event.target.closest('button') : null;
+                if (!button || button.disabled) return;
+                if (button.dataset.noClickSound === 'true') return;
+                this.lastButtonSoundAt = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+                this.cursor();
+            }, { capture: true, passive: true });
+        },
+        recentlyPlayedButtonSound() {
+            const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+            return now - this.lastButtonSoundAt < 140;
         },
         unlock() {
             const ctx = this.init();
@@ -4367,9 +5018,20 @@
             this.playTone('triangle', 300, 0.8, 0.2, 50);
         },
         // UI操作音
-        cursor() { this.playTone('square', 800, 0.05, 0.05); },
-        confirm() { this.playTone('sine', 1200, 0.1, 0.1); },
-        cancel() { this.playTone('square', 300, 0.1, 0.1); },
+        cursor() {
+            const now = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+            if (now - this.lastCursorAt < 90) return;
+            this.lastCursorAt = now;
+            this.playTone('square', 800, 0.05, 0.05);
+        },
+        confirm() {
+            if (this.recentlyPlayedButtonSound()) return;
+            this.playTone('sine', 1200, 0.1, 0.1);
+        },
+        cancel() {
+            if (this.recentlyPlayedButtonSound()) return;
+            this.playTone('square', 300, 0.1, 0.1);
+        },
         stamp() { this.playTone('sine', 880, 0.2, 0.2, 1760); }, // スタンプ音も可愛く
         heal() {
             const notes = [
@@ -4638,6 +5300,7 @@
             ttsRepeatEnabled: false,
             ttsDefaultLang: '',
             ttsCleanupRules: createDefaultTtsCleanupRules(),
+            ttsPolyphoneRules: createDefaultTtsPolyphoneRules(),
             skillEnabled: true,
             skillGaugeMax: 100,
             skillGainCorrect: 20,
@@ -4698,6 +5361,7 @@
             this.d.ttsRepeatEnabled = this.d.ttsAutoEnabled === true && this.d.ttsRepeatEnabled === true;
             this.d.ttsDefaultLang = String(this.d.ttsDefaultLang || '').trim();
             this.d.ttsCleanupRules = normalizeTtsCleanupRules(this.d.ttsCleanupRules);
+            this.d.ttsPolyphoneRules = normalizeTtsPolyphoneRules(this.d.ttsPolyphoneRules);
             this.d.skillEnabled = this.d.skillEnabled !== undefined ? this.d.skillEnabled : true;
             this.d.skillGaugeMax = this.d.skillGaugeMax || 100;
             this.d.skillGainCorrect = this.d.skillGainCorrect !== undefined ? this.d.skillGainCorrect : 20;
@@ -4943,6 +5607,7 @@
                     this.d.ttsRepeatEnabled = data.ttsAutoEnabled === true && data.ttsRepeatEnabled === true;
                     this.d.ttsDefaultLang = String(data.ttsDefaultLang || '').trim();
                     this.d.ttsCleanupRules = normalizeTtsCleanupRules(data.ttsCleanupRules);
+                    this.d.ttsPolyphoneRules = normalizeTtsPolyphoneRules(data.ttsPolyphoneRules);
                     this.d.skillEnabled = data.skillEnabled !== undefined ? data.skillEnabled : true;
                     this.d.skillGaugeMax = data.skillGaugeMax || 100;
                     this.d.skillGainCorrect = data.skillGainCorrect !== undefined ? data.skillGainCorrect : 20;
@@ -5057,6 +5722,11 @@
             const ttsDefaultLangEl = document.getElementById('tts-card-default-lang');
             if (ttsDefaultLangEl) ttsDefaultLangEl.value = this.d.ttsDefaultLang || '';
             this.d.ttsCleanupRules = normalizeTtsCleanupRules(this.d.ttsCleanupRules);
+            this.d.ttsPolyphoneRules = normalizeTtsPolyphoneRules(this.d.ttsPolyphoneRules);
+            if (typeof TtsTest !== 'undefined' && TtsTest.initialized) {
+                TtsTest.renderCleanupRuleSettings();
+                TtsTest.renderPolyphoneRuleSettings();
+            }
             this.updateTtsRepeatUI();
             this.updateVolumeLabel();
             document.getElementById('cfg-skill-enabled').checked = this.d.skillEnabled;
@@ -5087,10 +5757,7 @@
 
             // カスタムモンスター設定を読み込み
             if (this.d.customMonsters && this.d.customMonsters.length > 0) {
-                document.getElementById('custom-monster-enabled').checked = true;
-                document.getElementById('monster-image-input').style.display = 'block';
-                document.getElementById('monster-images-list').style.display = 'block';
-                document.getElementById('monster-order-setting').style.display = 'block';
+                showCustomMonsterControls();
                 this.renderMonsterPreviews();
             }
 
@@ -5147,6 +5814,15 @@
                 }
             } catch (e) {
                 this.d.ttsCleanupRules = normalizeTtsCleanupRules(this.d.ttsCleanupRules);
+            }
+            try {
+                if (typeof TtsTest !== 'undefined' && TtsTest.initialized && typeof TtsTest.readPolyphoneRulesFromUi === 'function') {
+                    this.d.ttsPolyphoneRules = TtsTest.readPolyphoneRulesFromUi();
+                } else {
+                    this.d.ttsPolyphoneRules = normalizeTtsPolyphoneRules(this.d.ttsPolyphoneRules);
+                }
+            } catch (e) {
+                this.d.ttsPolyphoneRules = normalizeTtsPolyphoneRules(this.d.ttsPolyphoneRules);
             }
             this.updateTtsRepeatUI();
             if (!this.d.ttsAutoEnabled && typeof QuestionTtsLoop !== 'undefined') {
@@ -6136,7 +6812,20 @@
             return this.importRowsAsDeck(rows, deckName);
         },
 
-        removeDeck(deckName) {
+        confirmRemoveDeck(deckName) {
+            const displayName = getDeckDisplayName(deckName);
+            const deck = this.d.decks && this.d.decks[deckName];
+            const count = Array.isArray(deck) ? deck.length : 0;
+            return window.confirm(
+                `デッキ「${displayName}」を削除しますか？\n\n` +
+                `登録項目: ${count}語\n` +
+                'この操作は元に戻せません。'
+            );
+        },
+
+        removeDeck(deckName, options = {}) {
+            if (!this.d.decks || !this.d.decks[deckName]) return false;
+            if (!options.skipConfirm && !this.confirmRemoveDeck(deckName)) return false;
             delete this.d.decks[deckName];
             this.dirtyDecks.delete(deckName);
             this.deletedDecks.add(deckName);
@@ -6145,6 +6834,7 @@
             }
             this.save();
             this.updateUI();
+            return true;
         },
 
         selectDeck(deckName) {
@@ -6307,15 +6997,30 @@
                     item.classList.add('selected');
                 }
 
-                item.innerHTML = `
-            <span class="deck-name">${displayName}</span>
-            <span class="deck-count">${deck.length}語</span>
-            <button class="deck-remove" onclick="event.stopPropagation(); DB.removeDeck('${deckName}')">削除</button>
-        `;
+                const nameEl = document.createElement('span');
+                nameEl.className = 'deck-name';
+                nameEl.textContent = displayName;
 
-                item.onclick = () => {
+                const countEl = document.createElement('span');
+                countEl.className = 'deck-count';
+                countEl.textContent = `${deck.length}語`;
+
+                const removeButton = document.createElement('button');
+                removeButton.type = 'button';
+                removeButton.className = 'deck-remove';
+                removeButton.textContent = '削除';
+                removeButton.addEventListener('click', event => {
+                    event.stopPropagation();
+                    DB.removeDeck(deckName);
+                });
+
+                item.appendChild(nameEl);
+                item.appendChild(countEl);
+                item.appendChild(removeButton);
+
+                item.addEventListener('click', () => {
                     DB.selectDeck(deckName);
-                };
+                });
 
                 deckList.appendChild(item);
             });
@@ -6818,6 +7523,139 @@
         return result;
     }
 
+    function getTtsPolyphoneRules() {
+        try {
+            if (typeof DB !== 'undefined' && DB.d) {
+                DB.d.ttsPolyphoneRules = normalizeTtsPolyphoneRules(DB.d.ttsPolyphoneRules);
+                return DB.d.ttsPolyphoneRules;
+            }
+        } catch (e) { }
+        return createDefaultTtsPolyphoneRules();
+    }
+
+    function extractChinesePinyinHintsForTts(text, options = {}) {
+        const original = String(text || '').trim();
+        if (!original || !/[\u3400-\u9FFF]/u.test(original)) return [];
+        const cleanupRules = normalizeTtsCleanupRules(options.rules || getTtsCleanupRules());
+        let source = stripLeadingQuestionNumberForTts(original, cleanupRules);
+        source = stripDecorativeMarksForTts(source, cleanupRules);
+
+        const pinyinChars = 'A-Za-züÜǖǘǚǜāáǎàēéěèīíǐìōóǒòūúǔùńňǹḿ0-9';
+        const pinyinGlue = "\\s'’\\-・･·/／∕⁄∥‖|｜";
+        const pattern = new RegExp(`([\\u3400-\\u9FFF]{1,24})\\s*[\\(\\[（【]?\\s*([${pinyinChars}][${pinyinChars}${pinyinGlue}]{0,79})\\s*[\\)\\]）】]?`, 'gu');
+        const hints = [];
+        let match;
+        while ((match = pattern.exec(source)) !== null) {
+            const term = String(match[1] || '').trim();
+            const pinyin = String(match[2] || '').trim();
+            if (!term || !looksLikePinyinGuide(pinyin)) continue;
+            const normalizedTerm = normalizeChineseTermForTts(term);
+            const normalizedPinyin = normalizePinyinForTts(pinyin);
+            const syllables = parsePinyinSyllablesForTts(pinyin, Array.from(normalizedTerm).length);
+            if (!normalizedTerm || !normalizedPinyin) continue;
+            hints.push({
+                term,
+                pinyin,
+                normalizedTerm,
+                normalizedPinyin,
+                normalizedTonePinyin: normalizePinyinToneKeyForTts(pinyin, Array.from(normalizedTerm).length),
+                syllables
+            });
+        }
+        return hints;
+    }
+
+    function pinyinSyllableSliceMatchesForTts(slice, ruleInfo) {
+        if (!slice.length || !ruleInfo?.baseKey) return false;
+        const sliceBaseKey = slice.map(item => item.base).join('');
+        const sliceToneKey = slice.map(item => item.key).join('');
+        const sliceHasTone = slice.some(item => item.hasTone);
+        if (ruleInfo.hasTone && sliceHasTone) return sliceToneKey === ruleInfo.toneKey;
+        return sliceBaseKey === ruleInfo.baseKey;
+    }
+
+    function findTtsPolyphoneCorrectionFromRules(rules, hints, source) {
+        const orderedRules = [...rules].sort((a, b) =>
+            normalizeChineseTermForTts(b.term).length - normalizeChineseTermForTts(a.term).length
+        );
+        for (const rule of orderedRules) {
+            const ruleTerm = normalizeChineseTermForTts(rule.term);
+            const ruleChars = Array.from(ruleTerm);
+            const ruleInfo = getPinyinMatchInfoForTts(rule.pinyin, ruleChars.length);
+            if (!ruleTerm || !ruleInfo.baseKey) continue;
+            let hint = null;
+            for (const item of hints) {
+                const hintChars = Array.from(item.normalizedTerm);
+                if (source === 'builtin' && ruleChars.length === 1 && hintChars.length !== 1) continue;
+                const hasAlignedSyllables = item.syllables?.length === hintChars.length;
+                for (let index = 0; index <= hintChars.length - ruleChars.length; index += 1) {
+                    if (hintChars.slice(index, index + ruleChars.length).join('') !== ruleTerm) continue;
+                    if (hasAlignedSyllables) {
+                        const slice = item.syllables.slice(index, index + ruleChars.length);
+                        if (pinyinSyllableSliceMatchesForTts(slice, ruleInfo)) {
+                            hint = item;
+                            break;
+                        }
+                    } else if (item.normalizedTerm === ruleTerm) {
+                        const hintInfo = getPinyinMatchInfoForTts(item.pinyin, ruleChars.length);
+                        if (
+                            hintInfo.baseKey === ruleInfo.baseKey
+                            && (!ruleInfo.hasTone || !hintInfo.hasTone || hintInfo.toneKey === ruleInfo.toneKey)
+                        ) {
+                            hint = item;
+                            break;
+                        }
+                    }
+                }
+                if (hint) break;
+            }
+            if (hint) {
+                return { text: rule.ttsText, rule, hint, source };
+            }
+        }
+        return null;
+    }
+
+    function findTtsPolyphoneCorrection(questionText, options = {}) {
+        const userRules = normalizeTtsPolyphoneRules(options.polyphoneRules || getTtsPolyphoneRules());
+        const allowBuiltinContextReplacement = options.allowBuiltinContextReplacement === true
+            || TTS_ENABLE_BUILTIN_CONTEXT_REPLACEMENTS === true;
+        const builtinRules = allowBuiltinContextReplacement && options.includeBuiltinPolyphoneRules !== false
+            ? getBuiltinTtsPolyphoneRules()
+            : [];
+        if (!userRules.length && !builtinRules.length) return null;
+        const cleanupRules = normalizeTtsCleanupRules(options.rules || getTtsCleanupRules());
+        const hints = extractChinesePinyinHintsForTts(questionText, { rules: cleanupRules });
+        if (!hints.length) return null;
+
+        return findTtsPolyphoneCorrectionFromRules(userRules, hints, 'user')
+            || findTtsPolyphoneCorrectionFromRules(builtinRules, hints, 'builtin');
+    }
+
+    function resolveQuestionTtsText(questionText, options = {}) {
+        const original = String(questionText || '').trim();
+        if (!original) {
+            return { text: '', source: 'empty', original, normalized: '', correction: null };
+        }
+        const cleanupRules = normalizeTtsCleanupRules(options.rules || getTtsCleanupRules());
+        const polyphoneRules = normalizeTtsPolyphoneRules(options.polyphoneRules || getTtsPolyphoneRules());
+        const correction = findTtsPolyphoneCorrection(original, {
+            rules: cleanupRules,
+            polyphoneRules
+        });
+        if (correction?.text) {
+            return {
+                text: correction.text,
+                source: 'polyphone',
+                original,
+                normalized: normalizeQuestionTextForTts(original, { rules: cleanupRules }),
+                correction
+            };
+        }
+        const normalized = normalizeQuestionTextForTts(original, { rules: cleanupRules });
+        return { text: normalized, source: 'cleanup', original, normalized, correction: null };
+    }
+
     function normalizeQuestionTextForTts(text, options = {}) {
         const original = String(text || '').trim();
         if (!original) return '';
@@ -6837,10 +7675,22 @@
     }
 
     function getCardSpeakableText(card) {
+        return resolveCardSpeakableText(card).text;
+    }
+
+    function resolveCardSpeakableText(card) {
         const explicit = getCardTtsText(card);
-        if (explicit) return explicit;
+        if (explicit) {
+            return {
+                text: explicit,
+                source: 'explicit',
+                original: String(card?.q || '').trim(),
+                normalized: explicit,
+                correction: null
+            };
+        }
         const question = String(card?.q || '').trim();
-        return normalizeQuestionTextForTts(question);
+        return resolveQuestionTtsText(question);
     }
 
     function isSameChoiceGroup(a, b) {
@@ -7431,6 +8281,12 @@
     function showView(v) {
         document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
         document.getElementById(v).classList.add('active');
+    }
+
+    function goSettings() {
+        Snd.cursor();
+        if (typeof DB !== 'undefined' && DB.loadSettings) DB.loadSettings();
+        showView('view-settings');
     }
 
     function goHome() {
@@ -10973,6 +11829,7 @@
         card: null,
         battleToken: 0,
         repeatDelayMs: 500,
+        maxErrorDelayMs: 8000,
 
         stop(options = {}) {
             this.token++;
@@ -10995,11 +11852,26 @@
             this.active = repeat === true;
             this.card = card;
             this.battleToken = battleToken;
+            let consecutiveErrors = 0;
 
-            const scheduleNext = () => {
+            const scheduleNext = (result = 'done') => {
                 if (!this.active || this.token !== token) return;
                 if (!isCurrentBattle(battleToken) || Game.cur !== card || Game.pHP <= 0 || Game.eHP <= 0) return;
-                this.timer = window.setTimeout(play, this.repeatDelayMs);
+                if (result === 'error') {
+                    consecutiveErrors++;
+                    if (consecutiveErrors >= 3) {
+                        if (typeof TtsTest !== 'undefined') {
+                            TtsTest.setStatus('TTSエラーが続いています。Android TTSを回復しながら再試行します。', 'warn');
+                        }
+                    }
+                } else {
+                    consecutiveErrors = 0;
+                }
+                if (this.timer) clearTimeout(this.timer);
+                const delay = result === 'error'
+                    ? Math.min(this.maxErrorDelayMs, this.repeatDelayMs * Math.max(2, consecutiveErrors + 1))
+                    : this.repeatDelayMs;
+                this.timer = window.setTimeout(play, delay);
             };
 
             const play = () => {
@@ -11007,8 +11879,8 @@
                 if (!isCurrentBattle(battleToken) || Game.cur !== card || Game.pHP <= 0 || Game.eHP <= 0) return;
                 const ok = TtsTest.speakCard(card, {
                     auto: true,
-                    onDone: scheduleNext,
-                    onError: scheduleNext
+                    onDone: () => scheduleNext('done'),
+                    onError: () => scheduleNext('error')
                 });
                 if (!ok) this.active = false;
             };
@@ -11696,6 +12568,7 @@
                 questionInfo.textContent = questionLang ? `${questionText} / ${questionLang}` : questionText;
                 const btn = document.createElement('button');
                 btn.className = 'btn btn-blue btn-small tts-inline-btn';
+                btn.dataset.noClickSound = 'true';
                 btn.textContent = '問題音声';
                 btn.onclick = () => {
                     if (typeof TtsTest !== 'undefined') TtsTest.speakCard(item);
@@ -11716,6 +12589,7 @@
                 exampleInfo.textContent = exampleLang ? `${exampleText} / ${exampleLang}` : exampleText;
                 const btn = document.createElement('button');
                 btn.className = 'btn btn-green btn-small tts-inline-btn';
+                btn.dataset.noClickSound = 'true';
                 btn.textContent = '例文音声';
                 btn.onclick = () => {
                     if (typeof TtsTest === 'undefined') return;
@@ -12918,6 +13792,7 @@
                 ttsRepeatEnabled: DB.d.ttsRepeatEnabled,
                 ttsDefaultLang: DB.d.ttsDefaultLang,
                 ttsCleanupRules: normalizeTtsCleanupRules(DB.d.ttsCleanupRules),
+                ttsPolyphoneRules: normalizeTtsPolyphoneRules(DB.d.ttsPolyphoneRules),
                 skillEnabled: DB.d.skillEnabled,
                 skillGaugeMax: DB.d.skillGaugeMax,
                 skillGainCorrect: DB.d.skillGainCorrect,
@@ -12995,8 +13870,8 @@
         URL.revokeObjectURL(url);
 
         const message = recordsOnly
-            ? '✅ 学習記録をエクスポートしました！\n\n（デッキは含まれていません）'
-            : '✅ 学習データをエクスポートしました！\n\nこのファイルを大切に保管してください。';
+            ? '✅ 学習記録バックアップを書き出しました！\n\n（デッキは含まれていません）'
+            : '✅ バックアップを書き出しました！\n\nこのJSONファイルを大切に保管してください。';
         alert(message);
     }
 
@@ -13013,7 +13888,7 @@
 
                 // 確認ダイアログ
                 const confirm = window.confirm(
-                    '📥 学習データをインポートしますか？\n\n' +
+                    '♻️ バックアップJSONを復元しますか？\n\n' +
                     '現在のデータは上書きされます。\n' +
                     '（デッキデータは統合されます）\n\n' +
                     'よろしいですか？'
@@ -13059,70 +13934,235 @@
                 DB.updateUI();
 
                 alert(isRecordsOnly
-                    ? '✅ 学習記録をインポートしました！\n\n端末内のデッキは保持したまま、統計情報とスタンプを復元しました。'
-                    : '✅ 学習データをインポートしました！\n\nデッキ、統計情報、スタンプが復元されました。');
+                    ? '✅ バックアップを復元しました！\n\n端末内のデッキは保持したまま、統計情報とスタンプを復元しました。'
+                    : '✅ バックアップを復元しました！\n\nデッキ、統計情報、スタンプが復元されました。');
                 goHome();
             } catch (err) {
                 console.error(err);
-                alert('❌ ファイルの読み込みに失敗しました\n\n' + err.message);
+                alert('❌ バックアップJSONの復元に失敗しました\n\n' + err.message);
             }
         };
         reader.readAsText(file);
     }
 
-    // カスタムモンスター画像の処理（複数対応）
-    function handleMonsterImageUpload(files) {
-        if (!files || files.length === 0) return;
+    function getImportFileName(file, fallback = 'file') {
+        return String(file?.name || fallback || 'file');
+    }
 
-        let loaded = 0;
-        const newImages = [];
+    function getImportTimestamp() {
+        const now = new Date();
+        return now.toLocaleTimeString ? now.toLocaleTimeString() : now.toISOString();
+    }
 
-        Array.from(files).forEach(file => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    // 画像サイズを制限（最大200x200）
-                    const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-                    const maxSize = 200;
+    function formatImportFileSize(bytes) {
+        const size = Number(bytes) || 0;
+        if (size >= 1024 * 1024) return `${(size / 1024 / 1024).toFixed(2)} MB`;
+        if (size >= 1024) return `${(size / 1024).toFixed(1)} KB`;
+        return `${size} B`;
+    }
 
-                    if (width > maxSize || height > maxSize) {
-                        if (width > height) {
-                            height = (height / width) * maxSize;
-                            width = maxSize;
-                        } else {
-                            width = (width / height) * maxSize;
-                            height = maxSize;
-                        }
-                    }
+    function appendImportMessage(message, level = 'info') {
+        const text = String(message || '').trim();
+        if (!text) return;
+        const prefix = level === 'error' ? 'ERROR' : level === 'warn' ? 'WARN' : 'INFO';
+        const line = `[${getImportTimestamp()}] ${prefix}: ${text}`;
+        const win = document.getElementById('import-message-window');
+        if (win) {
+            if (win.dataset.initialized !== 'true') {
+                win.textContent = '';
+                win.dataset.initialized = 'true';
+            }
+            const current = win.textContent ? win.textContent.split('\n') : [];
+            current.push(line);
+            while (current.length > 160) current.shift();
+            win.textContent = current.join('\n');
+            win.scrollTop = win.scrollHeight;
+        }
+        if (level === 'error') console.error(line);
+        else if (level === 'warn') console.warn(line);
+        else console.log(line);
+    }
 
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
+    function clearImportMessages() {
+        const win = document.getElementById('import-message-window');
+        if (!win) return;
+        win.dataset.initialized = 'true';
+        win.textContent = `[${getImportTimestamp()}] INFO: ログを消去しました。`;
+    }
 
-                    const dataUrl = canvas.toDataURL('image/png');
-                    newImages.push(dataUrl);
+    function resetImportMessages(message = '読み込みログを開始します。') {
+        const win = document.getElementById('import-message-window');
+        if (win) {
+            win.dataset.initialized = 'true';
+            win.textContent = '';
+        }
+        appendImportMessage(message);
+    }
 
-                    loaded++;
-                    if (loaded === files.length) {
-                        // すべての画像の読み込みが完了
-                        DB.d.customMonsters.push(...newImages);
-                        DB.save();
-                        DB.renderMonsterPreviews();
-
-                        document.getElementById('monster-images-list').style.display = 'block';
-                        document.getElementById('monster-order-setting').style.display = 'block';
-
-                        alert(`✅ ${newImages.length}個のカスタムモンスター画像を追加しました！\n合計: ${DB.d.customMonsters.length}個`);
-                    }
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
+    function onAndroidFileChooserEvent(payload) {
+        const event = payload && typeof payload === 'object' ? payload : {};
+        const type = String(event.type || 'event');
+        const message = String(event.message || '');
+        const details = [];
+        ['accept', 'mode', 'resultCode', 'uriCount', 'clipCount', 'hasDataUri'].forEach(key => {
+            if (event[key] !== undefined && event[key] !== null && event[key] !== '') {
+                details.push(`${key}=${event[key]}`);
+            }
         });
+        appendImportMessage(`Androidファイル選択: ${type}${message ? ' / ' + message : ''}${details.length ? ' / ' + details.join(', ') : ''}`);
+    }
+
+    window.onAndroidFileChooserEvent = onAndroidFileChooserEvent;
+
+    function describeImportFile(file) {
+        const name = getImportFileName(file);
+        const type = file?.type ? String(file.type) : '(MIMEなし)';
+        const size = file?.size !== undefined ? formatImportFileSize(file.size) : 'サイズ不明';
+        return `${name} / ${type} / ${size}`;
+    }
+
+    function readFileAs(file, mode = 'text') {
+        return new Promise((resolve, reject) => {
+            appendImportMessage(`FileReader開始: ${describeImportFile(file)} / mode=${mode}`);
+            const reader = new FileReader();
+            reader.onload = e => {
+                const value = e.target.result;
+                const length = value && value.byteLength !== undefined ? `${value.byteLength} bytes` : `${String(value || '').length} chars`;
+                appendImportMessage(`FileReader完了: ${getImportFileName(file)} / ${length}`);
+                resolve(value);
+            };
+            reader.onerror = () => {
+                const err = reader.error || new Error('ファイルを読めませんでした');
+                appendImportMessage(`FileReader失敗: ${getImportFileName(file)} / ${err.message || err}`, 'error');
+                reject(err);
+            };
+
+            if (mode === 'arraybuffer') {
+                reader.readAsArrayBuffer(file);
+            } else if (mode === 'dataurl') {
+                reader.readAsDataURL(file);
+            } else {
+                reader.readAsText(file);
+            }
+        });
+    }
+
+    function resizeMonsterImageDataUrl(dataUrl, label = '画像') {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => {
+                appendImportMessage(`画像デコード成功: ${label} / ${img.width}x${img.height}`);
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                const maxSize = 200;
+
+                if (width > maxSize || height > maxSize) {
+                    if (width > height) {
+                        height = (height / width) * maxSize;
+                        width = maxSize;
+                    } else {
+                        width = (width / height) * maxSize;
+                        height = maxSize;
+                    }
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                appendImportMessage(`画像リサイズ完了: ${label} / ${Math.round(width)}x${Math.round(height)} / PNG化`);
+                resolve(canvas.toDataURL('image/png'));
+            };
+            img.onerror = () => {
+                appendImportMessage(`画像デコード失敗: ${label}`, 'error');
+                reject(new Error(`${label}を画像として読み込めませんでした`));
+            };
+            appendImportMessage(`画像デコード開始: ${label} / dataUrl長=${String(dataUrl || '').length}`);
+            img.src = dataUrl;
+        });
+    }
+
+    function showCustomMonsterControls() {
+        const checkbox = document.getElementById('custom-monster-enabled');
+        const note = document.getElementById('monster-import-note');
+        const imagesList = document.getElementById('monster-images-list');
+        const orderSetting = document.getElementById('monster-order-setting');
+
+        if (checkbox) checkbox.checked = true;
+        if (note) note.style.display = 'block';
+        if (imagesList) imagesList.style.display = 'block';
+        if (orderSetting) orderSetting.style.display = 'block';
+    }
+
+    async function addCustomMonsterImagesFromDataUrls(entries, options = {}) {
+        const imageEntries = Array.from(entries || []);
+        const result = { imageCount: 0, imageNames: [], failedImages: [] };
+        appendImportMessage(`カスタム画像登録開始: ${imageEntries.length}件`);
+        if (!imageEntries.length) return result;
+
+        const newImages = [];
+        for (const entry of imageEntries) {
+            const name = String(entry?.name || '画像');
+            try {
+                newImages.push(await resizeMonsterImageDataUrl(entry.dataUrl, name));
+                result.imageNames.push(name);
+                appendImportMessage(`画像登録成功: ${name}`);
+            } catch (err) {
+                console.error(err);
+                result.failedImages.push(`${name}（${err.message || '画像読み込みエラー'}）`);
+            }
+        }
+
+        if (newImages.length > 0) {
+            DB.d.customMonsters = DB.d.customMonsters || [];
+            DB.d.customMonsters.push(...newImages);
+            result.imageCount = newImages.length;
+            await DB.save();
+            DB.renderMonsterPreviews();
+            showCustomMonsterControls();
+            appendImportMessage(`カスタム画像登録完了: 追加=${result.imageCount} / 合計=${DB.d.customMonsters.length}`);
+        } else {
+            appendImportMessage('カスタム画像登録なし: 画像として読み込めたファイルがありませんでした。', 'warn');
+        }
+
+        if (options.alert !== false) {
+            if (result.imageCount > 0) {
+                let message = `✅ ${result.imageCount}個のカスタムモンスター画像を追加しました！\n合計: ${DB.d.customMonsters.length}個`;
+                if (result.failedImages.length) {
+                    message += `\n\n読み込めなかった画像:\n${result.failedImages.slice(0, 8).join('\n')}`;
+                }
+                alert(message);
+            } else if (result.failedImages.length) {
+                alert(`❌ 画像を読み込めませんでした\n\n${result.failedImages.slice(0, 8).join('\n')}`);
+            }
+        }
+
+        return result;
+    }
+
+    // カスタムモンスター画像の処理（複数対応）
+    async function handleMonsterImageUpload(files, options = {}) {
+        const fileList = Array.from(files || []);
+        const entries = [];
+        const failedImages = [];
+        appendImportMessage(`画像ファイル処理開始: ${fileList.length}件`);
+        if (!fileList.length) return { imageCount: 0, failedImages };
+
+        for (const file of fileList) {
+            const name = getImportFileName(file, '画像');
+            try {
+                entries.push({ name, dataUrl: await readFileAs(file, 'dataurl') });
+            } catch (err) {
+                console.error(err);
+                appendImportMessage(`画像ファイル読み取り失敗: ${name} / ${err.message || err}`, 'error');
+                failedImages.push(`${name}（${err.message || 'ファイルを読めませんでした'}）`);
+            }
+        }
+
+        const result = await addCustomMonsterImagesFromDataUrls(entries, options);
+        result.failedImages.unshift(...failedImages);
+        return result;
     }
 
     function getDeckDisplayName(name) {
@@ -13133,19 +14173,24 @@
     function importDeckContentByName(filename, content) {
         const lower = String(filename || '').toLowerCase();
         const deckName = getDeckDisplayName(filename);
+        appendImportMessage(`デッキ形式判定: ${filename} -> ${deckName}`);
+        let count = 0;
         if (lower.endsWith('.csv')) {
-            return DB.importDelimited(content, deckName, ',');
+            count = DB.importDelimited(content, deckName, ',');
+        } else if (lower.endsWith('.tsv')) {
+            count = DB.importDelimited(content, deckName, '\t');
+        } else if (lower.endsWith('.txt')) {
+            count = DB.import(content, deckName);
+        } else if (lower.endsWith('.xlsx') || lower.endsWith('.ods')) {
+            count = DB.importSpreadsheet(content, deckName);
+        } else {
+            appendImportMessage(`デッキ形式未対応: ${filename}`, 'warn');
+            return 0;
         }
-        if (lower.endsWith('.tsv')) {
-            return DB.importDelimited(content, deckName, '\t');
-        }
-        if (lower.endsWith('.txt')) {
-            return DB.import(content, deckName);
-        }
-        if (lower.endsWith('.xlsx') || lower.endsWith('.ods')) {
-            return DB.importSpreadsheet(content, deckName);
-        }
-        return 0;
+        appendImportMessage(count > 0
+            ? `デッキ登録成功: ${deckName} / ${count}件`
+            : `デッキ登録0件: ${deckName}`, count > 0 ? 'info' : 'warn');
+        return count;
     }
 
     function isSpreadsheetDeckFile(filename) {
@@ -13156,12 +14201,19 @@
         return /\.(txt|csv|tsv|xlsx|ods)$/i.test(String(filename || ''));
     }
 
+    function isSupportedImageFile(filename, mimeType = '') {
+        return /^image\/(png|jpeg|gif|webp)$/i.test(String(mimeType || ''))
+            || /\.(png|jpg|jpeg|gif|webp)$/i.test(String(filename || ''));
+    }
+
     function getDeckFileReadMode(filename) {
         return isSpreadsheetDeckFile(filename) ? 'arraybuffer' : 'text';
     }
 
-    function isZipFile(filename) {
-        return /\.zip$/i.test(String(filename || ''));
+    function isZipFile(filename, mimeType = '') {
+        return /\.zip$/i.test(String(filename || ''))
+            || /(^|\/)(zip|x-zip-compressed)$/i.test(String(mimeType || ''))
+            || /application\/(zip|x-zip-compressed)/i.test(String(mimeType || ''));
     }
 
     const TtsTest = {
@@ -13174,6 +14226,11 @@
         languageCategoryStorageKey: 'mozTtsVoiceLanguageCategory',
         initialized: false,
         playToken: 0,
+        androidPendingUtterance: null,
+        androidMissingCompletionCount: 0,
+        androidConsecutiveErrors: 0,
+        androidRecoveryInProgress: false,
+        androidRecoveryTimer: null,
         slotSelectIds: {
             free: 'tts-voice-select',
             en: 'tts-voice-en',
@@ -13207,9 +14264,11 @@
         init() {
             if (this.initialized) return;
             this.initialized = true;
+            this.installAndroidTtsEventBridge();
             this.bindControls();
             this.updateSettingLabels();
             this.renderCleanupRuleSettings();
+            this.renderPolyphoneRuleSettings();
             this.refreshVoices();
             const synth = this.getSynth();
             if (synth && typeof synth.addEventListener === 'function') {
@@ -13263,6 +14322,14 @@
             bind('tts-reset-cleanup-rules', 'click', () => this.resetCleanupRules());
             bind('tts-cleanup-preview-input', 'input', () => this.updateCleanupPreview());
             bind('tts-decorative-mark-list', 'change', () => this.updateCleanupRemoveButton());
+            bind('tts-save-polyphone-rule', 'click', () => this.savePolyphoneRuleFromForm());
+            bind('tts-remove-polyphone-rule', 'click', () => this.removeSelectedPolyphoneRule());
+            bind('tts-clear-polyphone-form', 'click', () => this.clearPolyphoneRuleForm());
+            bind('tts-polyphone-rule-list', 'change', () => this.loadSelectedPolyphoneRuleToForm());
+            bind('tts-polyphone-preview-input', 'input', () => this.updatePolyphonePreview());
+            ['tts-polyphone-term', 'tts-polyphone-pinyin', 'tts-polyphone-tts-text'].forEach(id => {
+                bind(id, 'input', () => this.updatePolyphonePreview());
+            });
 
             [
                 'tts-rule-leading-number',
@@ -13396,6 +14463,155 @@
             if (!output) return;
             const rules = this.readCleanupRulesFromUi();
             output.textContent = normalizeQuestionTextForTts(input ? input.value : '', { rules });
+            this.updatePolyphonePreview();
+        },
+
+        getCurrentPolyphoneRules() {
+            if (typeof DB !== 'undefined' && DB.d) {
+                DB.d.ttsPolyphoneRules = normalizeTtsPolyphoneRules(DB.d.ttsPolyphoneRules);
+                return DB.d.ttsPolyphoneRules;
+            }
+            return createDefaultTtsPolyphoneRules();
+        },
+
+        readPolyphoneRulesFromUi() {
+            const list = document.getElementById('tts-polyphone-rule-list');
+            if (!list) return normalizeTtsPolyphoneRules(this.getCurrentPolyphoneRules());
+            const rules = Array.from(list.options).map(option => {
+                try {
+                    return JSON.parse(option.value || '{}');
+                } catch (e) {
+                    return null;
+                }
+            });
+            return normalizeTtsPolyphoneRules(rules);
+        },
+
+        renderPolyphoneRuleSettings(options = {}) {
+            const list = document.getElementById('tts-polyphone-rule-list');
+            if (!list) return;
+            const selectedKey = options.selectedKey || this.getSelectedPolyphoneRuleKey();
+            const rules = normalizeTtsPolyphoneRules(options.rules || this.getCurrentPolyphoneRules());
+            list.textContent = '';
+            rules.forEach(rule => {
+                const option = document.createElement('option');
+                option.value = JSON.stringify(rule);
+                option.textContent = `${rule.term} / ${rule.pinyin} → ${rule.ttsText}`;
+                option.dataset.key = getTtsPolyphoneRuleKey(rule);
+                option.selected = option.dataset.key === selectedKey;
+                list.appendChild(option);
+            });
+            this.updatePolyphoneRemoveButton();
+            this.updatePolyphonePreview();
+        },
+
+        persistPolyphoneRules(rules, options = {}) {
+            const normalized = normalizeTtsPolyphoneRules(rules);
+            if (typeof DB !== 'undefined' && DB.d) {
+                DB.d.ttsPolyphoneRules = normalized;
+                if (typeof DB.save === 'function') DB.save({ skipSizeLog: true });
+            }
+            this.renderPolyphoneRuleSettings({ rules: normalized, selectedKey: options.selectedKey });
+            return normalized;
+        },
+
+        getSelectedPolyphoneRuleKey() {
+            const list = document.getElementById('tts-polyphone-rule-list');
+            const selected = list?.selectedOptions?.[0];
+            return selected?.dataset?.key || '';
+        },
+
+        updatePolyphoneRemoveButton() {
+            const list = document.getElementById('tts-polyphone-rule-list');
+            const button = document.getElementById('tts-remove-polyphone-rule');
+            if (button) button.disabled = !list || !list.selectedOptions || !list.selectedOptions.length;
+        },
+
+        getPolyphoneRuleForm() {
+            const term = document.getElementById('tts-polyphone-term')?.value || '';
+            const pinyin = document.getElementById('tts-polyphone-pinyin')?.value || '';
+            const ttsText = document.getElementById('tts-polyphone-tts-text')?.value || '';
+            return normalizeTtsPolyphoneRule({ term, pinyin, ttsText });
+        },
+
+        setPolyphoneRuleForm(rule) {
+            const normalized = normalizeTtsPolyphoneRule(rule) || { term: '', pinyin: '', ttsText: '' };
+            const term = document.getElementById('tts-polyphone-term');
+            const pinyin = document.getElementById('tts-polyphone-pinyin');
+            const ttsText = document.getElementById('tts-polyphone-tts-text');
+            if (term) term.value = normalized.term || '';
+            if (pinyin) pinyin.value = normalized.pinyin || '';
+            if (ttsText) ttsText.value = normalized.ttsText || '';
+            this.updatePolyphonePreview();
+        },
+
+        loadSelectedPolyphoneRuleToForm() {
+            const list = document.getElementById('tts-polyphone-rule-list');
+            const selected = list?.selectedOptions?.[0];
+            this.updatePolyphoneRemoveButton();
+            if (!selected) return;
+            try {
+                this.setPolyphoneRuleForm(JSON.parse(selected.value || '{}'));
+            } catch (e) { }
+        },
+
+        clearPolyphoneRuleForm() {
+            this.setPolyphoneRuleForm({ term: '', pinyin: '', ttsText: '' });
+            const list = document.getElementById('tts-polyphone-rule-list');
+            if (list) list.selectedIndex = -1;
+            this.updatePolyphoneRemoveButton();
+        },
+
+        savePolyphoneRuleFromForm() {
+            const rule = this.getPolyphoneRuleForm();
+            if (!rule) {
+                this.setStatus('多音字補正は「表示語 / ピンイン / TTS用テキスト」をすべて入力してください。', 'error');
+                return;
+            }
+            const rules = this.readPolyphoneRulesFromUi();
+            const key = getTtsPolyphoneRuleKey(rule);
+            const selectedKey = this.getSelectedPolyphoneRuleKey();
+            const index = rules.findIndex(item => getTtsPolyphoneRuleKey(item) === (selectedKey || key));
+            if (index >= 0) rules[index] = rule;
+            else rules.push(rule);
+            this.persistPolyphoneRules(rules, { selectedKey: key });
+            this.setStatus('多音字補正ルールを保存しました。', 'ok');
+        },
+
+        removeSelectedPolyphoneRule() {
+            const selectedKey = this.getSelectedPolyphoneRuleKey();
+            if (!selectedKey) return;
+            const rules = this.readPolyphoneRulesFromUi()
+                .filter(rule => getTtsPolyphoneRuleKey(rule) !== selectedKey);
+            this.persistPolyphoneRules(rules);
+            this.clearPolyphoneRuleForm();
+            this.setStatus('多音字補正ルールを削除しました。', 'ok');
+        },
+
+        updatePolyphonePreview() {
+            const input = document.getElementById('tts-polyphone-preview-input');
+            const output = document.getElementById('tts-polyphone-preview-output');
+            const detail = document.getElementById('tts-polyphone-preview-detail');
+            if (!output) return;
+            const cleanupRules = this.readCleanupRulesFromUi();
+            const polyphoneRules = this.readPolyphoneRulesFromUi();
+            const resolved = resolveQuestionTtsText(input ? input.value : '', {
+                rules: cleanupRules,
+                polyphoneRules
+            });
+            output.textContent = resolved.text || '';
+            if (!detail) return;
+            if (resolved.source === 'polyphone') {
+                const rule = resolved.correction?.rule;
+                const label = resolved.correction?.source === 'builtin' ? '内蔵補正適用' : '補正適用';
+                detail.textContent = rule
+                    ? `${label}: ${rule.term} / ${rule.pinyin} → ${rule.ttsText}`
+                    : label;
+            } else {
+                detail.textContent = resolved.text
+                    ? '補正なし: 通常の除外ルールで読み上げます。'
+                    : '読み上げる文字列がありません。';
+            }
         },
 
         getSynth() {
@@ -13413,6 +14629,122 @@
                 || typeof android.speakAndroidTtsVoice === 'function'
                 || typeof android.getAndroidTtsVoices === 'function'
             );
+        },
+
+        installAndroidTtsEventBridge() {
+            if (typeof window === 'undefined') return;
+            const bridge = window.MOZAndroidTts && typeof window.MOZAndroidTts === 'object' ? window.MOZAndroidTts : {};
+            bridge.onEvent = event => this.handleAndroidTtsEvent(event);
+            window.MOZAndroidTts = bridge;
+        },
+
+        clearAndroidTtsPending() {
+            const pending = this.androidPendingUtterance;
+            if (pending?.fallbackTimer) {
+                window.clearTimeout(pending.fallbackTimer);
+            }
+            this.androidPendingUtterance = null;
+        },
+
+        isAndroidTtsEventForPending(pending, utteranceId) {
+            if (!pending) return false;
+            if (!pending.utteranceId) return true;
+            return !!utteranceId && pending.utteranceId === utteranceId;
+        },
+
+        noteAndroidTtsHealthy() {
+            this.androidMissingCompletionCount = 0;
+            this.androidConsecutiveErrors = 0;
+            this.androidRecoveryInProgress = false;
+            if (this.androidRecoveryTimer) {
+                window.clearTimeout(this.androidRecoveryTimer);
+                this.androidRecoveryTimer = null;
+            }
+        },
+
+        requestAndroidTtsRecovery(reason = '') {
+            if (!this.hasAndroidTtsBridge()) return false;
+            const android = typeof window !== 'undefined' ? window.Android : null;
+            if (!android || typeof android.resetAndroidTts !== 'function') return false;
+            if (this.androidRecoveryInProgress) return true;
+
+            this.androidRecoveryInProgress = true;
+            this.clearAndroidTtsPending();
+            const detail = reason ? ` (${reason})` : '';
+            this.setStatus(`Android TTSを再初期化しています${detail}。少し待ってから自動で再試行します。`, 'warn');
+            try {
+                android.resetAndroidTts(String(reason || 'recovery'));
+            } catch (e) {
+                this.androidRecoveryInProgress = false;
+                this.setStatus(`Android TTSの再初期化に失敗しました。${e.message ? ' ' + e.message : ''}`, 'error');
+                return false;
+            }
+
+            if (this.androidRecoveryTimer) window.clearTimeout(this.androidRecoveryTimer);
+            this.androidRecoveryTimer = window.setTimeout(() => {
+                this.androidRecoveryInProgress = false;
+                this.androidRecoveryTimer = null;
+                this.updateAndroidTtsStatus();
+            }, 1800);
+            return true;
+        },
+
+        handleAndroidTtsEvent(event) {
+            let payload = event;
+            if (typeof payload === 'string') {
+                try {
+                    payload = JSON.parse(payload);
+                } catch (e) {
+                    payload = { type: payload };
+                }
+            }
+            const type = String(payload?.type || '').toLowerCase();
+            const utteranceId = String(payload?.utteranceId || '');
+
+            if (type === 'ready') {
+                this.noteAndroidTtsHealthy();
+                this.updateAndroidTtsStatus();
+                return;
+            }
+
+            const pending = this.androidPendingUtterance;
+            if (!pending) return;
+            if (pending.token !== this.playToken) {
+                this.clearAndroidTtsPending();
+                return;
+            }
+            if (!this.isAndroidTtsEventForPending(pending, utteranceId)) return;
+
+            if (type === 'start') {
+                pending.started = true;
+                this.setStatus('Android TTSで読み上げを開始しました。', 'ok');
+                return;
+            }
+
+            if (type === 'done') {
+                this.clearAndroidTtsPending();
+                this.noteAndroidTtsHealthy();
+                this.setStatus('Android TTSの読み上げが完了しました。', 'ok');
+                if (typeof pending.onDone === 'function' && pending.token === this.playToken) pending.onDone();
+                return;
+            }
+
+            if (type === 'error') {
+                this.clearAndroidTtsPending();
+                this.androidConsecutiveErrors++;
+                const detail = payload?.errorCode !== undefined ? ` (${payload.errorCode})` : '';
+                this.setStatus(`Android TTSで読み上げに失敗しました。端末のTTSエンジンと言語設定を確認してください。${detail}`, 'error');
+                if (this.androidConsecutiveErrors >= 2) {
+                    this.requestAndroidTtsRecovery(`error${detail}`);
+                }
+                if (typeof pending.onError === 'function' && pending.token === this.playToken) pending.onError();
+                return;
+            }
+
+            if (type === 'stop') {
+                this.clearAndroidTtsPending();
+                if (typeof pending.onError === 'function' && pending.token === this.playToken) pending.onError();
+            }
         },
 
         getAndroidTtsRawStatus() {
@@ -14031,6 +15363,14 @@
             }
 
             const rawStatus = this.getAndroidTtsRawStatus();
+            if (rawStatus === 'ready') {
+                this.androidRecoveryInProgress = false;
+            }
+            if (this.androidRecoveryInProgress && rawStatus !== 'ready') {
+                this.setStatus('Android TTSを再初期化中です。少し待ってから再試行します。', 'warn');
+                if (typeof options.onError === 'function') options.onError();
+                return false;
+            }
             if (rawStatus && rawStatus !== 'ready') {
                 this.setStatus(rawStatus === 'initializing'
                     ? 'Android TTSを初期化中です。少し待ってからもう一度試してください。'
@@ -14044,10 +15384,32 @@
             const pitch = Math.max(0.1, this.readSetting('tts-pitch', 0, 2, 1));
             const volume = this.readSetting('tts-volume', 0, 1, 1);
             const langTag = String(lang || voice?.lang || 'en-US').trim() || 'en-US';
+            const token = ++this.playToken;
+            this.clearAndroidTtsPending();
 
             try {
                 let ok = false;
-                if (voice?.androidName && typeof window.Android.speakAndroidTtsVoice === 'function') {
+                let utteranceId = '';
+                if (voice?.androidName && typeof window.Android.speakAndroidTtsVoiceRequest === 'function') {
+                    utteranceId = String(window.Android.speakAndroidTtsVoiceRequest(
+                        content,
+                        langTag,
+                        voice.androidName,
+                        rate.toFixed(2),
+                        pitch.toFixed(2),
+                        volume.toFixed(2)
+                    ) || '');
+                    ok = !!utteranceId;
+                } else if (typeof window.Android.speakAndroidTtsRequest === 'function') {
+                    utteranceId = String(window.Android.speakAndroidTtsRequest(
+                        content,
+                        langTag,
+                        rate.toFixed(2),
+                        pitch.toFixed(2),
+                        volume.toFixed(2)
+                    ) || '');
+                    ok = !!utteranceId;
+                } else if (voice?.androidName && typeof window.Android.speakAndroidTtsVoice === 'function') {
                     ok = window.Android.speakAndroidTtsVoice(
                         content,
                         langTag,
@@ -14070,16 +15432,45 @@
                     : 'Android TTSで読み上げできませんでした。端末のTTSエンジンと言語設定を確認してください。',
                     ok ? 'ok' : 'error');
                 this.updateAndroidTtsStatus();
-                if (ok && typeof options.onDone === 'function') {
-                    window.setTimeout(options.onDone, this.estimateSpeechDurationMs(content, rate));
-                } else if (!ok && typeof options.onError === 'function') {
+                if (ok) {
+                    const usesCompletionEvents = !!utteranceId;
+                    const pending = {
+                        token,
+                        utteranceId,
+                        onDone: options.onDone,
+                        onError: options.onError,
+                        started: false,
+                        fallbackTimer: null
+                    };
+                    const fallbackDelay = this.estimateSpeechDurationMs(content, rate) + (usesCompletionEvents ? 5000 : 0);
+                    pending.fallbackTimer = window.setTimeout(() => {
+                        if (this.androidPendingUtterance !== pending || token !== this.playToken) return;
+                        this.androidPendingUtterance = null;
+                        if (usesCompletionEvents) {
+                            this.androidMissingCompletionCount++;
+                            const shouldRecover = this.androidMissingCompletionCount >= 2 || !pending.started;
+                            if (shouldRecover) {
+                                this.requestAndroidTtsRecovery(pending.started ? 'missing-completion' : 'not-started');
+                            } else {
+                                this.setStatus('Android TTSの完了通知が届かなかったため、次の読み上げへ進みます。', 'warn');
+                            }
+                            if (shouldRecover && typeof options.onError === 'function') {
+                                options.onError();
+                                return;
+                            }
+                        }
+                        if (typeof options.onDone === 'function') options.onDone();
+                    }, fallbackDelay);
+                    this.androidPendingUtterance = pending;
+                } else if (typeof options.onError === 'function' && token === this.playToken) {
                     options.onError();
                 }
                 return !!ok;
             } catch (e) {
                 this.setStatus(`Android TTSで読み上げに失敗しました。${e.message ? ' ' + e.message : ''}`, 'error');
                 this.updateAndroidTtsStatus();
-                if (typeof options.onError === 'function') options.onError();
+                this.clearAndroidTtsPending();
+                if (typeof options.onError === 'function' && token === this.playToken) options.onError();
                 return false;
             }
         },
@@ -14088,12 +15479,13 @@
             if (!options.skipQuestionLoop && typeof QuestionTtsLoop !== 'undefined') {
                 QuestionTtsLoop.stop({ cancelSpeech: false });
             }
+            this.playToken++;
+            this.clearAndroidTtsPending();
             const synth = this.getSynth();
             let stopped = false;
             let lastError = '';
             try {
                 if (synth) {
-                    this.playToken++;
                     synth.cancel();
                     stopped = true;
                 }
@@ -14119,72 +15511,241 @@
         }
     };
 
+    function createImportResult() {
+        return {
+            deckCount: 0,
+            totalWords: 0,
+            imageCount: 0,
+            zipCount: 0,
+            deckNames: [],
+            imageNames: [],
+            zipNames: [],
+            failedFiles: []
+        };
+    }
+
+    function mergeImportResult(target, source) {
+        if (!source) return target;
+        target.deckCount += source.deckCount || 0;
+        target.totalWords += source.totalWords || 0;
+        target.imageCount += source.imageCount || 0;
+        target.zipCount += source.zipCount || 0;
+        if (Array.isArray(source.deckNames)) target.deckNames.push(...source.deckNames);
+        if (Array.isArray(source.imageNames)) target.imageNames.push(...source.imageNames);
+        if (Array.isArray(source.zipNames)) target.zipNames.push(...source.zipNames);
+        if (Array.isArray(source.failedFiles)) target.failedFiles.push(...source.failedFiles);
+        if (Array.isArray(source.failedImages)) target.failedFiles.push(...source.failedImages);
+        return target;
+    }
+
+    function importFailure(name, message = '読み込みエラー') {
+        return `${name}（${message}）`;
+    }
+
+    function formatImportNameList(items, limit = 5) {
+        const list = [...new Set((items || []).filter(Boolean).map(item => String(item)))];
+        if (!list.length) return '';
+        const shown = list.slice(0, limit).join('、');
+        return list.length > limit ? `${shown} ほか${list.length - limit}件` : shown;
+    }
+
+    function guessImageMimeType(filename) {
+        const lower = String(filename || '').toLowerCase();
+        if (lower.endsWith('.png')) return 'image/png';
+        if (lower.endsWith('.jpg') || lower.endsWith('.jpeg')) return 'image/jpeg';
+        if (lower.endsWith('.gif')) return 'image/gif';
+        if (lower.endsWith('.webp')) return 'image/webp';
+        return 'application/octet-stream';
+    }
+
+    async function importDeckFile(file, filename = getImportFileName(file)) {
+        const content = await readFileAs(file, getDeckFileReadMode(filename));
+        return importDeckContentByName(filename, content);
+    }
+
+    function buildImportResultMessage(result) {
+        const lines = [];
+        if (result.zipCount > 0) {
+            lines.push(`📦 ZIP: ${result.zipCount}個${result.zipNames.length ? `（${formatImportNameList(result.zipNames)}）` : ''}`);
+        }
+        if (result.deckCount > 0) {
+            lines.push(`📝 デッキ: ${result.deckCount}個（${result.totalWords}単語）${result.deckNames.length ? `\n   ${formatImportNameList(result.deckNames)}` : ''}`);
+        }
+        if (result.imageCount > 0) {
+            lines.push(`🖼️ カスタムモンスター画像: ${result.imageCount}個${result.imageNames.length ? `\n   ${formatImportNameList(result.imageNames)}` : ''}`);
+        }
+
+        if (result.deckCount > 0 || result.imageCount > 0) {
+            let message = `✅ 読み込み完了\n\n${lines.join('\n')}`;
+            if (result.failedFiles.length) {
+                message += `\n\n⚠️ 読み込めなかったファイル:\n${result.failedFiles.slice(0, 8).join('\n')}`;
+            }
+            return message;
+        }
+
+        let message = result.zipCount > 0
+            ? `❌ ZIPを開きましたが、読み込めるデッキや画像が見つかりませんでした\n\n${lines.join('\n')}\n\n`
+            : '❌ 読み込めるファイルがありませんでした\n\n';
+        message +=
+            '表形式は1列目を問題、2列目以降を解答にしてください。固定4択は choice1〜choice4 と correct、または choices と answer 列を使えます。choice_exclude_words / choice_group列がある場合は選択肢除外情報として扱います。\n' +
+            '対応形式: デッキ(txt/csv/tsv/xlsx/ods)、画像(png/jpg/jpeg/gif/webp)、ZIP';
+        if (result.failedFiles.length) {
+            message += `\n\n⚠️ 読み込めなかったファイル:\n${result.failedFiles.slice(0, 8).join('\n')}`;
+        }
+        return message;
+    }
+
     // ZIPファイル処理
-    async function handleZipFile(file) {
+    async function handleZipFile(file, options = {}) {
+        const result = createImportResult();
+        const zipName = getImportFileName(file, 'ZIPファイル');
+        appendImportMessage(`ZIP処理開始: ${describeImportFile(file)}`);
         try {
             if (typeof JSZip === 'undefined' || typeof JSZip.loadAsync !== 'function') {
+                appendImportMessage('JSZipが未読み込みです。CDNまたは通信制限の可能性があります。', 'error');
                 throw new Error('ZIP読み込みに必要なJSZipを読み込めませんでした。通信環境または外部CDNの制限を確認してください。');
             }
+            appendImportMessage('JSZip確認OK');
             const zip = await JSZip.loadAsync(file);
-            let deckCount = 0;
-            let imgCount = 0;
-            const failedDecks = [];
-            const imageFiles = [];
+            const entries = Object.entries(zip.files || {});
+            result.zipCount = 1;
+            result.zipNames.push(zipName);
+            appendImportMessage(`ZIP展開成功: ${zipName} / エントリ=${entries.length}件`);
+            const imageEntries = [];
 
-            // デッキファイルの処理
-            for (const [filename, zipEntry] of Object.entries(zip.files)) {
-                if (zipEntry.dir) continue;
+            for (const [filename, zipEntry] of entries) {
+                if (zipEntry.dir) {
+                    appendImportMessage(`ZIP内スキップ: ${filename} / ディレクトリ`);
+                    continue;
+                }
 
                 if (isSupportedDeckFile(filename)) {
+                    appendImportMessage(`ZIP内デッキ検出: ${filename}`);
                     try {
                         const content = await zipEntry.async(getDeckFileReadMode(filename));
-                        const c = importDeckContentByName(filename, content);
-                        if (c) deckCount++;
-                        else failedDecks.push(filename);
+                        const count = importDeckContentByName(filename, content);
+                        if (count) {
+                            const deckName = getDeckDisplayName(filename);
+                            result.deckCount++;
+                            result.totalWords += count;
+                            result.deckNames.push(`${deckName}（${count}件）`);
+                        } else {
+                            result.failedFiles.push(filename);
+                        }
                     } catch (err) {
                         console.error(err);
-                        failedDecks.push(`${filename}（${err.message || '読み込みエラー'}）`);
+                        appendImportMessage(`ZIP内デッキ失敗: ${filename} / ${err.message || err}`, 'error');
+                        result.failedFiles.push(importFailure(filename, err.message || '読み込みエラー'));
                     }
+                } else if (isSupportedImageFile(filename)) {
+                    appendImportMessage(`ZIP内画像検出: ${filename}`);
+                    try {
+                        const base64 = await zipEntry.async('base64');
+                        appendImportMessage(`ZIP内画像base64取得: ${filename} / ${base64.length} chars`);
+                        imageEntries.push({
+                            name: filename,
+                            dataUrl: `data:${guessImageMimeType(filename)};base64,${base64}`
+                        });
+                    } catch (err) {
+                        console.error(err);
+                        appendImportMessage(`ZIP内画像失敗: ${filename} / ${err.message || err}`, 'error');
+                        result.failedFiles.push(importFailure(filename, err.message || '画像読み込みエラー'));
+                    }
+                } else {
+                    appendImportMessage(`ZIP内スキップ: ${filename} / 未対応形式`, 'warn');
                 }
-
-                else if (filename.match(/\.(png|jpg|jpeg|gif|webp)$/i)) {
-                    const blob = await zipEntry.async('blob');
-                    imageFiles.push(blob);
-                }
             }
 
-            // 画像ファイルの処理
-            if (imageFiles.length > 0) {
-                handleMonsterImageUpload(imageFiles);
-                imgCount = imageFiles.length;
+            if (imageEntries.length > 0) {
+                mergeImportResult(result, await addCustomMonsterImagesFromDataUrls(imageEntries, { alert: false }));
             }
 
-            const failedText = failedDecks.length ? `\n\n読み込めなかったデッキ:\n${failedDecks.slice(0, 5).join('\n')}` : '';
-            if (deckCount > 0) {
-                alert(`✅ ZIPファイルを読み込みました！\n\n` +
-                    `📝 デッキ: ${deckCount}個\n` +
-                    `🖼️ 画像: ${imgCount}個` +
-                    failedText);
-            } else {
-                alert(`❌ ZIP内のデッキを読み込めませんでした。\n\n` +
-                    `表形式は1列目を問題、2列目以降を解答にしてください。固定4択は choice1〜choice4 と correct、または choices と answer 列を使えます。choice_exclude_words / choice_group列がある場合は選択肢除外情報として扱います。\n` +
-                    `対応形式: txt / csv / tsv / xlsx / ods` +
-                    failedText);
+            if (result.deckCount > 0 && !DB.d.selectedDeck) {
+                DB.d.selectedDeck = Object.keys(DB.d.decks)[0];
             }
 
-            if (deckCount > 0) {
-                if (!DB.d.selectedDeck) {
-                    DB.d.selectedDeck = Object.keys(DB.d.decks)[0];
-                }
-                goHome();
+            if (options.alert !== false) {
+                alert(buildImportResultMessage(result));
             }
+            appendImportMessage(`ZIP処理完了: デッキ=${result.deckCount} / 単語=${result.totalWords} / 画像=${result.imageCount} / 失敗=${result.failedFiles.length}`);
+            return result;
         } catch (err) {
             console.error(err);
-            alert('❌ ZIPファイルの読み込みに失敗しました\n\n' + err.message);
+            result.failedFiles.push(importFailure(zipName, err.message || 'ZIP読み込みエラー'));
+            appendImportMessage(`ZIP処理失敗: ${zipName} / ${err.message || err}`, 'error');
+            if (options.alert !== false) {
+                alert('❌ ZIPファイルの読み込みに失敗しました\n\n' + err.message);
+            }
+            return result;
         }
     }
+
+    async function handleUnifiedFileImport(files, options = {}) {
+        const fileList = Array.from(files || []);
+        const result = createImportResult();
+        appendImportMessage(`読み込み開始: ${fileList.length}件を自動判定します。`);
+        if (!fileList.length) return result;
+
+        for (const file of fileList) {
+            const filename = getImportFileName(file);
+            appendImportMessage(`ファイル確認: ${describeImportFile(file)}`);
+            if (isZipFile(filename, file.type)) {
+                appendImportMessage(`判定: ZIP -> ${filename}`);
+                mergeImportResult(result, await handleZipFile(file, { alert: false }));
+                continue;
+            }
+
+            if (isSupportedImageFile(filename, file.type)) {
+                appendImportMessage(`判定: 画像 -> ${filename}`);
+                mergeImportResult(result, await handleMonsterImageUpload([file], { alert: false }));
+                continue;
+            }
+
+            if (isSupportedDeckFile(filename)) {
+                appendImportMessage(`判定: デッキ -> ${filename}`);
+                try {
+                    const count = await importDeckFile(file, filename);
+                    if (count) {
+                        const deckName = getDeckDisplayName(filename);
+                        result.deckCount++;
+                        result.totalWords += count;
+                        result.deckNames.push(`${deckName}（${count}件）`);
+                    } else {
+                        result.failedFiles.push(filename);
+                    }
+                } catch (err) {
+                    console.error(err);
+                    appendImportMessage(`デッキ読み込み失敗: ${filename} / ${err.message || err}`, 'error');
+                    result.failedFiles.push(importFailure(filename, err.message || '読み込みエラー'));
+                }
+                continue;
+            }
+
+            appendImportMessage(`判定: 未対応 -> ${filename} / type=${file.type || '(MIMEなし)'}`, 'warn');
+            result.failedFiles.push(importFailure(filename, '未対応形式'));
+        }
+
+        if (result.deckCount > 0 && !DB.d.selectedDeck) {
+            DB.d.selectedDeck = Object.keys(DB.d.decks)[0];
+        }
+        if (result.deckCount > 0) {
+            goHome();
+        }
+
+        if (options.alert !== false) {
+            alert(buildImportResultMessage(result));
+        }
+        appendImportMessage(`読み込み結果: ZIP=${result.zipCount} / デッキ=${result.deckCount} / 単語=${result.totalWords} / 画像=${result.imageCount} / 失敗=${result.failedFiles.length}`);
+        if (result.zipNames.length) appendImportMessage(`読み込んだZIP: ${formatImportNameList(result.zipNames, 10)}`);
+        if (result.deckNames.length) appendImportMessage(`読み込んだデッキ: ${formatImportNameList(result.deckNames, 10)}`);
+        if (result.imageNames.length) appendImportMessage(`読み込んだ画像: ${formatImportNameList(result.imageNames, 10)}`);
+        return result;
+    }
     window.onload = async function () {
-        if (typeof Snd !== 'undefined') Snd.installUnlockHandlers();
+        if (typeof Snd !== 'undefined') {
+            Snd.installUnlockHandlers();
+            Snd.installButtonSoundHandlers();
+        }
         if (typeof Runtime !== 'undefined') Runtime.checkEnvironment();
 
         try {
@@ -14219,84 +15780,25 @@
         safeSetHandler('file-input', 'onchange', e => {
             const files = e.target.files;
             if (!files || files.length === 0) return;
-            const fileList = Array.from(files);
-            const zipFiles = fileList.filter(file => isZipFile(file.name));
-            if (zipFiles.length === 1 && fileList.length === 1) {
-                handleZipFile(zipFiles[0]);
+            resetImportMessages(`ファイル選択: ${files.length}件。デッキ・画像・ZIPを自動判定します。`);
+            handleUnifiedFileImport(files).catch(err => {
+                console.error(err);
+                appendImportMessage(`読み込みの予期しない失敗: ${err.message || err}`, 'error');
+                alert('❌ ファイル読み込み中に予期しないエラーが発生しました\n\n' + (err.message || err));
+            }).finally(() => {
                 e.target.value = '';
-                return;
-            }
-
-            let loaded = 0;
-            let totalWords = 0;
-            const failedFiles = [];
-
-            const finishImport = () => {
-                loaded++;
-                if (loaded === fileList.length) {
-                    if (totalWords > 0) {
-                        let message = `${files.length}個のファイルから合計${totalWords}単語を読み込みました`;
-                        if (failedFiles.length) {
-                            message += `\n\n読み込めなかったファイル:\n${failedFiles.join('\n')}`;
-                        }
-                        alert(message);
-                        if (!DB.d.selectedDeck) {
-                            DB.d.selectedDeck = Object.keys(DB.d.decks)[0];
-                        }
-                    } else {
-                        alert("読込失敗\n\n表形式は1列目を問題、2列目以降を解答にしてください。固定4択は choice1〜choice4 と correct、または choices と answer 列を使えます。choice_exclude_words / choice_group列がある場合は選択肢除外情報として扱います。\n対応形式: txt / csv / tsv / xlsx / ods");
-                    }
-                    e.target.value = '';
-                    goHome();
-                }
-            };
-
-            fileList.forEach(file => {
-                if (isZipFile(file.name)) {
-                    failedFiles.push(`${file.name}（ZIPは1つずつ読み込んでください）`);
-                    finishImport();
-                    return;
-                }
-                if (!isSupportedDeckFile(file.name)) {
-                    failedFiles.push(`${file.name}（未対応形式）`);
-                    finishImport();
-                    return;
-                }
-                const r = new FileReader();
-                r.onload = ev => {
-                    try {
-                        const c = importDeckContentByName(file.name, ev.target.result);
-                        if (c) totalWords += c;
-                        else failedFiles.push(file.name);
-                    } catch (err) {
-                        console.error(err);
-                        failedFiles.push(`${file.name}（${err.message || '読み込みエラー'}）`);
-                    }
-                    finishImport();
-                };
-                r.onerror = () => {
-                    failedFiles.push(`${file.name}（ファイルを読めませんでした）`);
-                    finishImport();
-                };
-                if (getDeckFileReadMode(file.name) === 'arraybuffer') {
-                    r.readAsArrayBuffer(file);
-                } else {
-                    r.readAsText(file);
-                }
+                appendImportMessage('次の読み込みに備えてファイル選択をリセットしました。');
             });
         });
-
-        // ZIPファイル読み込み
-        safeSetHandler('zip-input', 'onchange', e => {
-            const file = e.target.files[0];
-            if (file) {
-                handleZipFile(file).finally(() => {
-                    e.target.value = '';
-                });
-            } else {
-                e.target.value = '';
-            }
-        });
+        const importFileInput = document.getElementById('file-input');
+        if (importFileInput) {
+            importFileInput.addEventListener('click', () => {
+                appendImportMessage('ファイル選択を開きました。デッキ・画像・ZIPを選べます。');
+            });
+            importFileInput.addEventListener('cancel', () => {
+                appendImportMessage('ファイル選択がキャンセルされました。', 'warn');
+            });
+        }
 
         // データインポート
         safeSetHandler('import-data-input', 'onchange', e => {
@@ -14307,24 +15809,17 @@
         // カスタムモンスター画像（複数対応）
         safeSetHandler('custom-monster-enabled', 'onchange', e => {
             const enabled = e.target.checked;
-            const imageInput = document.getElementById('monster-image-input');
+            const importNote = document.getElementById('monster-import-note');
             const imagesList = document.getElementById('monster-images-list');
             const orderSetting = document.getElementById('monster-order-setting');
 
-            if (imageInput) imageInput.style.display = enabled ? 'block' : 'none';
+            if (importNote) importNote.style.display = enabled ? 'block' : 'none';
             if (imagesList) imagesList.style.display = 'none';
             if (orderSetting) orderSetting.style.display = 'none';
 
             if (!enabled) {
                 DB.d.customMonsters = [];
                 DB.save();
-            }
-        });
-
-        safeSetHandler('monster-image-input', 'onchange', e => {
-            const files = e.target.files;
-            if (files && files.length > 0) {
-                handleMonsterImageUpload(files);
             }
         });
 

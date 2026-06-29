@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import android.util.Base64
 import android.webkit.JavascriptInterface
 import android.webkit.ValueCallback
@@ -31,7 +32,9 @@ class MainActivity : AppCompatActivity() {
     private var pendingSaveOutputStream: OutputStream? = null
     private var pendingSaveUri: Uri? = null
     private var pendingSaveFileName: String? = null
+    private lateinit var webView: WebView
     private var androidTts: TextToSpeech? = null
+    private val androidTtsLock = Any()
 
     @Volatile
     private var androidTtsReady: Boolean = false
@@ -39,12 +42,29 @@ class MainActivity : AppCompatActivity() {
     @Volatile
     private var androidTtsStatus: String = "initializing"
 
+    @Volatile
+    private var lastAndroidTtsUtteranceId: String = ""
+
+    @Volatile
+    private var activeAndroidTtsUtteranceId: String = ""
+
+    private var androidTtsRequestSeq: Long = 0
+    private var androidTtsConsecutiveFailures: Int = 0
+
     private val fileChooserLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        if (fileUploadCallback == null) return@registerForActivityResult
-        val results: Array<Uri>? = WebChromeClient.FileChooserParams.parseResult(result.resultCode, result.data)
+        if (fileUploadCallback == null) {
+            notifyFileChooserEvent("result-ignored", "callback is null", result.resultCode, result.data, null)
+            return@registerForActivityResult
+        }
+        val parsedResults: Array<Uri>? = WebChromeClient.FileChooserParams.parseResult(result.resultCode, result.data)
+        val manualResults: Array<Uri>? = extractChooserUris(result.data)
+        val results: Array<Uri>? = parsedResults ?: manualResults
+        notifyFileChooserEvent("result", "chooser returned", result.resultCode, result.data, results)
+        takePersistableReadPermissions(result.data, results)
         fileUploadCallback?.onReceiveValue(results)
+        notifyFileChooserEvent("delivered", "uris delivered to WebView", result.resultCode, result.data, results)
         fileUploadCallback = null
     }
 
@@ -99,7 +119,7 @@ class MainActivity : AppCompatActivity() {
             pitch: String,
             volume: String
         ): Boolean {
-            return speakWithAndroidTts(text, langTag, rate, pitch, volume)
+            return speakWithAndroidTts(text, langTag, rate, pitch, volume).isNotBlank()
         }
 
         @JavascriptInterface
@@ -111,6 +131,29 @@ class MainActivity : AppCompatActivity() {
             pitch: String,
             volume: String
         ): Boolean {
+            return speakWithAndroidTts(text, langTag, voiceName, rate, pitch, volume).isNotBlank()
+        }
+
+        @JavascriptInterface
+        fun speakAndroidTtsRequest(
+            text: String,
+            langTag: String,
+            rate: String,
+            pitch: String,
+            volume: String
+        ): String {
+            return speakWithAndroidTts(text, langTag, rate, pitch, volume)
+        }
+
+        @JavascriptInterface
+        fun speakAndroidTtsVoiceRequest(
+            text: String,
+            langTag: String,
+            voiceName: String,
+            rate: String,
+            pitch: String,
+            volume: String
+        ): String {
             return speakWithAndroidTts(text, langTag, voiceName, rate, pitch, volume)
         }
 
@@ -118,13 +161,76 @@ class MainActivity : AppCompatActivity() {
         fun stopAndroidTts(): Boolean {
             return stopAndroidTtsPlayback()
         }
+
+        @JavascriptInterface
+        fun resetAndroidTts(reason: String): Boolean {
+            return resetAndroidTtsEngine(reason)
+        }
+    }
+
+    private fun extractChooserUris(data: Intent?): Array<Uri>? {
+        if (data == null) return null
+        val uris = LinkedHashSet<Uri>()
+        data.data?.let { uris.add(it) }
+        val clipData = data.clipData
+        if (clipData != null) {
+            for (i in 0 until clipData.itemCount) {
+                clipData.getItemAt(i)?.uri?.let { uris.add(it) }
+            }
+        }
+        return if (uris.isEmpty()) null else uris.toTypedArray()
+    }
+
+    private fun takePersistableReadPermissions(data: Intent?, uris: Array<Uri>?) {
+        if (uris.isNullOrEmpty()) return
+        val flags = data?.flags ?: 0
+        if ((flags and Intent.FLAG_GRANT_READ_URI_PERMISSION) == 0) return
+        uris.forEach { uri ->
+            try {
+                contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            } catch (_: Exception) {
+                // 一部のピッカーは永続化不可のURIを返すため、その場合はWebViewへの一時URI受け渡しだけにする。
+            }
+        }
+    }
+
+    private fun notifyFileChooserEvent(
+        type: String,
+        message: String,
+        resultCode: Int? = null,
+        data: Intent? = null,
+        uris: Array<Uri>? = null,
+        acceptTypes: Array<String>? = null,
+        mode: Int? = null
+    ) {
+        if (!::webView.isInitialized) return
+        val payload = JSONObject()
+        payload.put("type", type)
+        payload.put("message", message)
+        if (resultCode != null) payload.put("resultCode", resultCode)
+        if (mode != null) payload.put("mode", mode)
+        if (acceptTypes != null) {
+            payload.put("accept", acceptTypes.filter { it.isNotBlank() }.joinToString(",").ifBlank { "(empty)" })
+        }
+        if (data != null) {
+            payload.put("clipCount", data.clipData?.itemCount ?: 0)
+            payload.put("hasDataUri", data.data != null)
+        }
+        if (uris != null) payload.put("uriCount", uris.size)
+        runOnUiThread {
+            webView.evaluateJavascript(
+                "window.onAndroidFileChooserEvent && window.onAndroidFileChooserEvent($payload);",
+                null
+            )
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val myWebView: WebView = findViewById(R.id.webview)
+        webView = findViewById(R.id.webview)
+        val myWebView: WebView = webView
         val webSettings: WebSettings = myWebView.settings
 
         webSettings.javaScriptEnabled = true
@@ -146,6 +252,12 @@ class MainActivity : AppCompatActivity() {
             ): Boolean {
                 fileUploadCallback?.onReceiveValue(null)
                 fileUploadCallback = filePathCallback
+                notifyFileChooserEvent(
+                    "open",
+                    "onShowFileChooser called",
+                    acceptTypes = fileChooserParams?.acceptTypes,
+                    mode = fileChooserParams?.mode
+                )
 
                 val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
                     addCategory(Intent.CATEGORY_OPENABLE)
@@ -157,9 +269,11 @@ class MainActivity : AppCompatActivity() {
 
                 try {
                     fileChooserLauncher.launch(intent)
+                    notifyFileChooserEvent("launched", "ACTION_OPEN_DOCUMENT launched")
                 } catch (e: Exception) {
                     fileUploadCallback?.onReceiveValue(null)
                     fileUploadCallback = null
+                    notifyFileChooserEvent("launch-error", e.message ?: "file chooser launch failed")
                     return false
                 }
                 return true
@@ -191,15 +305,49 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initAndroidTts() {
-        androidTtsStatus = "initializing"
-        androidTts = TextToSpeech(this) { status ->
-            if (status == TextToSpeech.SUCCESS) {
-                androidTtsReady = true
-                androidTtsStatus = "ready"
-            } else {
-                androidTtsReady = false
-                androidTtsStatus = "error"
+        synchronized(androidTtsLock) {
+            androidTtsReady = false
+            androidTtsStatus = "initializing"
+            activeAndroidTtsUtteranceId = ""
+            lastAndroidTtsUtteranceId = ""
+        }
+
+        var createdEngine: TextToSpeech? = null
+        createdEngine = TextToSpeech(this) { status ->
+            val engine = createdEngine
+            var shouldInstallListener = false
+            var shouldShutdownStaleEngine = false
+
+            synchronized(androidTtsLock) {
+                if (engine != null && androidTts !== engine) {
+                    shouldShutdownStaleEngine = true
+                } else if (status == TextToSpeech.SUCCESS && engine != null) {
+                    androidTtsReady = true
+                    androidTtsStatus = "ready"
+                    androidTtsConsecutiveFailures = 0
+                    shouldInstallListener = true
+                } else {
+                    androidTtsReady = false
+                    androidTtsStatus = "error"
+                }
             }
+
+            if (shouldShutdownStaleEngine) {
+                try {
+                    engine?.shutdown()
+                } catch (_: Exception) {
+                }
+                return@TextToSpeech
+            }
+
+            if (shouldInstallListener && engine != null) {
+                installAndroidTtsListener(engine)
+                notifyAndroidTtsEvent("ready", "")
+            }
+        }
+
+        synchronized(androidTtsLock) {
+            androidTts = createdEngine
         }
     }
 
@@ -216,8 +364,33 @@ class MainActivity : AppCompatActivity() {
         rate: String,
         pitch: String,
         volume: String
-    ): Boolean {
+    ): String {
         return speakWithAndroidTts(text, langTag, "", rate, pitch, volume)
+    }
+
+    private fun resetAndroidTtsEngine(reason: String = "recovery"): Boolean {
+        val oldEngine = synchronized(androidTtsLock) {
+            val current = androidTts
+            androidTts = null
+            androidTtsReady = false
+            androidTtsStatus = "initializing"
+            activeAndroidTtsUtteranceId = ""
+            lastAndroidTtsUtteranceId = ""
+            androidTtsConsecutiveFailures = 0
+            current
+        }
+
+        try {
+            oldEngine?.stop()
+        } catch (_: Exception) {
+        }
+        try {
+            oldEngine?.shutdown()
+        } catch (_: Exception) {
+        }
+
+        initAndroidTts()
+        return true
     }
 
     private fun getAndroidTtsVoicesJson(): String {
@@ -256,12 +429,14 @@ class MainActivity : AppCompatActivity() {
         rate: String,
         pitch: String,
         volume: String
-    ): Boolean {
-        val engine = androidTts ?: return false
-        if (!androidTtsReady) return false
+    ): String {
+        val engine = synchronized(androidTtsLock) {
+            if (!androidTtsReady) return ""
+            androidTts ?: return ""
+        }
 
         val cleanText = text.trim().take(1000)
-        if (cleanText.isBlank()) return false
+        if (cleanText.isBlank()) return ""
 
         return try {
             val requestedLocale = parseLocale(langTag)
@@ -289,7 +464,7 @@ class MainActivity : AppCompatActivity() {
                     fallbackAvailability == TextToSpeech.LANG_MISSING_DATA ||
                     fallbackAvailability == TextToSpeech.LANG_NOT_SUPPORTED
                 ) {
-                    return false
+                    return ""
                 }
                 fallbackLocale
             }
@@ -304,21 +479,116 @@ class MainActivity : AppCompatActivity() {
             val params = Bundle().apply {
                 putFloat(TextToSpeech.Engine.KEY_PARAM_VOLUME, (volume.toFloatOrNull() ?: 1.0f).coerceIn(0.0f, 1.0f))
             }
-            val utteranceId = "moz-android-tts-${System.currentTimeMillis()}"
-            engine.speak(cleanText, TextToSpeech.QUEUE_FLUSH, params, utteranceId) == TextToSpeech.SUCCESS
+            val utteranceId = synchronized(androidTtsLock) {
+                androidTtsRequestSeq += 1
+                "moz-android-tts-${System.currentTimeMillis()}-$androidTtsRequestSeq"
+            }
+            val result = engine.speak(cleanText, TextToSpeech.QUEUE_FLUSH, params, utteranceId)
+            if (result == TextToSpeech.SUCCESS) {
+                synchronized(androidTtsLock) {
+                    lastAndroidTtsUtteranceId = utteranceId
+                    activeAndroidTtsUtteranceId = utteranceId
+                    androidTtsConsecutiveFailures = 0
+                    androidTtsStatus = "ready"
+                }
+                utteranceId
+            } else {
+                noteAndroidTtsFailure(utteranceId)
+                notifyAndroidTtsEvent("error", utteranceId)
+                ""
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            noteAndroidTtsFailure("")
+            ""
+        }
+    }
+
+    private fun noteAndroidTtsFailure(utteranceId: String?) {
+        val shouldReset = synchronized(androidTtsLock) {
+            if (!utteranceId.isNullOrBlank() && activeAndroidTtsUtteranceId == utteranceId) {
+                activeAndroidTtsUtteranceId = ""
+            }
+            androidTtsConsecutiveFailures += 1
+            androidTtsConsecutiveFailures >= 3
+        }
+        if (shouldReset) {
+            resetAndroidTtsEngine("native-failure")
+        }
+    }
+
+    private fun stopAndroidTtsPlayback(): Boolean {
+        return try {
+            val stoppedId = synchronized(androidTtsLock) {
+                val id = activeAndroidTtsUtteranceId.ifBlank { lastAndroidTtsUtteranceId }
+                activeAndroidTtsUtteranceId = ""
+                lastAndroidTtsUtteranceId = ""
+                id
+            }
+            synchronized(androidTtsLock) { androidTts }?.stop()
+            if (stoppedId.isNotBlank()) {
+                notifyAndroidTtsEvent("stop", stoppedId)
+            }
+            true
         } catch (e: Exception) {
             e.printStackTrace()
             false
         }
     }
 
-    private fun stopAndroidTtsPlayback(): Boolean {
-        return try {
-            androidTts?.stop()
-            true
-        } catch (e: Exception) {
-            e.printStackTrace()
-            false
+    private fun installAndroidTtsListener(engine: TextToSpeech) {
+        engine.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+            override fun onStart(utteranceId: String?) {
+                notifyAndroidTtsEvent("start", utteranceId)
+            }
+
+            override fun onDone(utteranceId: String?) {
+                synchronized(androidTtsLock) {
+                    if (!utteranceId.isNullOrBlank() && activeAndroidTtsUtteranceId == utteranceId) {
+                        activeAndroidTtsUtteranceId = ""
+                    }
+                    if (!utteranceId.isNullOrBlank() && lastAndroidTtsUtteranceId == utteranceId) {
+                        lastAndroidTtsUtteranceId = ""
+                    }
+                    androidTtsConsecutiveFailures = 0
+                }
+                notifyAndroidTtsEvent("done", utteranceId)
+            }
+
+            @Deprecated("Deprecated in Java")
+            override fun onError(utteranceId: String?) {
+                noteAndroidTtsFailure(utteranceId)
+                notifyAndroidTtsEvent("error", utteranceId)
+            }
+
+            override fun onError(utteranceId: String?, errorCode: Int) {
+                noteAndroidTtsFailure(utteranceId)
+                notifyAndroidTtsEvent("error", utteranceId, errorCode)
+            }
+
+            override fun onStop(utteranceId: String?, interrupted: Boolean) {
+                synchronized(androidTtsLock) {
+                    if (!utteranceId.isNullOrBlank() && activeAndroidTtsUtteranceId == utteranceId) {
+                        activeAndroidTtsUtteranceId = ""
+                    }
+                    if (!utteranceId.isNullOrBlank() && lastAndroidTtsUtteranceId == utteranceId) {
+                        lastAndroidTtsUtteranceId = ""
+                    }
+                }
+                notifyAndroidTtsEvent("stop", utteranceId)
+            }
+        })
+    }
+
+    private fun notifyAndroidTtsEvent(type: String, utteranceId: String?, errorCode: Int? = null) {
+        val payload = JSONObject()
+        payload.put("type", type)
+        payload.put("utteranceId", utteranceId ?: "")
+        if (errorCode != null) payload.put("errorCode", errorCode)
+        runOnUiThread {
+            if (::webView.isInitialized) {
+                webView.evaluateJavascript("window.MOZAndroidTts && window.MOZAndroidTts.onEvent($payload);", null)
+            }
         }
     }
 

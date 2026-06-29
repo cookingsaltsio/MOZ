@@ -1,0 +1,6 @@
+question	answer	choice1	choice2	choice3	choice4	correct	explanation
+MOZ import test 1: What color is the sky on a clear day?	blue	blue	green	red	yellow	1	Basic single-answer import test.
+MOZ import test 2: 2 + 3 = ?	5	4	5	6	7	2	Numeric answer test.
+MOZ import test 3: 日本の首都は？	東京	大阪	京都	東京	札幌	3	UTF-8 Japanese text test.
+MOZ import test 4: Select the animal that says "meow".	cat	dog	cat	bird	fish	2	Quoted text test.
+MOZ import test 5: Which file type is this test deck?	TSV	CSV	TSV	ZIP	PNG	2	Tab-separated deck import test.
